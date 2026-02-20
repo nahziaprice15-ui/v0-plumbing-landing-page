@@ -57,13 +57,6 @@ export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
 
           {/* CTA Buttons */}
           <div className="flex items-center gap-3">
-            <a
-              href="tel:+15045551234"
-              className="hidden sm:flex items-center gap-2 text-foreground hover:text-primary transition-colors"
-            >
-              <Phone className="w-4 h-4" />
-              <span className="font-semibold">(504) 555-1234</span>
-            </a>
             <Button
               onClick={onBookingClick}
               className="bg-gradient-to-r from-secondary to-secondary/90 text-secondary-foreground hover:shadow-lg hover:shadow-secondary/40 hover:scale-105 transition-all duration-300 font-semibold px-6 relative overflow-hidden group"
@@ -98,13 +91,6 @@ export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
                 {link.label}
               </a>
             ))}
-            <a
-              href="tel:+15045551234"
-              className="flex items-center gap-2 text-foreground hover:text-primary transition-colors py-2 sm:hidden"
-            >
-              <Phone className="w-4 h-4" />
-              <span className="font-semibold">(504) 555-1234</span>
-            </a>
           </div>
         </div>
       )}
