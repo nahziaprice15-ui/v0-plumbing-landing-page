@@ -53,16 +53,19 @@ export function Hero({ onBookingClick }: { onBookingClick: () => void }) {
               <Button
                 onClick={onBookingClick}
                 size="lg"
-                className="bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold text-lg px-8 py-6 h-auto"
+                className="bg-gradient-to-r from-secondary to-secondary/90 text-secondary-foreground hover:shadow-2xl hover:shadow-secondary/50 hover:scale-105 transition-all duration-300 font-bold text-lg px-8 py-6 h-auto relative overflow-hidden group"
               >
-                Get Service Now
-                <ArrowRight className="ml-2 w-5 h-5" />
+                <span className="relative z-10 flex items-center">
+                  Get Service Now
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
               </Button>
               <Button
                 variant="outline"
                 size="lg"
                 asChild
-                className="font-semibold text-lg px-8 py-6 h-auto border-2"
+                className="font-semibold text-lg px-8 py-6 h-auto border-2 border-primary hover:bg-primary hover:text-primary-foreground hover:scale-105 transition-all duration-300"
               >
                 <a href="#services">View Services</a>
               </Button>
@@ -94,8 +97,8 @@ export function Hero({ onBookingClick }: { onBookingClick: () => void }) {
                 priority
               />
               {/* Floating Badge */}
-              <div className="absolute bottom-6 left-6 right-6 bg-background/95 backdrop-blur-sm rounded-xl p-4 shadow-lg">
-                <div className="flex items-center justify-between">
+              <div className="absolute bottom-6 left-6 right-6 bg-card backdrop-blur-sm rounded-xl p-4 shadow-lg border border-border">
+                <div className="flex items-center justify-between gap-3">
                   <div>
                     <div className="font-semibold text-foreground">Same-Day Service</div>
                     <div className="text-sm text-muted-foreground">Book within 2 hours</div>
@@ -103,9 +106,10 @@ export function Hero({ onBookingClick }: { onBookingClick: () => void }) {
                   <Button
                     onClick={onBookingClick}
                     size="sm"
-                    className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                    className="bg-gradient-to-r from-secondary to-secondary/90 text-secondary-foreground hover:shadow-lg hover:shadow-secondary/40 hover:scale-110 transition-all duration-300 relative overflow-hidden group"
                   >
-                    Book Now
+                    <span className="relative z-10">Book Now</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                   </Button>
                 </div>
               </div>

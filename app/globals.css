@@ -12,7 +12,7 @@
   --white: #FFFFFF;
   
   /* Semantic Tokens */
-  --background: var(--white);
+  --background: #E8F0F8;
   --foreground: var(--charcoal);
   --card: var(--white);
   --card-foreground: var(--charcoal);
@@ -22,15 +22,15 @@
   --primary-foreground: var(--white);
   --secondary: var(--liberty-red);
   --secondary-foreground: var(--white);
-  --muted: var(--light-gray);
-  --muted-foreground: #666666;
+  --muted: #D4E4F3;
+  --muted-foreground: #4A5568;
   --accent: var(--liberty-red);
   --accent-foreground: var(--white);
   --destructive: #EF4444;
   --destructive-foreground: var(--white);
-  --border: #E5E5E5;
-  --input: #F5F5F5;
-  --ring: var(--patriot-blue);
+  --border: #B8D4EA;
+  --input: var(--white);
+  --ring: var(--liberty-red);
   --chart-1: var(--patriot-blue);
   --chart-2: var(--liberty-red);
   --chart-3: #003D7A;

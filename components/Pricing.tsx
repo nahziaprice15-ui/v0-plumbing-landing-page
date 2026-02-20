@@ -118,13 +118,10 @@ export function Pricing({ onBookingClick }: { onBookingClick: () => void }) {
 
               <Button
                 onClick={onBookingClick}
-                className={`w-full font-semibold ${
-                  tier.popular
-                    ? 'bg-secondary text-secondary-foreground hover:bg-secondary/90'
-                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                }`}
+                className="w-full font-bold bg-gradient-to-r from-secondary to-secondary/90 text-secondary-foreground hover:shadow-xl hover:shadow-secondary/50 hover:scale-105 transition-all duration-300 relative overflow-hidden group"
               >
-                Book {tier.name}
+                <span className="relative z-10">Book {tier.name}</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
               </Button>
             </div>
           ))}

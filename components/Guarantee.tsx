@@ -90,9 +90,10 @@ export function Guarantee({ onBookingClick }: { onBookingClick: () => void }) {
               <Button
                 onClick={onBookingClick}
                 size="lg"
-                className="bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold text-lg px-8 whitespace-nowrap"
+                className="bg-gradient-to-r from-secondary to-secondary/90 text-secondary-foreground hover:shadow-2xl hover:shadow-secondary/50 hover:scale-110 transition-all duration-300 font-bold text-lg px-8 whitespace-nowrap relative overflow-hidden group"
               >
-                Lock in Your Guarantee
+                <span className="relative z-10">Lock in Your Guarantee</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
               </Button>
             </div>
           </div>
