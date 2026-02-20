@@ -146,15 +146,11 @@ export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
 
           {/* Company Name & Legal */}
           <div className="flex flex-col items-center gap-4 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">M&P</span>
-              </div>
-              <div>
-                <div className="font-bold text-lg text-white">MS & P LLC</div>
-                <div className="text-xs text-white/60">Licensed & Insured</div>
-              </div>
-            </div>
+            <img 
+              src="/images/ms-p-logo.png" 
+              alt="MS & P LLC - Making Plumbing Great Again" 
+              className="h-24 w-auto"
+            />
           </div>
 
           {/* Copyright & Links */}

@@ -33,13 +33,11 @@ export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <a href="#" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl">M&P</span>
-            </div>
-            <div className="hidden sm:block">
-              <div className="font-bold text-lg text-foreground">MS & P LLC</div>
-              <div className="text-xs text-muted-foreground">Licensed & Insured</div>
-            </div>
+            <img 
+              src="/images/ms-p-logo.png" 
+              alt="MS & P LLC - Making Plumbing Great Again" 
+              className="h-16 w-auto"
+            />
           </a>
 
           {/* Desktop Navigation */}
