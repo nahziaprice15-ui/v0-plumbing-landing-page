@@ -54,7 +54,7 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
               <h2 className="text-2xl font-bold text-white">Book a Service</h2>
               <p className="text-sm text-white/90 mt-1 flex items-center gap-2">
                 <Clock className="w-4 h-4" />
-                {'We'll respond within 2 hours'}
+                We&apos;ll respond within 2 hours
               </p>
             </div>
           </div>

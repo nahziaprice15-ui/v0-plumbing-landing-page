@@ -113,7 +113,7 @@ export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
         <div className="bg-gradient-to-r from-primary via-primary to-primary/90 rounded-3xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 mb-12 shadow-2xl shadow-primary/20 border border-white/10">
           <div className="text-center md:text-left">
             <h3 className="text-2xl md:text-3xl font-bold mb-2 text-white">Need Plumbing Help Right Now?</h3>
-            <p className="text-white/90 text-lg">{'We're available 24/7 for emergencies. Get help in 2 hours or less.'}</p>
+            <p className="text-white/90 text-lg">We&apos;re available 24/7 for emergencies. Get help in 2 hours or less.</p>
           </div>
           <Button
             onClick={onBookingClick}
