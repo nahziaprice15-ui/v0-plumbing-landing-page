@@ -97,12 +97,12 @@ export function Pricing({ onBookingClick }: { onBookingClick: () => void }) {
               )}
 
               <div className="mb-6">
-                <h3 className="text-xl font-bold text-foreground mb-2">{tier.name}</h3>
+                <h3 className="text-xl font-bold text-card-foreground mb-2">{tier.name}</h3>
                 <div className="flex items-baseline gap-1 mb-3">
-                  <span className="text-4xl font-bold text-primary">{tier.price}</span>
-                  <span className="text-muted-foreground">starting</span>
+                  <span className="text-4xl font-bold text-secondary">{tier.price}</span>
+                  <span className="text-card-foreground/70">starting</span>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <p className="text-sm text-card-foreground/70 leading-relaxed">
                   {tier.description}
                 </p>
               </div>
@@ -111,7 +111,7 @@ export function Pricing({ onBookingClick }: { onBookingClick: () => void }) {
                 {tier.features.map((feature, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-foreground">{feature}</span>
+                    <span className="text-sm text-card-foreground">{feature}</span>
                   </li>
                 ))}
               </ul>
