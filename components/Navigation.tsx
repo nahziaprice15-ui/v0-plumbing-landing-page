@@ -36,8 +36,12 @@ export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
             <img 
               src="/images/ms-p-logo.png" 
               alt="MS & P LLC - Making Plumbing Great Again" 
-              className="h-16 w-auto"
+              className="h-20 w-auto"
             />
+            <div className="hidden sm:block">
+              <div className="font-bold text-lg text-foreground">MS & P LLC</div>
+              <div className="text-xs text-muted-foreground">Licensed & Insured</div>
+            </div>
           </a>
 
           {/* Desktop Navigation */}
