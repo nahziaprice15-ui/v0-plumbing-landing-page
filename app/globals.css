@@ -12,23 +12,23 @@
   --white: #FFFFFF;
   
   /* Semantic Tokens */
-  --background: #E8F0F8;
-  --foreground: var(--charcoal);
+  --background: var(--patriot-blue);
+  --foreground: var(--white);
   --card: var(--white);
   --card-foreground: var(--charcoal);
   --popover: var(--white);
   --popover-foreground: var(--charcoal);
-  --primary: var(--patriot-blue);
-  --primary-foreground: var(--white);
+  --primary: var(--white);
+  --primary-foreground: var(--patriot-blue);
   --secondary: var(--liberty-red);
   --secondary-foreground: var(--white);
-  --muted: #D4E4F3;
-  --muted-foreground: #4A5568;
+  --muted: #004A99;
+  --muted-foreground: #E0E0E0;
   --accent: var(--liberty-red);
   --accent-foreground: var(--white);
   --destructive: #EF4444;
   --destructive-foreground: var(--white);
-  --border: #B8D4EA;
+  --border: #005BB5;
   --input: var(--white);
   --ring: var(--liberty-red);
   --chart-1: var(--patriot-blue);
