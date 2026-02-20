@@ -44,7 +44,7 @@ const faqs = [
 
 export function FAQ() {
   return (
-    <section id="faq" className="py-20 bg-muted">
+    <section id="faq" className="py-20 bg-card">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -81,7 +81,7 @@ export function FAQ() {
           <p className="text-muted-foreground mb-4">Still have questions?</p>
           <a
             href="tel:+15045551234"
-            className="text-primary hover:text-primary/80 font-semibold text-lg transition-colors"
+            className="text-secondary hover:text-secondary/80 font-semibold text-lg transition-colors"
           >
             Call us at (504) 555-1234
           </a>

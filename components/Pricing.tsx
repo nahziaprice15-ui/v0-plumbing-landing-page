@@ -63,7 +63,7 @@ const pricingTiers = [
 
 export function Pricing({ onBookingClick }: { onBookingClick: () => void }) {
   return (
-    <section id="pricing" className="py-20 bg-background">
+    <section id="pricing" className="py-20 bg-card">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -83,7 +83,7 @@ export function Pricing({ onBookingClick }: { onBookingClick: () => void }) {
               className={`relative bg-card border-2 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-in fade-in slide-in-from-bottom-8 duration-700 ${
                 tier.popular
                   ? 'border-secondary shadow-lg scale-105'
-                  : 'border-border'
+                  : 'border-[#003D7A]'
               }`}
               style={{ animationDelay: `${index * 100}ms` }}
             >
