@@ -13,17 +13,17 @@
   
   /* Semantic Tokens */
   --background: var(--patriot-blue);
-  --foreground: #B0B0B0;
+  --foreground: #D0D0D0;
   --card: var(--white);
-  --card-foreground: #6B6B6B;
+  --card-foreground: #4A4A4A;
   --popover: var(--white);
-  --popover-foreground: #6B6B6B;
+  --popover-foreground: #4A4A4A;
   --primary: var(--white);
-  --primary-foreground: #6B6B6B;
+  --primary-foreground: #4A4A4A;
   --secondary: var(--liberty-red);
   --secondary-foreground: var(--white);
   --muted: #004A99;
-  --muted-foreground: #9E9E9E;
+  --muted-foreground: #7A7A7A;
   --accent: var(--liberty-red);
   --accent-foreground: var(--white);
   --destructive: #EF4444;

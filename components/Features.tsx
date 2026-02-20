@@ -64,20 +64,20 @@ export function Features({ onBookingClick }: { onBookingClick: () => void }) {
             return (
               <div
                 key={index}
-                className="group bg-card border border-border rounded-xl p-6 hover:shadow-lg hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 animate-in fade-in slide-in-from-bottom-8 duration-700"
+                className="group bg-secondary border-2 border-secondary rounded-xl p-6 hover:shadow-2xl hover:shadow-secondary/50 hover:scale-105 transition-all duration-300 animate-in fade-in slide-in-from-bottom-8 duration-700"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
-                  <Icon className="w-7 h-7 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
+                <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center mb-4 group-hover:bg-white group-hover:scale-110 transition-all duration-300">
+                  <Icon className="w-7 h-7 text-white group-hover:text-secondary transition-colors duration-300" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground mb-2">{service.title}</h3>
-                <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
+                <h3 className="text-xl font-bold text-white mb-2">{service.title}</h3>
+                <p className="text-white/80 mb-4 text-sm leading-relaxed">
                   {service.description}
                 </p>
                 <ul className="space-y-2">
                   {service.features.map((feature, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                    <li key={i} className="flex items-center gap-2 text-sm text-white/70">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white" />
                       {feature}
                     </li>
                   ))}
