@@ -66,9 +66,10 @@ export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
             </a>
             <Button
               onClick={onBookingClick}
-              className="bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold px-6"
+              className="bg-gradient-to-r from-secondary to-secondary/90 text-secondary-foreground hover:shadow-lg hover:shadow-secondary/40 hover:scale-105 transition-all duration-300 font-semibold px-6 relative overflow-hidden group"
             >
-              Book Service
+              <span className="relative z-10">Book Service</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
             </Button>
 
             {/* Mobile Menu Button */}

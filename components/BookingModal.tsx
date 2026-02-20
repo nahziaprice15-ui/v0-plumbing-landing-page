@@ -42,19 +42,25 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-background rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
+      <div className="bg-background rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-4 duration-500 border border-primary/10">
         {/* Header */}
-        <div className="sticky top-0 bg-background border-b border-border p-6 flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">Book a Service</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Fill out the form and we'll get back to you within 2 hours
-            </p>
+        <div className="sticky top-0 bg-gradient-to-r from-primary via-primary to-primary/90 rounded-t-3xl p-8 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center animate-pulse">
+              <Calendar className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-white">Book a Service</h2>
+              <p className="text-sm text-white/90 mt-1 flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                {'We'll respond within 2 hours'}
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="text-white/80 hover:text-white hover:rotate-90 transition-all duration-300 p-2 rounded-lg hover:bg-white/10"
             aria-label="Close modal"
           >
             <X className="w-6 h-6" />
@@ -195,15 +201,19 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
               type="button"
               variant="outline"
               onClick={onClose}
-              className="flex-1"
+              className="flex-1 hover:scale-105 transition-transform duration-300"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold"
+              className="flex-1 bg-gradient-to-r from-secondary to-secondary/90 text-secondary-foreground hover:shadow-xl hover:shadow-secondary/50 hover:scale-105 transition-all duration-300 font-semibold relative overflow-hidden group"
             >
-              Submit Booking Request
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                Submit Booking Request
+                <Calendar className="w-4 h-4 group-hover:animate-bounce" />
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
             </Button>
           </div>
         </form>
