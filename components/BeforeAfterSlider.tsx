@@ -43,7 +43,7 @@ export function BeforeAfterSlider() {
   const current = transformations[currentIndex]
 
   return (
-    <section className="py-20 bg-muted">
+    <section className="py-20 bg-card">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -59,7 +59,7 @@ export function BeforeAfterSlider() {
         <div className="max-w-4xl mx-auto">
           <div className="bg-card rounded-2xl shadow-xl overflow-hidden border border-border">
             {/* Image Comparison */}
-            <div className="relative aspect-[16/10] bg-muted">
+            <div className="relative aspect-[16/10] bg-gray-100">
               <div className="absolute inset-0 select-none">
                 {/* After Image */}
                 <Image

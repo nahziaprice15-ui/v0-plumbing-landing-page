@@ -28,7 +28,7 @@ const guaranteePoints = [
 
 export function Guarantee({ onBookingClick }: { onBookingClick: () => void }) {
   return (
-    <section className="py-20 bg-primary text-primary-foreground relative overflow-hidden">
+    <section className="py-20 bg-background text-white relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0" style={{
@@ -41,13 +41,13 @@ export function Guarantee({ onBookingClick }: { onBookingClick: () => void }) {
         <div className="max-w-5xl mx-auto">
           {/* Header */}
           <div className="text-center mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary-foreground/10 mb-6">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/10 mb-6">
               <Shield className="w-10 h-10" />
             </div>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-balance">
               Our Ironclad Guarantee
             </h2>
-            <p className="text-lg text-primary-foreground/80 text-pretty max-w-2xl mx-auto">
+            <p className="text-lg text-white/90 text-pretty max-w-2xl mx-auto">
               Your satisfaction is our priority. We back every job with our comprehensive service guarantee.
             </p>
           </div>
@@ -63,12 +63,12 @@ export function Guarantee({ onBookingClick }: { onBookingClick: () => void }) {
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-primary-foreground/20 flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
                       <Icon className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold mb-2">{point.title}</h3>
-                      <p className="text-primary-foreground/80 leading-relaxed">
+                      <h3 className="text-xl font-bold text-white mb-2">{point.title}</h3>
+                      <p className="text-white/90 leading-relaxed">
                         {point.description}
                       </p>
                     </div>
@@ -80,10 +80,10 @@ export function Guarantee({ onBookingClick }: { onBookingClick: () => void }) {
 
           {/* CTA */}
           <div className="text-center animate-in fade-in duration-700 delay-500">
-            <div className="inline-flex flex-col sm:flex-row gap-4 items-center bg-primary-foreground/10 backdrop-blur-sm rounded-2xl p-6 md:p-8">
+            <div className="inline-flex flex-col sm:flex-row gap-4 items-center bg-white/10 backdrop-blur-sm rounded-2xl p-6 md:p-8">
               <div className="flex-1 text-center sm:text-left">
                 <h3 className="text-2xl font-bold mb-2">Ready to Experience the Difference?</h3>
-                <p className="text-primary-foreground/80">
+                <p className="text-white/90">
                   Join 2,000+ satisfied customers in New Orleans
                 </p>
               </div>

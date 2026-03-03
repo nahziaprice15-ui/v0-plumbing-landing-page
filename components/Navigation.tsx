@@ -26,7 +26,7 @@ export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-secondary shadow-md' : 'bg-secondary backdrop-blur-sm'
+        isScrolled ? 'bg-background shadow-md' : 'bg-background backdrop-blur-sm'
       }`}
     >
       <div className="container mx-auto px-4">
@@ -61,7 +61,7 @@ export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
           <div className="flex items-center gap-3">
             <Button
               onClick={onBookingClick}
-              className="bg-[#003D7A] text-black hover:shadow-lg hover:shadow-[#003D7A]/40 hover:scale-105 transition-all duration-300 font-bold px-6 relative overflow-hidden group"
+              className="bg-secondary text-white hover:shadow-lg hover:shadow-secondary/40 hover:scale-105 transition-all duration-300 font-bold px-6 relative overflow-hidden group"
             >
               <span className="relative z-10">Book Service</span>
               <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
@@ -81,7 +81,7 @@ export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-secondary border-t border-white/20">
+        <div className="md:hidden bg-background border-t border-white/20">
           <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
             {navLinks.map((link) => (
               <a

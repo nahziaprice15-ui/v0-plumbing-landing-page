@@ -27,7 +27,7 @@ const trustMetrics = [
 
 export function TrustBar() {
   return (
-    <section className="py-12 bg-muted border-y border-border">
+    <section className="py-12 bg-card border-y border-border">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {trustMetrics.map((metric, index) => {
