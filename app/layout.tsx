@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
-import { Toaster } from '@/components/ui/sonner'
+import { Toaster } from 'sonner'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -16,6 +17,9 @@ export const metadata: Metadata = {
   keywords: ['plumbing', 'New Orleans', 'emergency plumbing', 'drain cleaning', 'water heater', 'plumber', 'MS & P LLC'],
   authors: [{ name: 'MS & P LLC', url: siteUrl }],
   creator: 'MS & P LLC',
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
@@ -23,13 +27,13 @@ export const metadata: Metadata = {
     siteName: 'MS & P LLC Plumbing',
     title: 'MS & P LLC - Expert Plumbing Services in New Orleans',
     description: 'Fast, reliable plumbing services in New Orleans. 24/7 emergency repairs, drain cleaning, water heater installation. Licensed & insured. Book online today!',
-    images: [{ url: '/placeholder.svg', width: 1200, height: 630, alt: 'MS & P LLC Plumbing' }],
+    images: [{ url: '/images/plumber-hero.svg', width: 1200, height: 800, alt: 'MS & P LLC Professional Plumber' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'MS & P LLC - Expert Plumbing Services in New Orleans',
     description: 'Fast, reliable plumbing services in New Orleans. 24/7 emergency repairs. Licensed & insured.',
-    images: ['/placeholder.svg'],
+    images: ['/images/plumber-hero.svg'],
   },
   robots: {
     index: true,
@@ -39,6 +43,7 @@ export const metadata: Metadata = {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },
     ],
+    apple: '/icon.svg',
   },
 }
 
@@ -50,9 +55,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased">
-        {children}
-        <Toaster position="top-center" richColors closeButton />
-        <Analytics />
+        <ErrorBoundary>
+          <a href="#main-content" className="skip-link">
+            Skip to main content
+          </a>
+          {children}
+          <Toaster theme="light" position="top-center" richColors closeButton />
+          <Analytics />
+        </ErrorBoundary>
       </body>
     </html>
   )

@@ -18,21 +18,21 @@ export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
             </p>
             <div className="flex gap-3">
               <a
-                href="#"
+                href="https://www.facebook.com"
                 className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center hover:bg-primary hover:scale-110 transition-all duration-300"
                 aria-label="Facebook"
               >
                 <Facebook className="w-4 h-4" />
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com"
                 className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center hover:bg-primary hover:scale-110 transition-all duration-300"
                 aria-label="Instagram"
               >
                 <Instagram className="w-4 h-4" />
               </a>
               <a
-                href="#"
+                href="https://twitter.com"
                 className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center hover:bg-primary hover:scale-110 transition-all duration-300"
                 aria-label="Twitter"
               >
@@ -147,7 +147,7 @@ export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
           {/* Company Name & Legal */}
           <div className="flex flex-col items-center gap-4 mb-6">
             <img 
-              src="/images/ms-p-logo.png" 
+              src="/images/ms-p-logo.svg" 
               alt="MS & P LLC - Making Plumbing Great Again" 
               className="h-24 w-auto"
             />
@@ -159,13 +159,13 @@ export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
               © {currentYear} MS & P LLC. All rights reserved.
             </div>
             <div className="flex gap-6">
-              <a href="#" className="hover:text-white transition-colors">
+              <a href="/privacy" className="hover:text-white transition-colors">
                 Privacy Policy
               </a>
-              <a href="#" className="hover:text-white transition-colors">
+              <a href="/terms" className="hover:text-white transition-colors">
                 Terms of Service
               </a>
-              <a href="#" className="hover:text-white transition-colors">
+              <a href="/sitemap.xml" className="hover:text-white transition-colors">
                 Sitemap
               </a>
             </div>

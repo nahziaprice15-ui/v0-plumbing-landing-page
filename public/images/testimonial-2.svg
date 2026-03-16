@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300" role="img" aria-label="Testimonial avatar 2 placeholder">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#1e293b"/>
+      <stop offset="1" stop-color="#0ea5e9"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="300" rx="42" fill="url(#g)"/>
+  <circle cx="150" cy="122" r="54" fill="#ffffff" opacity="0.78"/>
+  <path d="M62 270c10-58 44-92 88-92s78 34 88 92" fill="#ffffff" opacity="0.42"/>
+  <text x="150" y="54" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif" font-size="18" font-weight="700" fill="#ffffff" opacity="0.92">Customer</text>
+</svg>

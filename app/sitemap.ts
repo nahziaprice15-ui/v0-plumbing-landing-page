@@ -1,29 +1,28 @@
 import type { MetadataRoute } from 'next'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://msandpllc.com'
-const baseUrl = siteUrl.replace(/\/+$/, '')
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const lastModified = new Date()
+  const now = new Date()
 
   return [
     {
-      url: `${baseUrl}/`,
-      lastModified,
+      url: `${siteUrl}/`,
+      lastModified: now,
       changeFrequency: 'weekly',
       priority: 1,
     },
     {
-      url: `${baseUrl}/privacy`,
-      lastModified,
+      url: `${siteUrl}/privacy`,
+      lastModified: now,
       changeFrequency: 'yearly',
-      priority: 0.2,
+      priority: 0.5,
     },
     {
-      url: `${baseUrl}/terms`,
-      lastModified,
+      url: `${siteUrl}/terms`,
+      lastModified: now,
       changeFrequency: 'yearly',
-      priority: 0.2,
+      priority: 0.5,
     },
   ]
 }
