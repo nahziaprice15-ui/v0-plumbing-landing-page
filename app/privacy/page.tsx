@@ -4,38 +4,6 @@ import Link from 'next/link'
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="container mx-auto px-4 py-16 max-w-3xl">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">Privacy Policy</h1>
-        <p className="text-sm text-muted-foreground mb-8">
-          Last updated: March 16, 2026
-        </p>
-
-        <div className="space-y-6 text-sm md:text-base leading-relaxed">
-          <p>
-            This privacy policy explains how MS &amp; P LLC collects, uses, and protects
-            information when you use this website or request our plumbing services.
-          </p>
-          <p>
-            This page is a general template and does not constitute legal advice. You
-            should review and update it with your actual business practices and consult
-            with a qualified attorney to ensure compliance with applicable laws
-            (including GDPR/CCPA where relevant).
-          </p>
-        </div>
-
-        <div className="mt-10">
-          <Link href="/" className="text-secondary hover:underline">
-            ← Back to homepage
-          </Link>
-        </div>
-      </div>
-    </main>
-  )
-}
-
-export default function PrivacyPage() {
-  return (
     <main className="min-h-screen container mx-auto px-4 py-16 max-w-3xl space-y-8">
       <header className="space-y-2">
         <h1 className="text-3xl font-bold">Privacy Policy</h1>
