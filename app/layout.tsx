@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
-import { Toaster } from '@/components/ui/sonner'
+import { Toaster } from 'sonner'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -23,13 +23,13 @@ export const metadata: Metadata = {
     siteName: 'MS & P LLC Plumbing',
     title: 'MS & P LLC - Expert Plumbing Services in New Orleans',
     description: 'Fast, reliable plumbing services in New Orleans. 24/7 emergency repairs, drain cleaning, water heater installation. Licensed & insured. Book online today!',
-    images: [{ url: '/placeholder.svg', width: 1200, height: 630, alt: 'MS & P LLC Plumbing' }],
+    images: [{ url: '/images/plumber-hero.jpg', width: 1200, height: 800, alt: 'MS & P LLC Professional Plumber' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'MS & P LLC - Expert Plumbing Services in New Orleans',
     description: 'Fast, reliable plumbing services in New Orleans. 24/7 emergency repairs. Licensed & insured.',
-    images: ['/placeholder.svg'],
+    images: ['/images/plumber-hero.jpg'],
   },
   robots: {
     index: true,
@@ -38,7 +38,10 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
+      { url: '/icon-dark-32x32.png', media: '(prefers-color-scheme: dark)' },
     ],
+    apple: '/apple-icon.png',
   },
 }
 
@@ -51,7 +54,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="font-sans antialiased">
         {children}
-        <Toaster position="top-center" richColors closeButton />
+        <Toaster theme="light" position="top-center" richColors closeButton />
         <Analytics />
       </body>
     </html>
