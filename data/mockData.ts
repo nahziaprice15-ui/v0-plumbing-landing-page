@@ -86,7 +86,7 @@ export const testimonials = [
     service: "Pipe Installation",
     text: "MS & P LLC was professional, punctual, and the quality of work was outstanding. They fixed our plumbing issues quickly!",
     rating: 5,
-    image: "/images/testimonial-1.jpg",
+    image: "/images/testimonial-1.svg",
   },
   {
     id: 2,
@@ -94,7 +94,7 @@ export const testimonials = [
     service: "Emergency Repair",
     text: "Had a pipe burst at 2 AM. MS & P showed up in 45 minutes and solved it. Extremely responsive team!",
     rating: 5,
-    image: "/images/testimonial-2.jpg",
+    image: "/images/testimonial-2.svg",
   },
   {
     id: 3,
@@ -102,7 +102,7 @@ export const testimonials = [
     service: "Leak Detection",
     text: "Found a hidden leak that was costing us hundreds. Their technology is impressive and pricing is fair.",
     rating: 5,
-    image: "/images/testimonial-3.jpg",
+    image: "/images/testimonial-3.svg",
   },
   {
     id: 4,
@@ -110,7 +110,7 @@ export const testimonials = [
     service: "Water Heater Service",
     text: "Replaced our water heater. Friendly staff, clean work, and they explained everything clearly.",
     rating: 5,
-    image: "/images/testimonial-4.jpg",
+    image: "/images/testimonial-4.svg",
   },
   {
     id: 5,
@@ -118,7 +118,7 @@ export const testimonials = [
     service: "Maintenance Plan",
     text: "Been on their maintenance plan for 2 years. Zero problems and great preventative care!",
     rating: 5,
-    image: "/images/testimonial-5.jpg",
+    image: "/images/testimonial-5.svg",
   },
 ];
 

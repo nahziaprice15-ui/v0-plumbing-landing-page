@@ -147,7 +147,7 @@ export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
           {/* Company Name & Legal */}
           <div className="flex flex-col items-center gap-4 mb-6">
             <img 
-              src="/images/ms-p-logo.png" 
+              src="/images/ms-p-logo.svg" 
               alt="MS & P LLC - Making Plumbing Great Again" 
               className="h-24 w-auto"
             />

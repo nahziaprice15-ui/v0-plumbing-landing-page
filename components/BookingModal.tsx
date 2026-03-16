@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
@@ -70,6 +70,7 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
     reset,
     setValue,
     watch,
+    control,
   } = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
@@ -302,28 +303,31 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
               <Label htmlFor="serviceType">
                 Service Type <span className="text-destructive">*</span>
               </Label>
-              <Select
-                onValueChange={(value) => setValue('serviceType', value, { shouldValidate: true })}
-                {...register('serviceType')}
-              >
-                <SelectTrigger 
-                  id="serviceType"
-                  aria-invalid={errors.serviceType ? 'true' : 'false'}
-                  aria-describedby={errors.serviceType ? 'serviceType-error' : undefined}
-                  aria-required="true"
-                  className={errors.serviceType ? 'border-destructive' : ''}
-                >
-                  <SelectValue placeholder="Select a service" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="emergency">Emergency Repair</SelectItem>
-                  <SelectItem value="drain">Drain Cleaning</SelectItem>
-                  <SelectItem value="water-heater">Water Heater Service</SelectItem>
-                  <SelectItem value="leak">Leak Detection</SelectItem>
-                  <SelectItem value="installation">Installation</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                control={control}
+                name="serviceType"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger
+                      id="serviceType"
+                      aria-invalid={errors.serviceType ? 'true' : 'false'}
+                      aria-describedby={errors.serviceType ? 'serviceType-error' : undefined}
+                      aria-required="true"
+                      className={errors.serviceType ? 'border-destructive' : ''}
+                    >
+                      <SelectValue placeholder="Select a service" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="emergency">Emergency Repair</SelectItem>
+                      <SelectItem value="drain">Drain Cleaning</SelectItem>
+                      <SelectItem value="water-heater">Water Heater Service</SelectItem>
+                      <SelectItem value="leak">Leak Detection</SelectItem>
+                      <SelectItem value="installation">Installation</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               {errors.serviceType && (
                 <p id="serviceType-error" className="text-sm text-destructive" role="alert">
                   {errors.serviceType.message}
@@ -350,19 +354,23 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="preferredTime">Preferred Time</Label>
-                <Select
-                  onValueChange={(value) => setValue('preferredTime', value)}
-                >
-                  <SelectTrigger id="preferredTime">
-                    <SelectValue placeholder="Select time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="morning">Morning (8AM-12PM)</SelectItem>
-                    <SelectItem value="afternoon">Afternoon (12PM-5PM)</SelectItem>
-                    <SelectItem value="evening">Evening (5PM-8PM)</SelectItem>
-                    <SelectItem value="asap">ASAP</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Controller
+                  control={control}
+                  name="preferredTime"
+                  render={({ field }) => (
+                    <Select value={field.value ?? ''} onValueChange={field.onChange}>
+                      <SelectTrigger id="preferredTime">
+                        <SelectValue placeholder="Select time" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="morning">Morning (8AM-12PM)</SelectItem>
+                        <SelectItem value="afternoon">Afternoon (12PM-5PM)</SelectItem>
+                        <SelectItem value="evening">Evening (5PM-8PM)</SelectItem>
+                        <SelectItem value="asap">ASAP</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
             </div>
 

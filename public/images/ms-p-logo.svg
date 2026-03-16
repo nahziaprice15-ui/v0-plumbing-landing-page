@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="240" viewBox="0 0 600 240" role="img" aria-label="MS &amp; P LLC logo placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0ea5e9"/>
+      <stop offset="1" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="240" rx="28" fill="url(#bg)"/>
+  <g fill="#ffffff" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif">
+    <text x="40" y="115" font-size="56" font-weight="800">MS &amp; P LLC</text>
+    <text x="40" y="165" font-size="22" opacity="0.92">Plumbing " New Orleans " 24/7 Emergency</text>
+  </g>
+  <g transform="translate(470 52)">
+    <circle cx="55" cy="55" r="55" fill="#ffffff" opacity="0.18"/>
+    <path d="M58 18c8 2 14 8 16 16l-10 3c-1-4-4-7-8-8l2-11zM42 28c-6 4-10 11-10 19 0 12 10 22 22 22 8 0 15-4 19-10l10 5c-6 11-18 19-31 19-20 0-36-16-36-36 0-13 7-25 18-31l8 12z" fill="#ffffff" opacity="0.92"/>
+    <rect x="50" y="78" width="10" height="38" rx="5" fill="#ffffff" opacity="0.92"/>
+  </g>
+</svg>

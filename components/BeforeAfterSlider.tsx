@@ -8,20 +8,20 @@ import Image from 'next/image'
 const transformations = [
   {
     title: 'Kitchen Pipe Replacement',
-    before: '/images/plumber-hero.jpg',
-    after: '/images/plumber-hero.jpg',
+    before: '/images/before-after-1-before.svg',
+    after: '/images/before-after-1-after.svg',
     description: 'Replaced corroded pipes with modern PEX piping system',
   },
   {
     title: 'Bathroom Renovation',
-    before: '/images/plumber-hero.jpg',
-    after: '/images/plumber-hero.jpg',
+    before: '/images/before-after-2-before.svg',
+    after: '/images/before-after-2-after.svg',
     description: 'Complete bathroom plumbing upgrade with new fixtures',
   },
   {
     title: 'Water Heater Installation',
-    before: '/images/plumber-hero.jpg',
-    after: '/images/plumber-hero.jpg',
+    before: '/images/before-after-3-before.svg',
+    after: '/images/before-after-3-after.svg',
     description: 'Installed energy-efficient tankless water heater',
   },
 ]

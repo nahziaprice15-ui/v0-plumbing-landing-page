@@ -34,7 +34,7 @@ export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
           {/* Logo */}
           <a href="#" className="flex items-center gap-3">
             <img 
-              src="/images/ms-p-logo.png" 
+              src="/images/ms-p-logo.svg" 
               alt="MS & P LLC - Making Plumbing Great Again" 
               className="h-20 w-auto"
             />

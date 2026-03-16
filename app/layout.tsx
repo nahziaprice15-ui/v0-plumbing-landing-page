@@ -23,13 +23,13 @@ export const metadata: Metadata = {
     siteName: 'MS & P LLC Plumbing',
     title: 'MS & P LLC - Expert Plumbing Services in New Orleans',
     description: 'Fast, reliable plumbing services in New Orleans. 24/7 emergency repairs, drain cleaning, water heater installation. Licensed & insured. Book online today!',
-    images: [{ url: '/images/plumber-hero.jpg', width: 1200, height: 800, alt: 'MS & P LLC Professional Plumber' }],
+    images: [{ url: '/images/plumber-hero.svg', width: 1200, height: 800, alt: 'MS & P LLC Professional Plumber' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'MS & P LLC - Expert Plumbing Services in New Orleans',
     description: 'Fast, reliable plumbing services in New Orleans. 24/7 emergency repairs. Licensed & insured.',
-    images: ['/images/plumber-hero.jpg'],
+    images: ['/images/plumber-hero.svg'],
   },
   robots: {
     index: true,
@@ -38,10 +38,8 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
-      { url: '/icon-dark-32x32.png', media: '(prefers-color-scheme: dark)' },
     ],
-    apple: '/apple-icon.png',
+    apple: '/icon.svg',
   },
 }
 

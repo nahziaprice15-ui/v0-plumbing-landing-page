@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-label="Plumber hero image placeholder">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0ea5e9"/>
+      <stop offset="0.55" stop-color="#22c55e"/>
+      <stop offset="1" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.78"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="800" fill="url(#sky)"/>
+
+  <!-- Subtle pattern -->
+  <g opacity="0.14" fill="#ffffff">
+    <circle cx="120" cy="120" r="6"/><circle cx="220" cy="180" r="6"/><circle cx="320" cy="120" r="6"/>
+    <circle cx="420" cy="180" r="6"/><circle cx="520" cy="120" r="6"/><circle cx="620" cy="180" r="6"/>
+    <circle cx="720" cy="120" r="6"/><circle cx="820" cy="180" r="6"/><circle cx="920" cy="120" r="6"/>
+    <circle cx="1020" cy="180" r="6"/><circle cx="1120" cy="120" r="6"/>
+  </g>
+
+  <!-- Abstract plumber silhouette -->
+  <g transform="translate(720 130)" opacity="0.95">
+    <circle cx="150" cy="120" r="70" fill="#ffffff" opacity="0.22"/>
+    <path d="M150 70c32 0 58 26 58 58s-26 58-58 58-58-26-58-58 26-58 58-58z" fill="#ffffff" opacity="0.55"/>
+    <path d="M70 330c0-68 52-122 116-122s116 54 116 122v92H70v-92z" fill="#ffffff" opacity="0.28"/>
+    <path d="M122 210h56v212h-56V210z" fill="#ffffff" opacity="0.22"/>
+    <path d="M88 272c32-22 64-32 94-32s62 10 94 32v44c-30-24-62-36-94-36s-64 12-94 36v-44z" fill="#ffffff" opacity="0.32"/>
+    <!-- wrench-ish mark -->
+    <path d="M265 230c14 6 22 19 22 34 0 12-6 23-16 30l14 52-20 6-14-52c-2 0-4 0-6-1-19-5-30-24-25-43 4-16 18-27 34-27 4 0 9 1 13 1z" fill="#ffffff" opacity="0.62"/>
+  </g>
+
+  <!-- Text card -->
+  <g transform="translate(70 520)">
+    <rect width="700" height="210" rx="26" fill="url(#card)"/>
+    <g font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif" fill="#0f172a">
+      <text x="36" y="76" font-size="44" font-weight="900">MS &amp; P LLC</text>
+      <text x="36" y="122" font-size="24" font-weight="600" opacity="0.9">Expert Plumbing Services in New Orleans</text>
+      <text x="36" y="162" font-size="20" opacity="0.75">Replace this placeholder with a real hero photo.</text>
+    </g>
+    <g transform="translate(540 46)" opacity="0.9">
+      <rect x="0" y="0" width="130" height="46" rx="23" fill="#0ea5e9"/>
+      <text x="65" y="30" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif" font-size="18" font-weight="700" fill="#ffffff">24/7</text>
+    </g>
+  </g>
+</svg>

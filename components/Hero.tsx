@@ -89,7 +89,7 @@ export function Hero({ onBookingClick }: { onBookingClick: () => void }) {
           <div className="relative animate-in fade-in slide-in-from-right-8 duration-700 delay-300">
             <div className="relative rounded-2xl overflow-hidden shadow-2xl">
               <Image
-                src="/images/plumber-hero.jpg"
+                src="/images/plumber-hero.svg"
                 alt="Professional plumber from MS & P LLC"
                 width={600}
                 height={700}
