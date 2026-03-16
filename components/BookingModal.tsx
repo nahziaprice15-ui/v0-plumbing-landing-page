@@ -62,6 +62,8 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const modalRef = useRef<HTMLDivElement>(null)
   const firstInputRef = useRef<HTMLInputElement>(null)
+  const focusableElementsRef = useRef<HTMLElement[]>([])
+  const triggerElementRef = useRef<HTMLElement | null>(null)
 
   const {
     register,
@@ -100,12 +102,21 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
   // Focus management and body scroll lock
   useEffect(() => {
     if (isOpen) {
+      triggerElementRef.current = document.activeElement as HTMLElement | null
       // Prevent body scroll
       document.body.style.overflow = 'hidden'
       // Focus first input
       setTimeout(() => {
         firstInputRef.current?.focus()
       }, 100)
+      if (modalRef.current) {
+        const elements = modalRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])',
+        )
+        focusableElementsRef.current = Array.from(elements).filter(
+          (el) => !el.hasAttribute('disabled') && !el.getAttribute('aria-hidden'),
+        )
+      }
     } else {
       document.body.style.overflow = ''
     }
@@ -126,16 +137,52 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
     return () => document.removeEventListener('keydown', handleEsc)
   }, [isOpen, onClose])
 
+  // Focus trap
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isOpen || event.key !== 'Tab') return
+      const focusableElements = focusableElementsRef.current
+      if (!focusableElements.length) return
+
+      const firstElement = focusableElements[0]
+      const lastElement = focusableElements[focusableElements.length - 1]
+      const current = document.activeElement as HTMLElement | null
+
+      if (event.shiftKey) {
+        if (current === firstElement || !current) {
+          event.preventDefault()
+          lastElement.focus()
+        }
+      } else {
+        if (current === lastElement || !current) {
+          event.preventDefault()
+          firstElement.focus()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isOpen])
+
   if (!isOpen) return null
 
   const onSubmit = async (data: BookingFormData) => {
     setIsSubmitting(true)
     try {
-      console.log('[v0] Booking form submitted:', data)
-      // TODO: Handle form submission - API call will go here
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const response = await fetch('/api/booking', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to submit booking')
+      }
       
       toast.success('Booking request submitted!', {
         description: 'We will contact you shortly to confirm your appointment.',
@@ -144,6 +191,9 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
       
       reset()
       onClose()
+      if (triggerElementRef.current) {
+        triggerElementRef.current.focus()
+      }
     } catch (error) {
       toast.error('Failed to submit booking request', {
         description: 'Please try again or call us directly at (504) 555-1234',
