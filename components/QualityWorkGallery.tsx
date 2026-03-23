@@ -14,10 +14,11 @@ type ProjectSlide = {
 
 const projects: ProjectSlide[] = [
   {
-    title: 'Kitchen Pipe Replacement',
-    image: '/images/before-after-1-after.svg',
-    description: 'Replaced corroded pipes with modern PEX piping system',
-    alt: 'Completed kitchen plumbing with new PEX piping installation',
+    title: 'Residential underground installation',
+    image: '/images/residential-underground-installation-1.png',
+    description:
+      'PVC drain and vent rough-in in trenches with vertical risers, ready for slab—clean layout in compacted clay.',
+    alt: 'White PVC plumbing rough-in in dug trenches with multiple pipe runs and vertical risers at a residential site',
   },
   {
     title: 'Bathroom Renovation',
