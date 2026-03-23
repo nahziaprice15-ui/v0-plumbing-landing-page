@@ -5,7 +5,7 @@ import { Navigation } from '@/components/Navigation'
 import { Hero } from '@/components/Hero'
 import { TrustBar } from '@/components/TrustBar'
 import { Features } from '@/components/Features'
-import { BeforeAfterSlider } from '@/components/BeforeAfterSlider'
+import { QualityWorkGallery } from '@/components/QualityWorkGallery'
 import { Testimonials } from '@/components/Testimonials'
 import { FAQ } from '@/components/FAQ'
 import { Guarantee } from '@/components/Guarantee'
@@ -102,7 +102,7 @@ export default function HomePage() {
         <Hero onBookingClick={openBookingModal} />
         <TrustBar />
         <Features onBookingClick={openBookingModal} />
-        <BeforeAfterSlider />
+        <QualityWorkGallery />
         <Testimonials />
         <Guarantee onBookingClick={openBookingModal} />
         <Pricing onBookingClick={openBookingModal} />
