@@ -38,8 +38,8 @@ export function TrustBar() {
                 className="flex flex-col items-center text-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-700"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Icon className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 rounded-full bg-brand/10 flex items-center justify-center">
+                  <Icon className="w-6 h-6 text-brand" />
                 </div>
                 <div>
                   <div className="text-2xl md:text-3xl font-bold text-foreground">

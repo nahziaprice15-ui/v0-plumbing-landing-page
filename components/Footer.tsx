@@ -2,6 +2,7 @@
 
 import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Twitter } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { BrandLogo } from '@/components/BrandLogo'
 
 export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
   const currentYear = new Date().getFullYear()
@@ -146,11 +147,7 @@ export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
 
           {/* Company Name & Legal */}
           <div className="flex flex-col items-center gap-4 mb-6">
-            <img 
-              src="/images/ms-p-logo.svg" 
-              alt="MS & P LLC - Making Plumbing Great Again" 
-              className="h-24 w-auto"
-            />
+            <BrandLogo size="footer" />
           </div>
 
           {/* Copyright & Links */}

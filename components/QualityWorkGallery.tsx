@@ -145,7 +145,7 @@ export function QualityWorkGallery() {
             id="quality-work-heading"
             className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 text-balance"
           >
-            Quality Work, <span className="text-primary">Guaranteed Results</span>
+            Quality Work, <span className="text-brand">Guaranteed Results</span>
           </h2>
           <p className="text-lg text-muted-foreground text-pretty">
             Recent completed work from New Orleans homes and businesses.
@@ -194,7 +194,7 @@ export function QualityWorkGallery() {
                     aria-current={index === currentIndex ? 'true' : undefined}
                     onClick={() => setCurrentIndex(index)}
                     className={`h-1.5 rounded-full transition-all duration-300 ${
-                      index === currentIndex ? 'w-8 bg-primary' : 'w-4 bg-border'
+                      index === currentIndex ? 'w-8 bg-brand' : 'w-4 bg-border'
                     }`}
                   />
                 ))}
