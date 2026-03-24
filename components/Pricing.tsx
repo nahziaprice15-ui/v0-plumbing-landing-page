@@ -68,7 +68,7 @@ export function Pricing({ onBookingClick }: { onBookingClick: () => void }) {
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 text-balance">
-            Transparent <span className="text-primary">Pricing</span> for Every Need
+            Transparent <span className="text-brand">Pricing</span> for Every Need
           </h2>
           <p className="text-lg text-muted-foreground text-pretty">
             No hidden fees, no surprises. Choose the service level that fits your needs.

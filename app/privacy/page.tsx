@@ -62,7 +62,7 @@ export default function PrivacyPage() {
       </section>
 
       <footer className="pt-4">
-        <a href="/" className="text-primary hover:underline">
+        <a href="/" className="text-brand hover:underline">
           ← Back to home
         </a>
       </footer>

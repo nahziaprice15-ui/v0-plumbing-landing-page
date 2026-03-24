@@ -63,7 +63,7 @@ export function Testimonials() {
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="flex items-start justify-between mb-4">
-                <Quote className="w-8 h-8 text-primary/20" />
+                <Quote className="w-8 h-8 text-brand/25" />
                 <div className="flex gap-1">
                   {Array.from({ length: testimonial.rating }).map((_, i) => (
                     <Star key={i} className="w-4 h-4 fill-secondary text-secondary" />

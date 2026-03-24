@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Menu, X, Phone } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { BrandLogo } from '@/components/BrandLogo'
 
 export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -33,11 +34,7 @@ export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <a href="#" className="flex items-center gap-3">
-            <img 
-              src="/images/ms-p-logo.svg" 
-              alt="MS & P LLC - Making Plumbing Great Again" 
-              className="h-20 w-auto"
-            />
+            <BrandLogo size="nav" />
             <div className="hidden sm:block">
               <div className="font-bold text-lg text-white">MS & P LLC</div>
               <div className="text-xs text-white/80">Licensed & Insured</div>
