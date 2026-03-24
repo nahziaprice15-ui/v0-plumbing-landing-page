@@ -1,40 +1,47 @@
 'use client'
 
+import Link from 'next/link'
 import { Droplets, Wrench, Zap, Wind, Thermometer, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const services = [
   {
+    slug: 'emergency-plumbing' as const,
     icon: Zap,
     title: 'Emergency Repairs',
     description: '24/7 rapid response for urgent plumbing issues. We arrive within 2 hours.',
     features: ['Burst pipes', 'Major leaks', 'No water', 'Flooding'],
   },
   {
+    slug: 'drain-cleaning' as const,
     icon: Droplets,
     title: 'Drain Cleaning',
     description: 'Professional drain and sewer line cleaning with advanced equipment.',
     features: ['Clogged drains', 'Sewer backups', 'Slow drainage', 'Root removal'],
   },
   {
+    slug: 'water-heater-service' as const,
     icon: Thermometer,
     title: 'Water Heater Service',
     description: 'Installation, repair, and maintenance of all water heater types.',
     features: ['Tank & tankless', 'Repairs', 'Installation', 'Maintenance'],
   },
   {
+    slug: 'leak-detection' as const,
     icon: Wind,
     title: 'Leak Detection',
     description: 'Advanced technology to find and fix hidden leaks before they cause damage.',
     features: ['Hidden leaks', 'Slab leaks', 'Wall leaks', 'Prevention'],
   },
   {
+    slug: 'fixture-installation' as const,
     icon: Wrench,
     title: 'Fixture Installation',
     description: 'Expert installation of faucets, toilets, sinks, and all plumbing fixtures.',
     features: ['Faucets', 'Toilets', 'Sinks', 'Showers'],
   },
   {
+    slug: 'pipe-repair' as const,
     icon: Shield,
     title: 'Pipe Repair',
     description: 'Comprehensive pipe repair and replacement services for all pipe types.',
@@ -52,8 +59,8 @@ export function Features({ onBookingClick }: { onBookingClick: () => void }) {
             Comprehensive Plumbing Services
           </h2>
           <p className="text-lg text-muted-foreground text-pretty">
-            From emergency repairs to routine maintenance, we handle all your plumbing needs
-            with expertise and care.
+            From emergency repairs to routine maintenance, we handle homes, businesses, and urgent
+            calls. See everything by category, pricing guides, and one-tap call on our services hub.
           </p>
         </div>
 
@@ -74,7 +81,7 @@ export function Features({ onBookingClick }: { onBookingClick: () => void }) {
                 <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
                   {service.description}
                 </p>
-                <ul className="space-y-2">
+                <ul className="space-y-2 mb-4">
                   {service.features.map((feature, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#003D7A]" />
@@ -82,20 +89,31 @@ export function Features({ onBookingClick }: { onBookingClick: () => void }) {
                     </li>
                   ))}
                 </ul>
+                <Link
+                  href={`/services/${service.slug}`}
+                  className="text-sm font-semibold text-[#003D7A] hover:underline"
+                >
+                  Learn more
+                </Link>
               </div>
             )
           })}
         </div>
 
         {/* CTA */}
-        <div className="text-center animate-in fade-in duration-700 delay-700">
-          <Button
-            onClick={onBookingClick}
-            size="lg"
-            className="bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold text-lg px-8"
-          >
-            Book Your Service Now
-          </Button>
+        <div className="text-center space-y-4 animate-in fade-in duration-700 delay-700">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <Button
+              onClick={onBookingClick}
+              size="lg"
+              className="bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold text-lg px-8"
+            >
+              Book Your Service Now
+            </Button>
+            <Button size="lg" variant="outline" className="font-semibold text-lg px-8 border-[#003D7A] text-[#003D7A]" asChild>
+              <Link href="/services">Services &amp; pricing by category</Link>
+            </Button>
+          </div>
         </div>
       </div>
     </section>

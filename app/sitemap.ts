@@ -1,9 +1,17 @@
 import type { MetadataRoute } from 'next'
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://msandpllc.com'
+import { getAllServiceSlugs } from '@/data/services'
+import { getSiteUrl } from '@/lib/site'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date()
+  const siteUrl = getSiteUrl()
+
+  const serviceEntries: MetadataRoute.Sitemap = getAllServiceSlugs().map((slug) => ({
+    url: `${siteUrl}/services/${slug}`,
+    lastModified: now,
+    changeFrequency: 'weekly' as const,
+    priority: 0.85,
+  }))
 
   return [
     {
@@ -12,6 +20,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 1,
     },
+    {
+      url: `${siteUrl}/services`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    ...serviceEntries,
     {
       url: `${siteUrl}/privacy`,
       lastModified: now,
