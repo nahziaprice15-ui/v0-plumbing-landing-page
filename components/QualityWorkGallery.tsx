@@ -5,15 +5,33 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 
-type ProjectSlide = {
-  title: string
-  image: string
-  description: string
+type GalleryImage = {
+  src: string
   alt: string
 }
 
+type ProjectSlideSingle = {
+  layout: 'single'
+  title: string
+  description: string
+  image: string
+  alt: string
+}
+
+type ProjectSlideGallery = {
+  layout: 'gallery'
+  title: string
+  description: string
+  images: GalleryImage[]
+  /** Short labels for screen reader summary when multiple photos are visible */
+  a11yPhotoLabels: string
+}
+
+type ProjectSlide = ProjectSlideSingle | ProjectSlideGallery
+
 const projects: ProjectSlide[] = [
   {
+    layout: 'single',
     title: 'Residential underground installation',
     image: '/images/residential-underground-installation-1.png',
     description:
@@ -21,18 +39,85 @@ const projects: ProjectSlide[] = [
     alt: 'White PVC plumbing rough-in in dug trenches with multiple pipe runs and vertical risers at a residential site',
   },
   {
-    title: 'Bathroom Renovation',
-    image: '/images/before-after-2-after.svg',
-    description: 'Complete bathroom plumbing upgrade with new fixtures',
-    alt: 'Finished bathroom plumbing renovation with updated fixtures',
+    layout: 'single',
+    title: 'Sewer line installation',
+    image: '/images/sewer-line-installation-1.png',
+    description:
+      'New sewer run in a straight yard trench from the home—proper depth, bedding, and alignment before backfill.',
+    alt: 'Residential backyard trench with white PVC sewer pipe running from a modern two-story house toward the lawn',
   },
   {
+    layout: 'gallery',
+    title: 'Bathroom installation',
+    description:
+      'Full bathroom fit-out: freestanding tub and floor-mounted filler, walk-in shower with rain and handheld fixtures, and marble vanity with vessel sink and toilet—all coordinated tile and trim.',
+    a11yPhotoLabels: 'freestanding tub area, walk-in shower, vanity and toilet',
+    images: [
+      {
+        src: '/images/bathroom-installation-tub.png',
+        alt: 'Modern bathroom with freestanding white tub, floor-mounted chrome faucet, large grey wall tiles, and blue geometric floor tile with recessed niche',
+      },
+      {
+        src: '/images/bathroom-installation-shower.png',
+        alt: 'Walk-in shower with light marble-look wall tile, square rain showerhead, handheld on slide bar, chrome valves, and dark geometric accent tile in niche and on floor',
+      },
+      {
+        src: '/images/bathroom-installation-vanity.png',
+        alt: 'White bathroom vanity with marble countertop, scalloped white vessel sink, waterfall faucet, and modern white toilet on a white wall',
+      },
+    ],
+  },
+  {
+    layout: 'single',
     title: 'Water Heater Installation',
     image: '/images/before-after-3-after.svg',
     description: 'Installed energy-efficient tankless water heater',
     alt: 'Professional tankless water heater installation',
   },
 ]
+
+function SlideHero({ project, slideIndex }: { project: ProjectSlide; slideIndex: number }) {
+  if (project.layout === 'gallery') {
+    return (
+      <div className="bg-gray-100 p-2 md:p-3">
+        <div
+          className="grid grid-cols-1 gap-2 md:grid-cols-3 md:gap-3"
+          role="group"
+          aria-label={`${project.title}: ${project.images.length} photos`}
+        >
+          {project.images.map((img, i) => (
+            <div
+              key={img.src}
+              className="relative aspect-[4/3] overflow-hidden rounded-lg bg-gray-200"
+            >
+              <Image
+                src={img.src}
+                alt={img.alt}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 280px"
+                priority={slideIndex === 0 && i === 0}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative aspect-[16/10] bg-gray-100">
+      <Image
+        src={project.image}
+        alt={project.alt}
+        fill
+        className="object-cover"
+        sizes="(max-width: 896px) 100vw, 896px"
+        priority={slideIndex === 0}
+      />
+    </div>
+  )
+}
 
 export function QualityWorkGallery() {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -46,6 +131,11 @@ export function QualityWorkGallery() {
   }
 
   const current = projects[currentIndex]
+
+  const liveMessage =
+    current.layout === 'gallery'
+      ? `Slide ${currentIndex + 1} of ${projects.length}: ${current.title}. Three photos shown together: ${current.a11yPhotoLabels}.`
+      : `Slide ${currentIndex + 1} of ${projects.length}: ${current.title}`
 
   return (
     <section className="py-20 bg-card" aria-labelledby="quality-work-heading">
@@ -64,22 +154,13 @@ export function QualityWorkGallery() {
 
         <div className="max-w-4xl mx-auto">
           <div className="bg-card rounded-2xl shadow-xl overflow-hidden border border-border">
-            <div className="relative aspect-[16/10] bg-gray-100">
-              <Image
-                src={current.image}
-                alt={current.alt}
-                fill
-                className="object-cover"
-                sizes="(max-width: 896px) 100vw, 896px"
-                priority={currentIndex === 0}
-              />
-            </div>
+            <SlideHero project={current} slideIndex={currentIndex} />
 
             <div className="p-6 md:p-8">
               <div className="flex items-center justify-between gap-4 mb-4">
                 <div className="flex-1 min-w-0">
                   <p className="sr-only" aria-live="polite" aria-atomic="true">
-                    Slide {currentIndex + 1} of {projects.length}: {current.title}
+                    {liveMessage}
                   </p>
                   <h3 className="text-2xl font-bold text-foreground mb-2">{current.title}</h3>
                   <p className="text-muted-foreground">{current.description}</p>

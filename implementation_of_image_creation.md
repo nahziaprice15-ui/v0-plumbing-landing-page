@@ -1,75 +1,145 @@
 # Implementation Plan: Quality Work — Image Creation & Placement
 
-**Status**: In progress (first residential underground assets live)  
+**Status**: In progress (real project photos rolling in)  
 **Last updated**: March 23, 2026  
 
 ## Purpose
 
-This document defines how **project photos** for the **Quality Work** section ([`components/QualityWorkGallery.tsx`](components/QualityWorkGallery.tsx)) are produced, stored, named, and wired into the site. It complements [Implementation_quality_work_gallery_plan.md](Implementation_quality_work_gallery_plan.md), which covers the carousel UI itself.
+This document is the **single catalog** for **Quality Work** photos: where files live, how they map to carousel slides, and how to add more. The UI lives in [`components/QualityWorkGallery.tsx`](components/QualityWorkGallery.tsx); structure and behavior are described in [Implementation_quality_work_gallery_plan.md](Implementation_quality_work_gallery_plan.md).
 
 ## Goals
 
-- Keep **one source of truth** for filenames under [`public/images/`](public/images/).
+- One **naming convention** under [`public/images/`](public/images/) (`kebab-case`, topic + optional index).
 - Use **descriptive alt text** for accessibility and SEO.
-- Prefer **consistent aspect** (landscape) so `object-cover` in the `aspect-[16/10]` hero crops predictably.
-- Compress large PNGs/JPEGs before commit when file sizes hurt LCP (optional follow-up).
+- Prefer **landscape-first** shots where possible so single-image slides use `aspect-[16/10]` + `object-cover` cleanly; **gallery slides** use a fixed cell aspect (`4/3`) per image.
+- Optional: compress PNGs or standardize on WebP before production if LCP suffers.
 
-## Current Assets — Residential Underground Installation
+---
 
-| File | Use |
-|------|-----|
-| [`public/images/residential-underground-installation-1.png`](public/images/residential-underground-installation-1.png) | PVC rough-in: trenches in clay, multiple runs and vertical risers, formwork visible. Used on the **Residential underground installation** carousel slide. |
-| [`public/images/residential-underground-installation-2.png`](public/images/residential-underground-installation-2.png) | Main drain trench, long PVC run, T/Y branch, string lines and slab formwork. **Staged for a second slide**—duplicate the first slide’s object in `projects`, point `image` here, and adjust `description` / `alt` (see checklist below). |
+## Master asset list → carousel
 
-**Gallery copy** (editable in `QualityWorkGallery.tsx` → `projects` array):
+Order matches the `projects` array in `QualityWorkGallery.tsx` (one dot = one array entry).
 
-- **Title**: `Residential underground installation` (replaces the former “Kitchen pipe replacement” placeholder slide).
-- **Description / alt**: Match what is actually visible in `residential-underground-installation-1.png` (see component for current strings).
+| Order | Carousel title | Files | Notes |
+|------:|----------------|--------|--------|
+| 1 | Residential underground installation | [`residential-underground-installation-1.png`](public/images/residential-underground-installation-1.png) | Single-image slide (`layout: 'single'`). |
+| 2 | Sewer line installation | [`sewer-line-installation-1.png`](public/images/sewer-line-installation-1.png) | Single-image slide. |
+| 3 | Bathroom installation | [`bathroom-installation-tub.png`](public/images/bathroom-installation-tub.png), [`bathroom-installation-shower.png`](public/images/bathroom-installation-shower.png), [`bathroom-installation-vanity.png`](public/images/bathroom-installation-vanity.png) | **Multi-image slide** (`layout: 'gallery'`): all three show together—stacked on mobile, three columns from `md` up. |
+| 4 | Water Heater Installation | [`before-after-3-after.svg`](public/images/before-after-3-after.svg) | Placeholder SVG until a real water heater photo replaces it. |
 
-## Data Shape (reference)
+### Staged (not yet on a slide)
 
-Each carousel item in code:
+| File | Intended use |
+|------|----------------|
+| [`residential-underground-installation-2.png`](public/images/residential-underground-installation-2.png) | Second view: main drain trench, branch fittings, string lines, slab formwork. Add a new `layout: 'single'` entry or duplicate the first residential entry with this `image`. |
+
+---
+
+## Batch notes (source content)
+
+### Residential underground installation
+
+- **Slide title**: `Residential underground installation`
+- **Image**: `residential-underground-installation-1.png`
+- **Scene**: Underground rough-in phase—white PVC in red clay trenches, junctions and risers, wooden formwork for slab edge.
+
+### Sewer line installation
+
+- **Slide title**: `Sewer line installation`
+- **Image**: `sewer-line-installation-1.png`
+- **Scene**: Rear of a modern home; long trench in sandy soil with PVC sewer line; stairs, lawn, and equipment visible—documents exterior lateral / yard run work.
+
+### Bathroom installation (gallery slide)
+
+- **Slide title**: `Bathroom installation`
+- **Files** (order left-to-right on desktop, top-to-bottom on mobile):
+  1. **`bathroom-installation-tub.png`** — Freestanding tub, floor-mounted filler, large-format wall tile, geometric floor tile, recessed niche.
+  2. **`bathroom-installation-shower.png`** — Walk-in shower: rain head, wall head, handheld on bar, stacked valves, niche with accent tile.
+  3. **`bathroom-installation-vanity.png`** — Vanity with marble top, vessel sink, waterfall faucet, toilet; trim-out stage.
+
+---
+
+## Data shape (code reference)
+
+Projects are a **discriminated union** by `layout`:
+
+**Single image** (one hero photo, full width):
 
 ```ts
 {
+  layout: 'single'
   title: string
-  image: string  // '/images/your-file.png' or .jpg / .webp
   description: string
+  image: string   // '/images/...'
   alt: string
 }
 ```
 
-## Workflow for Adding a New Photo
+**Gallery** (multiple photos in one carousel step):
 
-1. **Export** from camera or editor: landscape if possible; reasonable resolution (e.g. 1600–2400px wide).
-2. **Name** the file: `kebab-case`, topic first, e.g. `residential-underground-installation-3.png` or `tankless-install-midcity.jpg`.
-3. **Place** the file in `public/images/`.
-4. **Edit** [`components/QualityWorkGallery.tsx`](components/QualityWorkGallery.tsx): append or replace an object in the `projects` array with `image`, `title`, `description`, and `alt`.
-5. **Verify** locally: carousel, prev/next, dots, and first-slide `priority` if this slide should be first.
-6. **Commit** image + component change together.
+```ts
+{
+  layout: 'gallery'
+  title: string
+  description: string
+  a11yPhotoLabels: string  // short phrase for aria-live, e.g. "tub, shower, vanity"
+  images: { src: string; alt: string }[]
+}
+```
 
-## Optional Optimizations
+## Workflow for adding a new photo
 
-- [ ] Run images through compression (ImageOptim, Squoosh, or `sharp` CLI) and prefer **WebP** if you standardize on one format.
-- [ ] If `next.config` adds `remotePatterns` later, document CDN URLs here instead of only `public/`.
+### Single-image project
 
-## Checklist — Residential Underground Batch
+1. Export at usable width (e.g. 1600–2400px), landscape if you can.
+2. Name: `service-or-job-type-1.png` (increment per job).
+3. Copy into `public/images/`.
+4. Append a `{ layout: 'single', ... }` object to `projects` in [`components/QualityWorkGallery.tsx`](components/QualityWorkGallery.tsx).
+5. Commit asset + component together.
 
-- [x] Images copied to `public/images/` with stable names
-- [x] `QualityWorkGallery` updated: one slide titled **Residential underground installation** using `residential-underground-installation-1.png`
-- [ ] Optional: add a second `projects` entry (same title or a qualified title) using `residential-underground-installation-2.png`
-- [ ] Optional: compress PNGs and/or convert to WebP
-- [ ] Lighthouse: LCP for hero image acceptable on 3G Fast throttle
+### Multi-image project (one dot, several photos visible)
 
-## Files Touched When Images Change
+1. Add all files to `public/images/` with a shared prefix (e.g. `bathroom-installation-*.png`).
+2. Add one `{ layout: 'gallery', images: [...], a11yPhotoLabels: '...' }` entry—**one** carousel dot for the whole set.
+3. Order `images[]` to match the story you want (e.g. tub → shower → vanity).
+
+## Optional optimizations
+
+- [ ] Compress PNGs or serve WebP copies and update paths.
+- [ ] Document CDN / `remotePatterns` here if you move off `public/`.
+
+## Checklists
+
+### Residential underground batch
+
+- [x] `residential-underground-installation-1.png` in `public/images/`
+- [x] Slide wired in `QualityWorkGallery`
+- [ ] Optional: second slide using `residential-underground-installation-2.png`
+
+### Sewer line batch
+
+- [x] `sewer-line-installation-1.png` in `public/images/`
+- [x] Slide wired in `QualityWorkGallery`
+
+### Bathroom batch
+
+- [x] `bathroom-installation-tub.png`, `bathroom-installation-shower.png`, `bathroom-installation-vanity.png` in `public/images/`
+- [x] One **gallery** slide wired in `QualityWorkGallery` (three images visible together)
+
+### Global
+
+- [ ] Optional: compress / WebP for all Quality Work PNGs
+- [ ] Lighthouse: LCP acceptable on throttled connection
+
+## Files touched when images change
 
 | File | Role |
 |------|------|
-| `public/images/*` | Static image assets |
-| `components/QualityWorkGallery.tsx` | `projects` array: paths, titles, copy, alt |
+| `public/images/*` | Static assets |
+| `components/QualityWorkGallery.tsx` | `projects`: `layout`, paths, titles, descriptions, `alt`, `a11yPhotoLabels` for galleries |
 
-## Success Criteria
+## Success criteria
 
-- [ ] All `image` paths resolve (no 404 in Network tab).
-- [ ] Each slide has a unique, accurate `alt`.
-- [ ] Section still matches site frame (card, typography, controls).
+- [x] No 404s for paths listed in the master table (SVG placeholder for water heater until replaced).
+- [x] Each image has accurate, non-generic `alt`; gallery slide exposes a clear screen-reader summary.
+- [x] Section frame unchanged (card, prev/next, dots); bathroom uses one dot for three photos.
