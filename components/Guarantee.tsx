@@ -28,7 +28,7 @@ const guaranteePoints = [
 
 export function Guarantee({ onBookingClick }: { onBookingClick: () => void }) {
   return (
-    <section className="py-20 bg-background text-white relative overflow-hidden">
+    <section className="py-20 bg-gradient-to-br from-brand via-brand to-brand-deep text-white relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0" style={{
@@ -59,7 +59,7 @@ export function Guarantee({ onBookingClick }: { onBookingClick: () => void }) {
               return (
                 <div
                   key={index}
-                  className="bg-primary-foreground/10 backdrop-blur-sm rounded-xl p-6 animate-in fade-in slide-in-from-bottom-8 duration-700"
+                  className="bg-white/10 backdrop-blur-sm rounded-xl p-6 animate-in fade-in slide-in-from-bottom-8 duration-700"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="flex items-start gap-4">

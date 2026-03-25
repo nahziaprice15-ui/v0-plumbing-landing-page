@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { SITE } from '@/lib/site'
 
 export default function TermsPage() {
   return (
@@ -54,8 +55,16 @@ export default function TermsPage() {
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">Contact</h2>
         <p className="text-muted-foreground">
-          For questions about these terms, please contact us at
-          <span className="font-medium"> info@msandp.com</span>.
+          For questions about these terms, please contact us at{' '}
+          <a href={`mailto:${SITE.email}`} className="font-medium text-brand hover:underline">
+            {SITE.email}
+          </a>
+          {' '}
+          or call{' '}
+          <a href={`tel:${SITE.phoneTel}`} className="font-medium text-brand hover:underline">
+            {SITE.phoneDisplay}
+          </a>
+          .
         </p>
       </section>
 

@@ -138,7 +138,7 @@ export function QualityWorkGallery() {
       : `Slide ${currentIndex + 1} of ${projects.length}: ${current.title}`
 
   return (
-    <section className="py-20 bg-card" aria-labelledby="quality-work-heading">
+    <section className="py-20 bg-muted/25 border-y border-border/50" aria-labelledby="quality-work-heading">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <h2

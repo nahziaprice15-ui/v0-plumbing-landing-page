@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { SITE } from '@/lib/site'
 
 export default function PrivacyPage() {
   return (
@@ -56,8 +57,16 @@ export default function PrivacyPage() {
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">Contact Us</h2>
         <p className="text-muted-foreground">
-          If you have questions about this policy or how we handle your data, please contact us at
-          <span className="font-medium"> info@msandp.com</span>.
+          If you have questions about this policy or how we handle your data, please contact us at{' '}
+          <a href={`mailto:${SITE.email}`} className="font-medium text-brand hover:underline">
+            {SITE.email}
+          </a>
+          {' '}
+          or call{' '}
+          <a href={`tel:${SITE.phoneTel}`} className="font-medium text-brand hover:underline">
+            {SITE.phoneDisplay}
+          </a>
+          .
         </p>
       </section>
 

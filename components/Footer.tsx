@@ -1,8 +1,11 @@
 'use client'
 
+import Link from 'next/link'
 import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Twitter } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BrandLogo } from '@/components/BrandLogo'
+import { services } from '@/data/services'
+import { SITE } from '@/lib/site'
 
 export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
   const currentYear = new Date().getFullYear()
@@ -47,24 +50,24 @@ export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
             <h3 className="font-bold text-lg mb-4">Quick Links</h3>
             <ul className="space-y-3">
               <li>
-                <a href="#services" className="text-white/80 hover:text-white transition-colors">
-                  Our Services
-                </a>
+                <Link href="/services" className="text-white/80 hover:text-white transition-colors">
+                  Services &amp; pricing (residential / commercial / emergency)
+                </Link>
               </li>
               <li>
-                <a href="#pricing" className="text-white/80 hover:text-white transition-colors">
+                <Link href="/#pricing" className="text-white/80 hover:text-white transition-colors">
                   Pricing
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#testimonials" className="text-white/80 hover:text-white transition-colors">
+                <Link href="/#testimonials" className="text-white/80 hover:text-white transition-colors">
                   Testimonials
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#faq" className="text-white/80 hover:text-white transition-colors">
+                <Link href="/#faq" className="text-white/80 hover:text-white transition-colors">
                   FAQ
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -73,12 +76,16 @@ export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
           <div>
             <h3 className="font-bold text-lg mb-4">Services</h3>
             <ul className="space-y-3 text-sm">
-              <li className="text-white/80">Emergency Repairs</li>
-              <li className="text-white/80">Drain Cleaning</li>
-              <li className="text-white/80">Water Heater Service</li>
-              <li className="text-white/80">Leak Detection</li>
-              <li className="text-white/80">Fixture Installation</li>
-              <li className="text-white/80">Pipe Repair</li>
+              {services.map((s) => (
+                <li key={s.slug}>
+                  <Link
+                    href={`/services/${s.slug}`}
+                    className="text-white/80 hover:text-white transition-colors"
+                  >
+                    {s.h1}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -88,14 +95,18 @@ export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <Mail className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
-                <a href="mailto:info@msandp.com" className="text-white hover:text-secondary transition-colors">
-                  info@msandp.com
+                <a
+                  href={`mailto:${SITE.email}`}
+                  className="text-white hover:text-secondary transition-colors"
+                >
+                  {SITE.email}
                 </a>
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
                 <div className="text-white/80">
-                  New Orleans, LA<br />
+                  {SITE.city}, {SITE.state}
+                  <br />
                   Serving all neighborhoods
                 </div>
               </li>
@@ -135,11 +146,11 @@ export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
           <div className="flex items-center justify-center gap-4 mb-6">
             <Phone className="w-6 h-6 text-secondary" />
             <div className="text-center">
-              <a 
-                href="tel:+15045551234" 
+              <a
+                href={`tel:${SITE.phoneTel}`}
                 className="text-2xl font-bold text-white hover:text-secondary transition-colors"
               >
-                (504) 555-1234
+                {SITE.phoneDisplay}
               </a>
               <div className="text-sm text-white/60 mt-1">24/7 Emergency Line</div>
             </div>
@@ -156,12 +167,12 @@ export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
               © {currentYear} MS & P LLC. All rights reserved.
             </div>
             <div className="flex gap-6">
-              <a href="/privacy" className="hover:text-white transition-colors">
+              <Link href="/privacy" className="hover:text-white transition-colors">
                 Privacy Policy
-              </a>
-              <a href="/terms" className="hover:text-white transition-colors">
+              </Link>
+              <Link href="/terms" className="hover:text-white transition-colors">
                 Terms of Service
-              </a>
+              </Link>
               <a href="/sitemap.xml" className="hover:text-white transition-colors">
                 Sitemap
               </a>

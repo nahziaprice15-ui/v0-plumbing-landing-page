@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { SITE } from '@/lib/site'
 
 interface BookingModalProps {
   isOpen: boolean
@@ -41,7 +42,13 @@ const formatPhoneNumber = (value: string) => {
 // Zod schema for form validation
 const bookingSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  phone: z.string().min(10, 'Please enter a valid phone number').regex(/^\(\d{3}\) \d{3}-\d{4}$/, 'Please enter a valid phone number (e.g., (504) 555-1234)'),
+  phone: z
+    .string()
+    .min(10, 'Please enter a valid phone number')
+    .regex(
+      /^\(\d{3}\) \d{3}-\d{4}$/,
+      `Please enter a valid phone number (e.g., ${SITE.phoneDisplay})`,
+    ),
   email: z.string().email('Please enter a valid email address').optional().or(z.literal('')),
   address: z.string().min(5, 'Address must be at least 5 characters'),
   serviceType: z.string().min(1, 'Please select a service type'),
@@ -196,7 +203,7 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
       }
     } catch (error) {
       toast.error('Failed to submit booking request', {
-        description: 'Please try again or call us directly at (504) 555-1234',
+        description: `Please try again or call us directly at ${SITE.phoneDisplay}`,
         duration: 5000,
       })
     } finally {
@@ -281,7 +288,7 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   <Input
                     id="phone"
                     type="tel"
-                    placeholder="(504) 555-1234"
+                    placeholder={SITE.phoneDisplay}
                     {...register('phone')}
                     aria-invalid={errors.phone ? 'true' : 'false'}
                     aria-describedby={errors.phone ? 'phone-error' : undefined}

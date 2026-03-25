@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Menu, X, Phone } from 'lucide-react'
+import Link from 'next/link'
+import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BrandLogo } from '@/components/BrandLogo'
 
@@ -18,39 +19,39 @@ export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
   }, [])
 
   const navLinks = [
-    { label: 'Services', href: '#services' },
-    { label: 'Pricing', href: '#pricing' },
-    { label: 'Testimonials', href: '#testimonials' },
-    { label: 'FAQ', href: '#faq' },
+    { label: 'All services', href: '/services' },
+    { label: 'Pricing', href: '/#pricing' },
+    { label: 'Testimonials', href: '/#testimonials' },
+    { label: 'FAQ', href: '/#faq' },
   ]
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-background shadow-md' : 'bg-background backdrop-blur-sm'
+      className={`fixed top-0 left-0 right-0 z-50 border-b border-white/10 transition-all duration-300 ${
+        isScrolled ? 'bg-brand/95 shadow-md backdrop-blur-md' : 'bg-brand/90 backdrop-blur-sm'
       }`}
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <a href="#" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <BrandLogo size="nav" />
             <div className="hidden sm:block">
               <div className="font-bold text-lg text-white">MS & P LLC</div>
               <div className="text-xs text-white/80">Licensed & Insured</div>
             </div>
-          </a>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
                 className="text-white hover:text-white/80 transition-colors font-medium"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </div>
 
@@ -78,17 +79,17 @@ export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-background border-t border-white/20">
+        <div className="md:hidden bg-brand-deep/95 border-t border-white/15">
           <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="text-white hover:text-white/80 transition-colors font-medium py-2"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </div>
         </div>

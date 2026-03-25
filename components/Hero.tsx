@@ -6,7 +6,7 @@ import Image from 'next/image'
 
 export function Hero({ onBookingClick }: { onBookingClick: () => void }) {
   return (
-    <section className="relative min-h-[90vh] flex items-center pt-20 bg-gradient-to-br from-background via-background to-muted">
+    <section className="relative min-h-[90vh] flex items-center pt-20 bg-gradient-to-br from-brand via-brand to-brand-deep text-white">
       <div className="container mx-auto px-4 py-16 md:py-24">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
@@ -16,12 +16,12 @@ export function Hero({ onBookingClick }: { onBookingClick: () => void }) {
               Licensed & Insured in New Orleans
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight text-balance">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight text-balance drop-shadow-sm">
               Expert Plumbing Services{' '}
-              <span className="text-primary">You Can Trust</span>
+              <span className="text-secondary">You Can Trust</span>
             </h1>
 
-            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed text-pretty">
+            <p className="text-lg md:text-xl text-white/85 leading-relaxed text-pretty">
               Fast, reliable plumbing solutions for New Orleans homes and businesses. 
               Available 24/7 for emergencies with same-day service guaranteed.
             </p>
@@ -29,21 +29,21 @@ export function Hero({ onBookingClick }: { onBookingClick: () => void }) {
             {/* Trust Indicators */}
             <div className="flex flex-wrap gap-6 pt-4">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-primary" />
+                <div className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <div className="font-semibold text-foreground">24/7 Available</div>
-                  <div className="text-sm text-muted-foreground">Same-day service</div>
+                  <div className="font-semibold text-white">24/7 Available</div>
+                  <div className="text-sm text-white/75">Same-day service</div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Wrench className="w-5 h-5 text-primary" />
+                <div className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center">
+                  <Wrench className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <div className="font-semibold text-foreground">15+ Years</div>
-                  <div className="text-sm text-muted-foreground">Experience</div>
+                  <div className="font-semibold text-white">15+ Years</div>
+                  <div className="text-sm text-white/75">Experience</div>
                 </div>
               </div>
             </div>
@@ -65,22 +65,22 @@ export function Hero({ onBookingClick }: { onBookingClick: () => void }) {
                 variant="outline"
                 size="lg"
                 asChild
-                className="font-semibold text-lg px-8 py-6 h-auto border-2 border-primary hover:bg-primary hover:text-primary-foreground hover:scale-105 transition-all duration-300"
+                className="font-semibold text-lg px-8 py-6 h-auto border-2 border-white/90 text-white bg-white/5 hover:bg-white hover:text-brand hover:scale-105 transition-all duration-300"
               >
                 <a href="#services">View Services</a>
               </Button>
             </div>
 
             {/* Social Proof */}
-            <div className="flex items-center gap-6 pt-4 border-t border-border">
+            <div className="flex items-center gap-6 pt-4 border-t border-white/25">
               <div>
-                <div className="text-2xl font-bold text-primary">4.9/5</div>
-                <div className="text-sm text-muted-foreground">500+ reviews</div>
+                <div className="text-2xl font-bold text-white">4.9/5</div>
+                <div className="text-sm text-white/75">500+ reviews</div>
               </div>
-              <div className="h-12 w-px bg-border" />
+              <div className="h-12 w-px bg-white/25" />
               <div>
-                <div className="text-2xl font-bold text-primary">2,000+</div>
-                <div className="text-sm text-muted-foreground">Jobs completed</div>
+                <div className="text-2xl font-bold text-white">2,000+</div>
+                <div className="text-sm text-white/75">Jobs completed</div>
               </div>
             </div>
           </div>
@@ -97,10 +97,10 @@ export function Hero({ onBookingClick }: { onBookingClick: () => void }) {
                 priority
               />
               {/* Floating Badge */}
-              <div className="absolute bottom-6 left-6 right-6 bg-card backdrop-blur-sm rounded-xl p-4 shadow-lg border border-border">
+              <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-border">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <div className="font-semibold text-foreground">Same-Day Service</div>
+                    <div className="font-semibold text-card-foreground">Same-Day Service</div>
                     <div className="text-sm text-muted-foreground">Book within 2 hours</div>
                   </div>
                   <Button

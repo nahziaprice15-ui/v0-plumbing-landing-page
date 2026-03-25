@@ -3,36 +3,32 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from 'sonner'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { getSiteUrl } from '@/lib/site'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://msandpllc.com'
+const siteUrl = getSiteUrl()
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: 'MS & P LLC - Expert Plumbing Services in New Orleans',
-  description: 'Fast, reliable plumbing services in New Orleans. 24/7 emergency repairs, drain cleaning, water heater installation. Licensed & insured. Book online today!',
+  title: {
+    default: 'New Orleans Plumber | 24/7 Emergency Plumbing | MS & P LLC',
+  },
+  description:
+    'Licensed New Orleans plumber for emergencies, drain cleaning, water heaters, leaks, and repipes. MS & P LLC—fast response and upfront pricing.',
   keywords: ['plumbing', 'New Orleans', 'emergency plumbing', 'drain cleaning', 'water heater', 'plumber', 'MS & P LLC'],
   authors: [{ name: 'MS & P LLC', url: siteUrl }],
   creator: 'MS & P LLC',
-  alternates: {
-    canonical: '/',
-  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: siteUrl,
     siteName: 'MS & P LLC Plumbing',
-    title: 'MS & P LLC - Expert Plumbing Services in New Orleans',
-    description: 'Fast, reliable plumbing services in New Orleans. 24/7 emergency repairs, drain cleaning, water heater installation. Licensed & insured. Book online today!',
     images: [{ url: '/images/plumber-hero.svg', width: 1200, height: 800, alt: 'MS & P LLC Professional Plumber' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MS & P LLC - Expert Plumbing Services in New Orleans',
-    description: 'Fast, reliable plumbing services in New Orleans. 24/7 emergency repairs. Licensed & insured.',
     images: ['/images/plumber-hero.svg'],
   },
   robots: {
