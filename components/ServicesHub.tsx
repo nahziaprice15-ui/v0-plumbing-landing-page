@@ -79,7 +79,7 @@ function SegmentPanel({ segment }: { segment: ServiceSegment }) {
                   <p className="text-sm text-muted-foreground mt-1 max-w-xl">{row.note}</p>
                 ) : null}
               </div>
-              <span className="text-base font-semibold text-[#003D7A] shrink-0">{row.display}</span>
+              <span className="text-base font-semibold text-brand shrink-0">{row.display}</span>
             </li>
           ))}
         </ul>
@@ -99,9 +99,9 @@ function OfferingCard({
   const Icon = offeringIcons[offering.iconKey]
 
   return (
-    <div className="group flex flex-col rounded-xl border-2 border-[#003D7A]/25 bg-card p-5 shadow-sm transition-all duration-300 hover:border-[#003D7A] hover:shadow-lg hover:shadow-[#003D7A]/10">
+    <div className="group flex flex-col rounded-xl border-2 border-brand/20 bg-card p-5 shadow-sm transition-all duration-300 hover:border-brand hover:shadow-lg hover:shadow-brand/10">
       <div className="flex items-start gap-3 mb-3">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#003D7A]/10 text-[#003D7A] transition-colors group-hover:bg-[#003D7A] group-hover:text-white">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand transition-colors group-hover:bg-brand group-hover:text-white">
           <Icon className="h-6 w-6" aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
@@ -170,7 +170,7 @@ function HubHero({ onBook }: { onBook: () => void }) {
         <Button
           type="button"
           variant="outline"
-          className="font-semibold text-base px-8 border-[#003D7A] text-[#003D7A] hover:bg-[#003D7A]/10"
+          className="font-semibold text-base px-8 border-brand text-brand hover:bg-brand/10"
           onClick={onBook}
         >
           Book online
@@ -196,7 +196,7 @@ function ServicesMobileDock({ onBook }: { onBook: () => void }) {
       <Button
         type="button"
         variant="outline"
-        className="flex-1 font-semibold border-[#003D7A] text-[#003D7A]"
+        className="flex-1 font-semibold border-brand text-brand"
         onClick={onBook}
       >
         Book

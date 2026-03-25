@@ -51,7 +51,7 @@ const services = [
 
 export function Features({ onBookingClick }: { onBookingClick: () => void }) {
   return (
-    <section id="services" className="py-20 bg-background">
+    <section id="services" className="py-20 bg-white/70 border-y border-border/80">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -71,11 +71,11 @@ export function Features({ onBookingClick }: { onBookingClick: () => void }) {
             return (
               <div
                 key={index}
-                className="group bg-card border-2 border-[#003D7A] rounded-xl p-6 hover:shadow-2xl hover:shadow-[#003D7A]/20 hover:border-[#003D7A] hover:scale-105 transition-all duration-300 animate-in fade-in slide-in-from-bottom-8 duration-700"
+                className="group bg-card border-2 border-brand/20 rounded-xl p-6 shadow-sm hover:shadow-xl hover:shadow-brand/10 hover:border-brand hover:scale-[1.02] transition-all duration-300 animate-in fade-in slide-in-from-bottom-8 duration-700"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className="w-14 h-14 rounded-xl bg-[#003D7A]/10 flex items-center justify-center mb-4 group-hover:bg-[#003D7A] group-hover:scale-110 transition-all duration-300">
-                  <Icon className="w-7 h-7 text-[#003D7A] group-hover:text-white transition-colors duration-300" />
+                <div className="w-14 h-14 rounded-xl bg-brand/10 flex items-center justify-center mb-4 group-hover:bg-brand group-hover:scale-110 transition-all duration-300">
+                  <Icon className="w-7 h-7 text-brand group-hover:text-white transition-colors duration-300" />
                 </div>
                 <h3 className="text-xl font-bold text-foreground mb-2">{service.title}</h3>
                 <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
@@ -84,14 +84,14 @@ export function Features({ onBookingClick }: { onBookingClick: () => void }) {
                 <ul className="space-y-2 mb-4">
                   {service.features.map((feature, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#003D7A]" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-brand" />
                       {feature}
                     </li>
                   ))}
                 </ul>
                 <Link
                   href={`/services/${service.slug}`}
-                  className="text-sm font-semibold text-[#003D7A] hover:underline"
+                  className="text-sm font-semibold text-brand hover:underline"
                 >
                   Learn more
                 </Link>
@@ -110,7 +110,7 @@ export function Features({ onBookingClick }: { onBookingClick: () => void }) {
             >
               Book Your Service Now
             </Button>
-            <Button size="lg" variant="outline" className="font-semibold text-lg px-8 border-[#003D7A] text-[#003D7A]" asChild>
+            <Button size="lg" variant="outline" className="font-semibold text-lg px-8 border-brand text-brand hover:bg-brand/10" asChild>
               <Link href="/services">Services &amp; pricing by category</Link>
             </Button>
           </div>

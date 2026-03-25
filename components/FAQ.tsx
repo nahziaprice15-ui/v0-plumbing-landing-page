@@ -11,7 +11,7 @@ import { SITE } from '@/lib/site'
 
 export function FAQ() {
   return (
-    <section id="faq" className="py-20 bg-card">
+    <section id="faq" className="py-20 bg-white/80 border-y border-border/70">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">

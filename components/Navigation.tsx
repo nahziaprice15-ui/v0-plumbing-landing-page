@@ -27,8 +27,8 @@ export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-background shadow-md' : 'bg-background backdrop-blur-sm'
+      className={`fixed top-0 left-0 right-0 z-50 border-b border-white/10 transition-all duration-300 ${
+        isScrolled ? 'bg-brand/95 shadow-md backdrop-blur-md' : 'bg-brand/90 backdrop-blur-sm'
       }`}
     >
       <div className="container mx-auto px-4">
@@ -79,7 +79,7 @@ export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-background border-t border-white/20">
+        <div className="md:hidden bg-brand-deep/95 border-t border-white/15">
           <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
             {navLinks.map((link) => (
               <Link

@@ -4,38 +4,39 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Brand Colors */
-  --patriot-blue: #003D7A;
-  --liberty-red: #DA1F3D;
-  --charcoal: #121212;
-  --light-gray: #F5F5F5;
-  --white: #FFFFFF;
-  
-  /* Semantic Tokens */
-  --background: var(--patriot-blue);
-  --foreground: #000000;
+  /* Brand (navy + red — use brand surfaces for nav/hero, light surfaces for content) */
+  --patriot-blue: #0b3a62;
+  --liberty-red: #c81e2d;
+  --brand-deep: #061f36;
+  --charcoal: #141820;
+  --light-gray: #f1f4f9;
+  --white: #ffffff;
+
+  /* Page shell: light, readable; cards stay white */
+  --background: #eef2f8;
+  --foreground: #0f172a;
   --card: var(--white);
-  --card-foreground: #000000;
+  --card-foreground: #0f172a;
   --popover: var(--white);
-  --popover-foreground: #000000;
-  --primary: var(--white);
-  --primary-foreground: #000000;
+  --popover-foreground: #0f172a;
+  --primary: var(--patriot-blue);
+  --primary-foreground: var(--white);
   --secondary: var(--liberty-red);
   --secondary-foreground: var(--white);
-  --muted: #004A99;
-  --muted-foreground: #000000;
-  --accent: var(--liberty-red);
-  --accent-foreground: var(--white);
-  --destructive: #EF4444;
+  --muted: #e2e8f0;
+  --muted-foreground: #64748b;
+  --accent: #e8eef6;
+  --accent-foreground: var(--patriot-blue);
+  --destructive: #dc2626;
   --destructive-foreground: var(--white);
-  --border: #005BB5;
-  --input: var(--white);
+  --border: #cbd5e1;
+  --input: #cbd5e1;
   --ring: var(--liberty-red);
   --chart-1: var(--patriot-blue);
   --chart-2: var(--liberty-red);
-  --chart-3: #003D7A;
-  --chart-4: #DA1F3D;
-  --chart-5: #121212;
+  --chart-3: var(--patriot-blue);
+  --chart-4: var(--liberty-red);
+  --chart-5: var(--charcoal);
   --radius: 0.625rem;
   --sidebar: var(--white);
   --sidebar-foreground: var(--charcoal);
@@ -43,10 +44,9 @@
   --sidebar-primary-foreground: var(--white);
   --sidebar-accent: var(--liberty-red);
   --sidebar-accent-foreground: var(--white);
-  --sidebar-border: #E5E5E5;
+  --sidebar-border: #e5e5e5;
   --sidebar-ring: var(--patriot-blue);
 
-  /* Patriot Blue as foreground on light surfaces (cards, modals). Use text-brand / bg-brand — not text-primary (primary is white for blue sections). */
   --brand: var(--patriot-blue);
 }
 
@@ -127,6 +127,8 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
+  --color-charcoal: var(--charcoal);
 }
 
 @layer base {
