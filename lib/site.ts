@@ -3,6 +3,13 @@ export function getSiteUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://msandpllc.com').replace(/\/$/, '')
 }
 
+/** GitHub Issues tab URL for this repo; unset until configured in the host environment. */
+export function getGithubIssuesUrl(): string | undefined {
+  const raw = process.env.NEXT_PUBLIC_GITHUB_ISSUES_URL?.trim()
+  if (!raw) return undefined
+  return raw.replace(/\/$/, '')
+}
+
 export const SITE = {
   businessName: 'MS & P LLC',
   /** E.164 without spaces */

@@ -56,13 +56,16 @@ npm start
 
 Notable routes include the home page, `/services` and dynamic `/services/[slug]`, `/privacy`, and `/terms`.
 
+The **`/issues`** route is a developer-facing landing page for reporting website bugs via GitHub. It is not linked from the main navigation or footer; use the URL directly or see below. It is excluded from the sitemap and set to `noindex` in metadata.
+
 ## Environment
 
 | Variable | Description |
 |----------|-------------|
 | `NEXT_PUBLIC_SITE_URL` | Canonical site origin (no trailing slash). Used for metadata, sitemap, and structured data. Defaults to `https://msandpllc.com` in code if unset. |
+| `NEXT_PUBLIC_GITHUB_ISSUES_URL` | Full URL to this repository’s GitHub Issues tab (e.g. `https://github.com/your-org/your-repo/issues`). When set, the `/issues` page shows a button to open it. If unset, that page falls back to the business email for feedback. |
 
-Set this in `.env.local` for local SEO checks and in your host’s environment for production.
+Set these in `.env.local` for local SEO checks and in your host’s environment for production.
 
 ## Build note
 
