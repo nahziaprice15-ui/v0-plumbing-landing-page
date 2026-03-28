@@ -32,6 +32,8 @@ Create a **new** issue when:
 
 **Before creating:** run a quick duplicate check (same feature, same bug symptom, same refactor target).
 
+**After creating:** apply labels using the **project label map** in §7 (map deliverable type → repo label).
+
 ---
 
 ## 4. When to update an existing issue
@@ -73,9 +75,26 @@ Link related items: `Depends on #123`, `Related to #456`, `Closes #789` (in PR d
 
 ## 7. Labels and milestones
 
-- Apply **labels** the repository already uses (e.g. `bug`, `enhancement`, `documentation`, `priority`). If unsure, match recent issues in the same area.
+- Apply **labels** that exist on the repository. If unsure, match recent issues or PRs in the same area.
 - Set **milestone** to the phase or release this work belongs to. If none fits, ask the user or use the team’s backlog milestone if one exists.
 - **Do not** remove a milestone without user confirmation unless the issue was filed by mistake.
+
+### 7.1 Project: `nahziaprice15-ui/v0-plumbing-landing-page`
+
+**Labels currently in the repo** (GitHub defaults): `bug`, `documentation`, `duplicate`, `enhancement`, `good first issue`, `help wanted`, `invalid`, `question`, `wontfix`.
+
+**Map deliverable types (§3) to labels:**
+
+| Deliverable | Label to use | Notes |
+|-------------|----------------|--------|
+| Feature, UI change, spike, or general improvement | `enhancement` | Default for most product work. |
+| Bugfix | `bug` | Regressions, broken behavior, incorrect output. |
+| Docs only | `documentation` | README, guides, comments-only doc tasks. |
+| Chore (tooling, deps, refactor with no user-visible “feature”) | `enhancement` | Until a dedicated `chore` label is created in the repo, use `enhancement` and state “chore” in the title or body. |
+| Duplicate of another item | `duplicate` | Only when closing or linking as duplicate; reference the canonical issue/PR number. |
+| Not actionable / invalid | `invalid` or `wontfix` | Only with user agreement. |
+
+**Historical:** Closed PRs [#1](https://github.com/nahziaprice15-ui/v0-plumbing-landing-page/pull/1)–[#5](https://github.com/nahziaprice15-ui/v0-plumbing-landing-page/pull/5) were labeled `enhancement` (March 2026) for consistent tracking; they previously had no labels. There were **no separate (non-PR) issues** in the repo at that time—only these pull requests appear in the Issues tab.
 
 ---
 
@@ -99,7 +118,7 @@ Link related items: `Depends on #123`, `Related to #456`, `Closes #789` (in PR d
 Before ending substantive work:
 
 1. **Comment on the issue** with: what was done, PR link if any, what is left, and next step.
-2. **Update checklists** and labels (e.g. `ready for review`).
+2. **Update checklists** and labels (use repo-defined labels; this project does not define a `ready for review` label unless you add one).
 3. If the issue is **fully done** and merged, confirm it is **closed** (via merge keyword or manual close with a one-line reason).
 
 ---
