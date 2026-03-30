@@ -207,8 +207,12 @@ export function BookingModal({ isOpen, onClose, presetServiceType = null }: Book
         body: JSON.stringify(data),
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to submit booking')
+      const result = await response.json().catch(() => ({} as { success?: boolean; error?: string }))
+
+      if (!response.ok || !result.success) {
+        throw new Error(
+          typeof result.error === 'string' ? result.error : 'Failed to submit booking',
+        )
       }
       
       toast.success('Booking request submitted!', {
@@ -222,9 +226,10 @@ export function BookingModal({ isOpen, onClose, presetServiceType = null }: Book
         triggerElementRef.current.focus()
       }
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Something went wrong'
       toast.error('Failed to submit booking request', {
-        description: `Please try again or call us directly at ${SITE.phoneDisplay}`,
-        duration: 5000,
+        description: `${message} — or call us at ${SITE.phoneDisplay}`,
+        duration: 7000,
       })
     } finally {
       setIsSubmitting(false)
