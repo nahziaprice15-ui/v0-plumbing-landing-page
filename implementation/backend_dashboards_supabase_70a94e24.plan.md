@@ -357,6 +357,8 @@ Rules:
 
 ## 12. Implementation phases (step-by-step)
 
+**Execution order:** The repo root [`Implementation_plan.md`](../Implementation_plan.md) defines the **phased rollout** in use: (1) Supabase + **full** schema, (2) signup/login, (3) **manual** admin bootstrap and roles, (4) **mock** customer and admin dashboards to test auth, then (5+) full booking and operations. Use the numbered checklist below as the full technical backlog; sequence sprints to match `Implementation_plan.md` when the two differ.
+
 1. **Supabase project**: Create project, enable Auth (email/password), configure URL redirects, local env vars.
 2. **Schema migration**: Tables above + enums + indexes + RLS policies + core RPCs (`create_booking`, `set_booking_status`).
 3. **Next.js Supabase helpers**: `middleware.ts`, `lib/supabase/server.ts` + `client.ts`, cookie handling per official Next.js guide.

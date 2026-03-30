@@ -1,8 +1,11 @@
 'use client'
 
 import { createContext, useContext } from 'react'
+import type { BookingServiceTypeId } from '@/lib/bookingServiceType'
 
-const BookingOpenContext = createContext<(() => void) | null>(null)
+export type OpenBookingOptions = { serviceType?: BookingServiceTypeId }
+
+const BookingOpenContext = createContext<((opts?: OpenBookingOptions) => void) | null>(null)
 
 export function useOpenBooking() {
   const open = useContext(BookingOpenContext)
@@ -16,7 +19,7 @@ export function BookingOpenProvider({
   openBooking,
   children,
 }: {
-  openBooking: () => void
+  openBooking: (opts?: OpenBookingOptions) => void
   children: React.ReactNode
 }) {
   return <BookingOpenContext.Provider value={openBooking}>{children}</BookingOpenContext.Provider>
