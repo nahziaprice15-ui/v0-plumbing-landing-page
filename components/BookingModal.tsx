@@ -18,10 +18,13 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { SITE } from '@/lib/site'
+import type { BookingServiceTypeId } from '@/lib/bookingServiceType'
 
 interface BookingModalProps {
   isOpen: boolean
   onClose: () => void
+  /** When opening from a service CTA, pre-select the matching dropdown value. */
+  presetServiceType?: BookingServiceTypeId | null
 }
 
 // Phone number formatting function
@@ -65,7 +68,7 @@ const bookingSchema = z.object({
 
 type BookingFormData = z.infer<typeof bookingSchema>
 
-export function BookingModal({ isOpen, onClose }: BookingModalProps) {
+export function BookingModal({ isOpen, onClose, presetServiceType = null }: BookingModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const modalRef = useRef<HTMLDivElement>(null)
   const firstInputRef = useRef<HTMLInputElement>(null)
@@ -95,6 +98,21 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
   })
 
   const phoneValue = watch('phone')
+
+  // Fresh form when the modal opens (and apply service preset from the CTA that opened it).
+  useEffect(() => {
+    if (!isOpen) return
+    reset({
+      name: '',
+      phone: '',
+      email: '',
+      address: '',
+      serviceType: presetServiceType ?? '',
+      preferredDate: '',
+      preferredTime: '',
+      notes: '',
+    })
+  }, [isOpen, presetServiceType, reset])
 
   // Format phone number as user types
   useEffect(() => {
@@ -173,6 +191,8 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
       document.removeEventListener('keydown', handleKeyDown)
     }
   }, [isOpen])
+
+  const { ref: registerNameRef, ...nameRegister } = register('name')
 
   if (!isOpen) return null
 
@@ -266,8 +286,11 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 <Input
                   id="name"
                   placeholder="John Doe"
-                  {...register('name')}
-                  ref={firstInputRef}
+                  {...nameRegister}
+                  ref={(el) => {
+                    registerNameRef(el)
+                    firstInputRef.current = el
+                  }}
                   aria-invalid={errors.name ? 'true' : 'false'}
                   aria-describedby={errors.name ? 'name-error' : undefined}
                   aria-required="true"

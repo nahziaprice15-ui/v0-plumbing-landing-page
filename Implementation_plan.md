@@ -63,6 +63,7 @@ This phase is **intentionally thin**: no real slot booking yet—only **auth + r
 | Site build / landing structure | [`implementation/implementation_plan.md`](implementation/implementation_plan.md) |
 | Website enhancements | [`implementation/website_enhancement_plan_f6c2dc95.plan.md`](implementation/website_enhancement_plan_f6c2dc95.plan.md) |
 | Color system | [`implementation/Implementation_color_plan.md`](implementation/Implementation_color_plan.md) |
+| Booking modal (validation & service preset) | [`implementation/booking_modal_ux.md`](implementation/booking_modal_ux.md) |
 
 ---
 

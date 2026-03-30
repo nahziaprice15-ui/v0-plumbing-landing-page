@@ -31,7 +31,8 @@ import {
   isSegmentId,
   serviceSegments,
 } from '@/data/serviceSegments'
-import { useOpenBooking } from '@/components/BookingOpenContext'
+import { useOpenBooking, type OpenBookingOptions } from '@/components/BookingOpenContext'
+import { offeringToBookingType, segmentIdToBookingType } from '@/lib/bookingServiceType'
 import { SITE } from '@/lib/site'
 import { cn } from '@/lib/utils'
 
@@ -94,7 +95,7 @@ function OfferingCard({
   onBook,
 }: {
   offering: SegmentOffering
-  onBook: () => void
+  onBook: (opts?: OpenBookingOptions) => void
 }) {
   const Icon = offeringIcons[offering.iconKey]
 
@@ -137,7 +138,12 @@ function OfferingCard({
             Call now
           </a>
         </Button>
-        <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={onBook}>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full sm:w-auto"
+          onClick={() => onBook({ serviceType: offeringToBookingType(offering) })}
+        >
           Book online
         </Button>
         {offering.detailSlug ? (
@@ -150,7 +156,7 @@ function OfferingCard({
   )
 }
 
-function HubHero({ onBook }: { onBook: () => void }) {
+function HubHero({ onBook }: { onBook: (opts?: OpenBookingOptions) => void }) {
   return (
     <div className="mb-10 md:mb-12 text-center max-w-3xl mx-auto">
       <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-balance">
@@ -180,7 +186,7 @@ function HubHero({ onBook }: { onBook: () => void }) {
   )
 }
 
-function ServicesMobileDock({ onBook }: { onBook: () => void }) {
+function ServicesMobileDock({ onBook }: { onBook: (opts?: OpenBookingOptions) => void }) {
   return (
     <div
       className={cn(
@@ -266,7 +272,14 @@ export function ServicesHub() {
                       Call {SITE.phoneDisplay}
                     </a>
                   </Button>
-                  <Button type="button" variant="outline" onClick={openBooking}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const st = segmentIdToBookingType(segment.id)
+                      openBooking(st ? { serviceType: st } : undefined)
+                    }}
+                  >
                     Book this category
                   </Button>
                 </div>
