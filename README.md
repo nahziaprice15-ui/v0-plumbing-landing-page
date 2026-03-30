@@ -17,7 +17,7 @@ Public marketing and lead-generation site for **MS & P LLC** (plumbing services)
 | Fonts | [Geist](https://vercel.com/font) (via `next/font`) |
 | Other UI libs | [Embla Carousel](https://www.embla-carousel.com/), [Recharts](https://recharts.org/), [Vaul](https://github.com/emilkowalski/vaul) (drawer), [CMDK](https://cmdk.paco.me/), etc. (see `package.json`) |
 
-**Linting:** ESLint is invoked via `npm run lint` (configuration lives in the repo alongside Next.js defaults).
+**Linting:** ESLint is invoked via `pnpm run lint` (configuration lives in the repo alongside Next.js defaults).
 
 ## Prerequisites
 
@@ -25,26 +25,28 @@ Public marketing and lead-generation site for **MS & P LLC** (plumbing services)
 
 ## Getting started
 
+This repo uses **pnpm** (`pnpm-lock.yaml`). Vercel installs with **frozen lockfile**—after changing `package.json`, run `pnpm install` and commit the updated lockfile.
+
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000). Production build:
 
 ```bash
-npm run build
-npm start
+pnpm run build
+pnpm start
 ```
 
 ## Scripts
 
 | Command | Purpose |
 |---------|---------|
-| `npm run dev` | Development server with hot reload |
-| `npm run build` | Production build |
-| `npm run start` | Serve the production build |
-| `npm run lint` | Run ESLint |
+| `pnpm run dev` | Development server with hot reload |
+| `pnpm run build` | Production build |
+| `pnpm start` | Serve the production build |
+| `pnpm run lint` | Run ESLint |
 
 ## Project layout (high level)
 
@@ -74,6 +76,8 @@ Set these in `.env.local` for local SEO checks and in your host’s environment 
 ## Deployment
 
 The stack is a standard Next.js app and deploys cleanly on [Vercel](https://vercel.com/) (Analytics is already integrated). Any Node-compatible host that supports Next.js 16 works if configured appropriately.
+
+Keep **`pnpm-lock.yaml` committed and in sync** with `package.json` (add or upgrade deps with `pnpm add` / `pnpm install`). CI uses a **frozen** install; an outdated lockfile makes `pnpm install` exit with code 1. Use the default Vercel install command (`pnpm install`—not a typo like `pnpm istall`), or leave the install command empty so Vercel infers it.
 
 ---
 
