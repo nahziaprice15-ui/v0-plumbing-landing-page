@@ -173,6 +173,9 @@ export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
               <Link href="/terms" className="hover:text-white transition-colors">
                 Terms of Service
               </Link>
+              <Link href="/admin-login" className="hover:text-white transition-colors">
+                Admin Portal
+              </Link>
               <a href="/sitemap.xml" className="hover:text-white transition-colors">
                 Sitemap
               </a>
