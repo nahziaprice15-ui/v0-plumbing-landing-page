@@ -83,7 +83,10 @@ export default async function AdminBookingsPage({
                   <Badge variant={statusVariant(booking.status)}>{booking.status.replace('_', ' ')}</Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
+                  <div className="flex flex-wrap justify-end gap-2">
+                    <Button size="sm" variant="secondary" asChild>
+                      <a href={`/admin/bookings/${booking.id}`}>View</a>
+                    </Button>
                     {booking.status !== 'confirmed' && (
                       <form action={updateBookingStatus}>
                         <input type="hidden" name="bookingId" value={booking.id} />

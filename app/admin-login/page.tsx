@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { LockKeyhole, ShieldCheck } from 'lucide-react'
+import { signInAdmin } from '@/app/admin-login/actions'
 import { SiteChrome } from '@/components/SiteChrome'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -34,46 +35,40 @@ export default async function AdminLoginLandingPage({
             </div>
             <CardTitle className="text-2xl">Admin Portal Access</CardTitle>
             <CardDescription>
-              This area is for authorized MS & P LLC admins and staff. Public visitors cannot access admin
-              pages.
+              Sign in with a Supabase account that has an admin or staff profile in the database.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-lg border bg-muted/40 p-4 text-sm text-muted-foreground">
-              <p className="mb-2 font-medium text-foreground">Why it looked like nothing happened</p>
+              <p className="mb-2 font-medium text-foreground">Access requirements</p>
               <p>
-                The admin route is protected. If you are not signed in with an admin/staff profile, it
-                redirects back to the homepage.
+                The admin area is restricted to users whose <code className="text-xs">profiles.role</code> is{' '}
+                <code className="text-xs">admin</code> or <code className="text-xs">staff</code>. Promote your
+                user in Supabase (SQL or dashboard) after the first sign-up.
               </p>
             </div>
 
-            <form action="/api/admin-demo-login" method="POST" className="space-y-3 rounded-lg border p-4">
+            <form action={signInAdmin} className="space-y-3 rounded-lg border p-4">
               <div className="space-y-1">
-                <label htmlFor="username" className="text-sm font-medium">
-                  Username
+                <label htmlFor="email" className="text-sm font-medium">
+                  Email
                 </label>
-                <Input id="username" name="username" placeholder="admin" required />
+                <Input id="email" name="email" type="email" autoComplete="email" required />
               </div>
               <div className="space-y-1">
                 <label htmlFor="password" className="text-sm font-medium">
                   Password
                 </label>
-                <Input id="password" name="password" type="password" placeholder="••••••••" required />
+                <Input id="password" name="password" type="password" autoComplete="current-password" required />
               </div>
               {hasError && (
-                <p className="text-sm text-destructive">Invalid demo credentials. Please try again.</p>
+                <p className="text-sm text-destructive">Could not sign in. Check your email and password.</p>
               )}
               <Button type="submit" className="w-full gap-2">
                 <LockKeyhole className="h-4 w-4" />
-                Continue to Admin
+                Sign in
               </Button>
             </form>
-
-            <div className="rounded-lg border bg-muted/40 p-4 text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">Demo credentials (temporary)</p>
-              <p>Username: admin</p>
-              <p>Password: plumbing123</p>
-            </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button asChild variant="outline">
@@ -86,4 +81,3 @@ export default async function AdminLoginLandingPage({
     </SiteChrome>
   )
 }
-

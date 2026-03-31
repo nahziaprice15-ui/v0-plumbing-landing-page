@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { AdminShell } from '@/components/admin/AdminShell'
 import { createClient } from '@/lib/supabase/server'
@@ -14,20 +13,15 @@ export const metadata: Metadata = {
 }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies()
-  if (cookieStore.get('admin_demo')?.value === '1') {
-    return <AdminShell>{children}</AdminShell>
-  }
-
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/')
+  if (!user) redirect('/admin-login')
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
   if (!profile || (profile.role !== 'admin' && profile.role !== 'staff')) {
-    redirect('/')
+    redirect('/admin-login')
   }
 
   return <AdminShell>{children}</AdminShell>

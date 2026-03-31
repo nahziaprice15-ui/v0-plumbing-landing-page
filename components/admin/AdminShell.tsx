@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Bell, BookOpenCheck, BriefcaseBusiness, ChartColumnIncreasing, LayoutDashboard, Tags, Users } from 'lucide-react'
+import { signOutAdmin } from '@/app/admin/actions'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
@@ -56,8 +57,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               <p className="text-sm text-muted-foreground">Private staff tools for bookings and dispatch</p>
             </div>
             <div className="flex items-center gap-2">
-              <form action="/api/admin-demo-logout" method="POST">
-                <Button variant="outline" size="sm">
+              <form action={signOutAdmin}>
+                <Button variant="outline" size="sm" type="submit">
                   Logout
                 </Button>
               </form>
