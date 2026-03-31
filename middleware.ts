@@ -15,6 +15,7 @@ export async function middleware(request: NextRequest) {
   }
 
   let supabaseResponse = NextResponse.next()
+  const isAdminRoute = request.nextUrl.pathname.startsWith('/admin')
 
   try {
     // Initialize Supabase lazily inside middleware so it never runs at import/build time.
@@ -33,11 +34,40 @@ export async function middleware(request: NextRequest) {
     })
 
     // Refresh session / validate auth cookie if present.
-    await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (isAdminRoute) {
+      if (!user) {
+        const redirectUrl = request.nextUrl.clone()
+        redirectUrl.pathname = '/'
+        return NextResponse.redirect(redirectUrl)
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      const role = profile?.role
+      const isAdmin = role === 'admin' || role === 'staff'
+      if (profileError || !isAdmin) {
+        const redirectUrl = request.nextUrl.clone()
+        redirectUrl.pathname = '/'
+        return NextResponse.redirect(redirectUrl)
+      }
+    }
   } catch (err) {
     // If auth/session refresh fails, don't block page loads.
     // (We'll still allow the request through with the original cookies.)
     console.warn('[middleware][supabase]', err)
+    if (isAdminRoute) {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = '/'
+      return NextResponse.redirect(redirectUrl)
+    }
   }
 
   return supabaseResponse

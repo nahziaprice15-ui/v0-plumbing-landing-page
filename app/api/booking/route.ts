@@ -21,6 +21,8 @@ function normalizeBookingPayload(body: Record<string, unknown>) {
   const preferred_time_slot =
     str(body.preferred_time_slot) || str(body.preferredTime) || 'Morning'
   const urgency = str(body.urgency) || 'standard'
+  const source_path = str(body.sourcePath) || '/'
+  const form_variant = str(body.formVariant) || 'unknown'
 
   return {
     full_name,
@@ -34,6 +36,8 @@ function normalizeBookingPayload(body: Record<string, unknown>) {
     preferred_date,
     preferred_time_slot,
     urgency,
+    source_path,
+    form_variant,
   }
 }
 
@@ -119,6 +123,12 @@ export async function POST(request: Request) {
       .single()
 
     if (bookingError) throw bookingError
+
+    await db.from('booking_funnel_events').insert({
+      event_type: 'submit',
+      source_path: p.source_path,
+      form_variant: p.form_variant,
+    })
 
     return NextResponse.json({
       success: true,

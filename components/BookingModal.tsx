@@ -114,6 +114,16 @@ export function BookingModal({ isOpen, onClose, presetServiceType = null }: Book
     })
   }, [isOpen, presetServiceType, reset])
 
+  useEffect(() => {
+    if (!isOpen) return
+    const sourcePath = typeof window !== 'undefined' ? window.location.pathname : '/'
+    void fetch('/api/booking/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sourcePath, formVariant: 'modal' }),
+    }).catch(() => undefined)
+  }, [isOpen])
+
   // Format phone number as user types
   useEffect(() => {
     if (phoneValue) {
@@ -204,7 +214,11 @@ export function BookingModal({ isOpen, onClose, presetServiceType = null }: Book
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          sourcePath: typeof window !== 'undefined' ? window.location.pathname : '/',
+          formVariant: 'modal',
+        }),
       })
 
       const result = await response.json().catch(() => ({} as { success?: boolean; error?: string }))
