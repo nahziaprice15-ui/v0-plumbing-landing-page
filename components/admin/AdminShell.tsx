@@ -56,6 +56,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               <p className="text-sm text-muted-foreground">Private staff tools for bookings and dispatch</p>
             </div>
             <div className="flex items-center gap-2">
+              <form action="/api/admin-demo-logout" method="POST">
+                <Button variant="outline" size="sm">
+                  Logout
+                </Button>
+              </form>
               <Button variant="outline" size="sm" className="gap-2">
                 <Bell className="h-4 w-4" />
                 Alerts

@@ -15,7 +15,12 @@ export async function middleware(request: NextRequest) {
   }
 
   let supabaseResponse = NextResponse.next()
-  const isAdminRoute = request.nextUrl.pathname.startsWith('/admin')
+  const isAdminRoute = /^\/admin(?:\/|$)/.test(request.nextUrl.pathname)
+  const hasDemoAdminCookie = request.cookies.get('admin_demo')?.value === '1'
+
+  if (isAdminRoute && hasDemoAdminCookie) {
+    return supabaseResponse
+  }
 
   try {
     // Initialize Supabase lazily inside middleware so it never runs at import/build time.

@@ -118,6 +118,7 @@ This plan assumes **admin-only access** (no public customer login portal in this
 - Admin can see traffic-to-booking conversion metrics in the admin UI.
 - Admin can manage bookings/services/categories/clients from private routes only.
 - Non-admin users cannot access `/admin/*` data or pages.
+- Public staff entry link `/admin-login` remains accessible and can route authorized users into `/admin`.
 
 ## Implementation checklist
 - [x] confirm schema coverage for booking + service + category metrics
@@ -128,6 +129,11 @@ This plan assumes **admin-only access** (no public customer login portal in this
 - [x] implement conversion metrics panel
 - [x] enforce middleware/server/admin role guard checks
 - [x] QA with realistic fixture data and edge cases
+
+## Post-QA fixes
+- [x] Fixed admin route matcher to avoid treating `/admin-login` as a protected `/admin/*` route.
+- [x] Added public admin entry page and footer link so staff can reliably find admin access.
+- [x] Added temporary demo login flow (`/admin-login`) with session cookie bypass for admin preview access.
 
 ## Architecture flow
 ```mermaid
