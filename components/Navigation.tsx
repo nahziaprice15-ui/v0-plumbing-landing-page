@@ -20,6 +20,7 @@ export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
 
   const navLinks = [
     { label: 'All services', href: '/services' },
+    { label: 'Articles', href: '/articles' },
     { label: 'Pricing', href: '/#pricing' },
     { label: 'Testimonials', href: '/#testimonials' },
     { label: 'FAQ', href: '/#faq' },

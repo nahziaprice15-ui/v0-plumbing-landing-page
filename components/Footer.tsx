@@ -5,6 +5,7 @@ import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Twitter } from 'lucide
 import { Button } from '@/components/ui/button'
 import { BrandLogo } from '@/components/BrandLogo'
 import { services } from '@/data/services'
+import { formatDisplayDate, SITE_WIDE_LAST_UPDATED_ISO } from '@/lib/freshness'
 import { SITE } from '@/lib/site'
 
 export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
@@ -67,6 +68,16 @@ export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
               <li>
                 <Link href="/#faq" className="text-white/80 hover:text-white transition-colors">
                   FAQ
+                </Link>
+              </li>
+              <li>
+                <Link href="/articles" className="text-white/80 hover:text-white transition-colors">
+                  Articles
+                </Link>
+              </li>
+              <li>
+                <Link href="/site-map" className="text-white/80 hover:text-white transition-colors">
+                  Site map
                 </Link>
               </li>
             </ul>
@@ -163,8 +174,11 @@ export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
 
           {/* Copyright & Links */}
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/60">
-            <div>
-              © {currentYear} MS & P LLC. All rights reserved.
+            <div className="flex flex-col items-center md:items-start gap-1">
+              <span>© {currentYear} MS & P LLC. All rights reserved.</span>
+              <span className="text-white/50 text-xs">
+                Site content last updated {formatDisplayDate(SITE_WIDE_LAST_UPDATED_ISO)}
+              </span>
             </div>
             <div className="flex gap-6">
               <Link href="/privacy" className="hover:text-white transition-colors">
@@ -176,9 +190,9 @@ export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
               <Link href="/admin-login" className="hover:text-white transition-colors">
                 Admin Portal
               </Link>
-              <a href="/sitemap.xml" className="hover:text-white transition-colors">
-                Sitemap
-              </a>
+              <Link href="/site-map" className="hover:text-white transition-colors">
+                Site map
+              </Link>
             </div>
           </div>
         </div>

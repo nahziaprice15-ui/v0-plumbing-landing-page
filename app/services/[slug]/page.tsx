@@ -7,7 +7,11 @@ import { ServicePageCtas } from '@/components/ServicePageCtas'
 import { StructuredData } from '@/components/StructuredData'
 import { getAllServiceSlugs, getServiceBySlug } from '@/data/services'
 import { buildFaqPageJsonLd } from '@/data/faqs'
-import { combineJsonLd, buildServicePageJsonLd } from '@/lib/schema'
+import {
+  combineJsonLd,
+  buildBreadcrumbListJsonLd,
+  buildServicePageJsonLd,
+} from '@/lib/schema'
 import { getSiteUrl } from '@/lib/site'
 
 type Props = {
@@ -49,6 +53,11 @@ export default async function ServiceDetailPage({ params }: Props) {
 
   const path = `/services/${slug}`
   const structuredData = combineJsonLd([
+    buildBreadcrumbListJsonLd([
+      { name: 'Home', path: '/' },
+      { name: 'Services', path: '/services' },
+      { name: s.h1, path },
+    ]),
     buildServicePageJsonLd({
       name: s.h1,
       description: s.description,

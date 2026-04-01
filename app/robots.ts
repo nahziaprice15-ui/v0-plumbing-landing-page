@@ -1,13 +1,14 @@
 import type { MetadataRoute } from 'next'
+import { getSiteUrl } from '@/lib/site'
 
 export default function robots(): MetadataRoute.Robots {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://msandpllc.com'
+  const siteUrl = getSiteUrl()
 
   return {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/api/'],
+      disallow: ['/api/', '/admin', '/admin-login', '/sentry-example-page'],
     },
     sitemap: `${siteUrl}/sitemap.xml`,
   }
