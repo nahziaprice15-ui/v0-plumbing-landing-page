@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -47,11 +48,11 @@ export default async function AdminClientsPage() {
                 </TableCell>
                 <TableCell>{client.lastServiceDate ?? '—'}</TableCell>
                 <TableCell className="space-x-2 text-right">
-                  <Button size="sm" variant="outline">
-                    Profile
+                  <Button size="sm" variant="outline" asChild>
+                    <Link href={`/admin/clients/${encodeURIComponent(client.key)}`}>Profile</Link>
                   </Button>
-                  <Button size="sm" variant="ghost">
-                    History
+                  <Button size="sm" variant="ghost" asChild>
+                    <Link href={`/admin/clients/${encodeURIComponent(client.key)}`}>History</Link>
                   </Button>
                 </TableCell>
               </TableRow>

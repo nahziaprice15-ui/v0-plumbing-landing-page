@@ -1,15 +1,20 @@
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { getAdminDashboardMetrics, getServiceDemand } from '@/lib/admin/queries'
+import { AdminEmptyState } from '@/components/admin/AdminEmptyState'
+import { getAdminDashboardMetrics, getAdminOperationalInsights, getServiceDemand } from '@/lib/admin/queries'
 
 export default async function AdminInsightsPage() {
-  const [metrics, serviceDemand] = await Promise.all([getAdminDashboardMetrics(), getServiceDemand()])
+  const [metrics, serviceDemand, ops] = await Promise.all([
+    getAdminDashboardMetrics(),
+    getServiceDemand(),
+    getAdminOperationalInsights(),
+  ])
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Traffic to Booking Funnel (7 days)</CardTitle>
+          <CardTitle>Traffic to booking funnel (7 days)</CardTitle>
           <CardDescription>Operational conversion from booking intent to submission</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-3">
@@ -30,7 +35,42 @@ export default async function AdminInsightsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Top Converting Entry Pages</CardTitle>
+          <CardTitle>Plumbing operations KPIs</CardTitle>
+          <CardDescription>Emergency vs commercial mix, SLA-style backlog, and quality signals</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="rounded-lg border p-3">
+            <p className="text-xs text-muted-foreground">Pending over {ops.slaPendingThresholdHours}h</p>
+            <p className="text-2xl font-semibold">{ops.pendingOlderThanThreshold}</p>
+          </div>
+          <div className="rounded-lg border p-3">
+            <p className="text-xs text-muted-foreground">Emergency bookings (30d)</p>
+            <p className="text-2xl font-semibold">{ops.emergencyBookingsLast30d}</p>
+          </div>
+          <div className="rounded-lg border p-3">
+            <p className="text-xs text-muted-foreground">Residential / commercial</p>
+            <p className="text-sm font-semibold">
+              {ops.residentialBookingsCount} / {ops.commercialBookingsCount}
+            </p>
+          </div>
+          <div className="rounded-lg border p-3">
+            <p className="text-xs text-muted-foreground">No-show rate (7d)</p>
+            <p className="text-2xl font-semibold">{ops.noShowRate7d}%</p>
+          </div>
+          <div className="rounded-lg border p-3">
+            <p className="text-xs text-muted-foreground">Cancellation rate (7d)</p>
+            <p className="text-2xl font-semibold">{ops.cancelRate7d}%</p>
+          </div>
+          <div className="rounded-lg border p-3">
+            <p className="text-xs text-muted-foreground">Repeat emergency customers (30d)</p>
+            <p className="text-2xl font-semibold">{ops.repeatEmergencyCustomers30d}</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Top converting entry pages</CardTitle>
           <CardDescription>Source pages associated with successful booking submissions</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -41,14 +81,19 @@ export default async function AdminInsightsPage() {
             </div>
           ))}
           {metrics.topEntryPages.length === 0 && (
-            <p className="text-sm text-muted-foreground">No source-page conversion events captured yet.</p>
+            <AdminEmptyState
+              title="No funnel conversions yet"
+              description="Funnel events will populate as visitors use the booking flow."
+              actionLabel="Dashboard"
+              actionHref="/admin/dashboard"
+            />
           )}
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Most Booked Services</CardTitle>
+          <CardTitle>Most booked services</CardTitle>
           <CardDescription>Demand ranking by booking volume</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -68,4 +113,3 @@ export default async function AdminInsightsPage() {
     </div>
   )
 }
-

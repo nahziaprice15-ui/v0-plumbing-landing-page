@@ -2,6 +2,8 @@
 
 Single checklist for **design acceptance** (mock-first) and **production readiness** (CRM completeness) for the local-plumbing admin experience. This document **extends** [adminUI-implementationplan.md](./adminUI-implementationplan.md); it does not replace the original scope—it adds mock-first design lock, niche analytics, and operational gaps.
 
+**Implementation status (baseline shipped):** Phases A–E are **largely complete** in code (`lib/admin/mock-repository.ts`, `lib/admin/queries.ts`, `components/admin/AdminShell.tsx`, bookings/clients/dashboard/insights, etc.). The checklist below uses **`[x]`** for delivered items and **`[ ]`** for optional polish or **follow-up** work (scale, persisted settings, extra analytics). See **§8 Remaining follow-up** for the backlog that was identified after the first pass.
+
 ---
 
 ## 1. Purpose
@@ -18,11 +20,11 @@ Single checklist for **design acceptance** (mock-first) and **production readine
 
 | Item | Checklist |
 |------|-----------|
-| **Env switch** | One flag (e.g. `ADMIN_DATA_SOURCE=mock` or `NEXT_PUBLIC_ADMIN_MOCK=1`) selects data source. |
-| **Single mock layer** | `lib/admin/mock-repository.ts` (or `components/admin/mockData.ts` + thin adapters) returns the **same shapes** as live queries (`AdminDashboardMetrics`, `AdminBookingRow`, `CatalogServiceRow`, etc. in `lib/admin/queries.ts`). |
-| **Query integration** | Either branch at the top of each exported function in `lib/admin/queries.ts`, or expose a `getAdminData()` facade used by pages (preferred for tests). |
-| **Demo richness** | Mock includes: mixed emergency vs residential; `no_show`; empty states; long addresses; multi-day schedule; funnel events with varied `source_path`; enough rows to stress tables (scroll, pagination story). |
-| **Security note** | Mock is **design-only**—no production PII; document that clearly for the team. |
+| **Env switch** | `[x]` `ADMIN_DATA_SOURCE=mock` or `NEXT_PUBLIC_ADMIN_MOCK=1` selects data source ([lib/admin/data-source.ts](lib/admin/data-source.ts)). |
+| **Single mock layer** | `[x]` [lib/admin/mock-repository.ts](lib/admin/mock-repository.ts) returns the same shapes as live queries (`AdminDashboardMetrics`, `AdminBookingRow`, etc.). [components/admin/mockData.ts](components/admin/mockData.ts) re-exports types / points at the mock layer—data lives in the repository. |
+| **Query integration** | `[x]` Branch at top of exported functions in [lib/admin/queries.ts](lib/admin/queries.ts). `[ ]` Optional: `getAdminData()` facade for tests (not required for product). |
+| **Demo richness** | `[x]` Mock includes mixed emergency vs residential/commercial, `no_show`, long addresses, multi-day schedule, funnel-style paths, enough rows for table stress. |
+| **Security note** | `[x]` Mock is **design-only**—no production PII. Team reminder: never point mock mode at prod exports; keep env in local/staging for demos. |
 
 ---
 
@@ -30,60 +32,63 @@ Single checklist for **design acceptance** (mock-first) and **production readine
 
 ### Shell and navigation
 
-- [ ] **Dynamic title/description** in `components/admin/AdminShell.tsx` (per route or derived from `pathname`)—not static “Operations Dashboard” on every page.
-- [ ] **Mobile**: collapsible sidebar or bottom nav; tables do not overflow without horizontal scroll hints where needed.
-- [ ] **Alerts**: remove stub, or wire a minimal notifications panel (even mock: e.g. “2 pending confirmations older than 4h”).
+- `[x]` **Dynamic title/description** via [lib/admin/route-meta.ts](lib/admin/route-meta.ts) and [components/admin/AdminShell.tsx](components/admin/AdminShell.tsx) (not static “Operations Dashboard” on every page).
+- `[x]` **Mobile**: collapsible nav (Sheet) + desktop sidebar; tables use horizontal scroll containers.
+- `[ ]` **Scroll hint copy** (optional): e.g. subtle “Scroll horizontally on small screens” where tables are wide—polish only.
+- `[x]` **Alerts**: popover with SLA-style pending backlog count (fed from [getAdminOperationalInsights](lib/admin/queries.ts) in [app/admin/layout.tsx](app/admin/layout.tsx)).
 
 ### Density and readability
 
-- [ ] **Empty states** (illustration + one CTA) on dashboard, bookings, insights when counts are zero.
-- [ ] **Status colors** consistent: dashboard cards, bookings table, detail page—shared `statusVariant` mapping including **`no_show`**.
-- [ ] **Loading / suspense** (optional): `loading.tsx` boundaries for admin routes.
+- `[x]` **Empty states** with icon + title + description + CTA ([components/admin/AdminEmptyState.tsx](components/admin/AdminEmptyState.tsx)) on key views (bookings, insights funnel empty, dashboard pipeline empty, today, activity).
+- `[ ]` **Illustrations** (optional): replace or supplement icon with brand illustration where design wants stronger marketing polish.
+- `[x]` **Status colors** shared: [lib/admin/booking-status.ts](lib/admin/booking-status.ts) includes **`no_show`**; used on dashboard, bookings, detail, clients.
+- `[x]` **Loading**: [app/admin/loading.tsx](app/admin/loading.tsx).
+- `[x]` **Error boundary**: [app/admin/error.tsx](app/admin/error.tsx).
 
 ### Bookings UX
 
-- [ ] **Default tab**: reconsider `pending`-only default (`app/admin/bookings` searchParams)—evaluate **“All”** or **“Today”** for dispatch.
-- [ ] **Search**: client name, phone, address fragment.
-- [ ] **Date range** filters for CRM scale.
-- [ ] **Pagination** or virtualized list when `getAdminBookings()` grows beyond current `.limit(200)`.
+- `[x]` **Default view**: **All** (with **Today** and per-status tabs); search; date range; client-side pagination within the loaded set.
+- `[ ]` **Server-side scale**: `getAdminBookings()` still uses `.limit(200)` in live mode—**DB filters, cursor/offset pagination, or raised cap** when CRM volume exceeds that (see §8).
 
 ---
 
 ## 4. Page inventory
 
-### Built (baseline)
+### Implemented routes (current)
 
 | Route | Purpose |
 |-------|---------|
-| `/admin/dashboard` | Metrics + operations overview |
-| `/admin/bookings` | List + filters |
-| `/admin/bookings/[id]` | Booking detail |
+| `/admin/dashboard` | KPIs + niche ops metrics + pipeline + demand snapshot |
+| `/admin/today` | Today’s jobs, time sort, Google Maps links |
+| `/admin/bookings` | List, tabs, search, date range, pagination, CSV link |
+| `/admin/bookings/[id]` | Detail, status actions, Maps link, timeline |
+| `/admin/bookings/export` | CSV export (auth-checked); optional `from` / `to` query params |
 | `/admin/services` | Catalog |
 | `/admin/service-categories` | Categories |
-| `/admin/clients` | Client list / snapshots |
-| `/admin/insights` | Funnel / analytics |
+| `/admin/clients` | Client list; Profile / History → client detail |
+| `/admin/clients/[key]` | Client profile + booking history ([encodeURIComponent](app/admin/clients/page.tsx) key) |
+| `/admin/insights` | Funnel + niche KPIs + demand |
+| `/admin/activity` | Recent `booking_events` (mock feed when `ADMIN_DATA_SOURCE=mock`) |
+| `/admin/settings` | **Static** dispatch reference (hours, ZIPs, after-hours copy)—not persisted yet |
 
-Shell + nav: `components/admin/AdminShell.tsx`. Server data: `lib/admin/queries.ts`. **`components/admin/mockData.ts` is not wired** until Phase A is done.
+Shell + nav: [components/admin/AdminShell.tsx](components/admin/AdminShell.tsx). Server data: [lib/admin/queries.ts](lib/admin/queries.ts).
 
-### Gaps to close (acceptance)
+### Resolved (formerly “gaps”)
 
-| Gap | Action |
-|-----|--------|
-| **Bookings `no_show`** | Schema supports it; UI tabs and `updateBookingStatus` / `allowedStatuses` in `app/admin/bookings/actions.ts` must include it (see Phase E). |
-| **Clients row actions** | “Profile” / “History” are placeholders—wire to real routes or remove until implemented. |
-| **Alerts** | Stub in shell header—real or removed per §3. |
+| Topic | Resolution |
+|-------|------------|
+| **`no_show`** | Tabs, actions, `allowedStatuses` in [app/admin/bookings/actions.ts](app/admin/bookings/actions.ts), shared badge styling. |
+| **Clients actions** | Wired to `/admin/clients/[key]`; [not-found](app/admin/clients/[key]/not-found.tsx) for bad keys. |
+| **Alerts** | SLA backlog popover (see §3). |
 
-### Planned (Phase C+)
+### Optional / later product scope
 
-| Item | Suggestion |
-|------|------------|
-| **Client detail** | `/admin/clients/[key]` or phone hash: full history, notes, VIP/problem tag (mock first). |
-| **Dispatch / day board** | **“Today”** view: sort by time window + Google Maps link from address (no map SDK required initially). |
-| **Quotes / estimates** | Optional; skip if bookings-only, else minimal pipeline later. |
-| **Staff / settings** | `/admin/settings`: business hours, service-area ZIP list, after-hours copy. |
-| **Audit / activity** | Filterable **Activity** from `booking_events` (see `app/admin/bookings/actions.ts`) or embed on dashboard. |
+| Item | Notes |
+|------|--------|
+| **Quotes / estimates** | Still optional; minimal pipeline only if product sells estimates separately from bookings. |
+| **Persisted settings** | Replace static `/admin/settings` with DB/CMS when hours/ZIPs must be edited without deploys (see §8). |
 
-### Out of scope (unchanged from original plan unless product changes)
+### Out of scope (unless product changes)
 
 - Public customer account portal.
 - Full external BI stack.
@@ -93,25 +98,25 @@ Shell + nav: `components/admin/AdminShell.tsx`. Server data: `lib/admin/queries.
 
 ## 5. Niche analytics catalog (Phase D)
 
-Definitions should align with data you can collect (`booking_funnel_events`, bookings, categories, `service_types`).
-
-| KPI / analysis | Definition / notes |
-|----------------|-------------------|
-| **Emergency vs scheduled** | Split KPIs using category or a tag on `service_types` (e.g. `is_emergency`); mock first, SQL view later. |
-| **SLA-style backlog** | Count **pending** bookings older than N hours; surface on dashboard. |
-| **Service mix** | Residential vs commercial; top “problem” services (drains, water heater, leaks)—reuse `getServiceDemand` + category breakdown. |
-| **Seasonal / campaign (optional)** | Tag landing pages or UTM in `source_path` if funnel events extended; week-over-week in Insights. |
-| **Callback / repeat risk** | Customers with **>1 emergency** in 30 days (mock narrative acceptable for design). |
-| **No-show & cancellation rate** | 7- and 30-day windows; requires consistent `no_show` and cancelled in UI + actions. |
+| KPI / analysis | Status | Notes |
+|----------------|--------|--------|
+| **Emergency vs scheduled / mix** | `[x]` partial | [getAdminOperationalInsights](lib/admin/queries.ts): emergency count (30d heuristics), residential vs commercial. Uses **category join + title** when live; not a dedicated `is_emergency` column yet. |
+| **SLA-style backlog** | `[x]` | Pending older than threshold (e.g. 4h); dashboard + alerts. |
+| **Service mix / demand** | `[x]` partial | `getServiceDemand` + insights; explicit “problem taxonomy” (drains vs heater vs leak **labels**) optional. |
+| **Seasonal / campaign / UTM** | `[ ]` | Optional: extend `source_path` / events; week-over-week in Insights—not built. |
+| **Callback / repeat risk** | `[x]` | Repeat emergency customers (30d) in operational insights. |
+| **No-show & cancellation rate** | `[x]` partial | **7-day** rates in insights; **[ ] 30-day** rates as separate KPIs if product wants both (see §8). |
 
 ---
 
 ## 6. Backend checklist (Phase E + cross-cutting)
 
-- [ ] **Status parity**: `no_show` in UI tabs, status transitions, and `allowedStatuses` in `app/admin/bookings/actions.ts`; copy safe for legal/ops.
-- [ ] **RLS / service role**: Admin reads stay on controlled paths; new client-write flows match existing role checks (`app/admin/layout.tsx`, middleware).
-- [ ] **Exports**: CSV export of bookings (date range)—common owner request.
-- [ ] **Observability**: Log failed catalog mutations; optional admin-only error boundary page.
+| Item | Status |
+|------|--------|
+| **Status parity (`no_show`)** | `[x]` UI + [updateBookingStatus](app/admin/bookings/actions.ts). |
+| **RLS / roles** | `[x]` behavior unchanged: layout + middleware + server actions enforce staff/admin; **`[ ]` written runbook** for operators/devs still recommended (§8). |
+| **CSV export** | `[x]` [app/admin/bookings/export/route.ts](app/admin/bookings/export/route.ts). |
+| **Observability** | `[x]` [lib/admin/catalog-actions.ts](lib/admin/catalog-actions.ts) logs failed mutations; `[x]` [app/admin/error.tsx](app/admin/error.tsx). |
 
 ---
 
@@ -130,16 +135,32 @@ flowchart LR
 
 | Phase | Name | Summary |
 |-------|------|---------|
-| **A** | Lock design with mock data | Env flag; single mock layer matching `queries.ts` types; demo-rich fixtures; document mock vs live. |
-| **B** | Visual and UX polish | Shell titles, mobile nav, alerts real or removed; empty states; status colors + `no_show`; optional loading boundaries; bookings search/date/pagination story. |
-| **C** | Missing pages and workflows | Client detail, Today board, optional quotes, settings, activity log; fix dead Client buttons. |
-| **D** | Plumbing-niche analytics | Emergency vs scheduled, SLA backlog, service mix, optional campaign/UTM, repeat emergency risk, no-show/cancel rates. |
-| **E** | Backend and product hardening | Status parity, RLS documentation, CSV export, observability. |
+| **A** | Lock design with mock data | `[x]` Env flag; mock layer; types aligned with queries. |
+| **B** | Visual and UX polish | `[x]` Shell titles, mobile nav, alerts, empty states, status + `no_show`, loading/error, bookings search/date/pagination (client-side). |
+| **C** | Missing pages and workflows | `[x]` Client detail, Today, settings (static), activity; client links live. `[ ]` Quotes if needed. |
+| **D** | Plumbing-niche analytics | `[x]` Core KPIs + ops insights; `[ ]` optional UTM/WoW, 30d rate split, formal `is_emergency`. |
+| **E** | Backend and product hardening | `[x]` Status parity, export, catalog logging, admin error UI; `[ ]` RLS/service-role **documentation** for humans. |
 
-**Suggested order**: A → B → C → D → E (D and E can overlap where analytics depends on status consistency).
+**Suggested order for any new work:** finish §8 scale + persistence + analytics gaps before expanding scope (quotes, BI).
+
+---
+
+## 8. Remaining follow-up (post–first implementation)
+
+These items were identified after the baseline ship; they are **not** blockers for a small operation but matter as volume and process grow.
+
+| Area | Follow-up |
+|------|-----------|
+| **Bookings at scale** | Move beyond **200-row** fetch: server-side filters (status, date, text), pagination or cursor, optional virtualization for very large lists. |
+| **Activity** | Add **filters** (date range, event type, booking id). Call **`revalidatePath('/admin/activity')`** (or tag-based revalidation) from [booking actions](app/admin/bookings/actions.ts) so the list stays fresh after status changes. Optional: embed recent activity on dashboard. |
+| **Analytics** | Add **30-day** no-show / cancel metrics alongside 7-day if stakeholders want both. Optional: **`is_emergency`** (or similar) on `service_types` + migration, then drop title-only heuristics. Optional: **UTM / week-over-week** once funnel events support it. |
+| **Settings** | Persist hours, ZIP list, after-hours message (Supabase table or CMS) and replace static copy on `/admin/settings`. |
+| **Testing facade** | Optional **`getAdminData()`** (or thin repository interface) to simplify unit tests. |
+| **Docs** | Short **runbook**: who may access admin, how service-role reads are scoped, where middleware/layout enforce roles, what mock env does—**for the team**, not only code comments. |
+| **UI polish** | Optional horizontal-scroll **hint** string; optional **illustrations** in empty states; tighten empty states on every subsection if design QA requires it. |
 
 ---
 
 ## Relationship to [adminUI-implementationplan.md](./adminUI-implementationplan.md)
 
-The implementation plan describes **original scope** (routes, core KPIs, security). **This file** is the forward-looking backlog for **mock-first design lock** and **CRM completeness** for the plumbing niche. Use both together: implementation plan for baseline delivery; **adminportal-upgrade.md** for acceptance criteria and phased enhancements.
+The implementation plan describes **original scope** (routes, core KPIs, security). **This file** tracks **mock-first design lock**, **CRM completeness**, and the **living follow-up backlog** (§8). Use both together: implementation plan for baseline intent; **adminportal-upgrade.md** for what shipped vs what is next.

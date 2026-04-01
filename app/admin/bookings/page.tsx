@@ -1,6 +1,9 @@
+import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Table,
   TableBody,
@@ -9,124 +12,287 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { getAdminBookings, type AdminBookingRow } from '@/lib/admin/queries'
+import { AdminEmptyState } from '@/components/admin/AdminEmptyState'
 import { updateBookingStatus } from '@/app/admin/bookings/actions'
+import { BOOKING_STATUS_ORDER, bookingStatusLabel, bookingStatusVariant } from '@/lib/admin/booking-status'
+import { getAdminBookings, type AdminBookingRow } from '@/lib/admin/queries'
 
-type BookingStatus = AdminBookingRow['status']
+const PAGE_SIZE = 20
 
-function statusVariant(status: BookingStatus): 'default' | 'secondary' | 'destructive' | 'outline' {
-  if (status === 'completed') return 'secondary'
-  if (status === 'cancelled') return 'destructive'
-  if (status === 'pending') return 'outline'
-  return 'default'
+type StatusFilter = 'all' | 'today' | AdminBookingRow['status']
+
+function parseStatus(raw: string | undefined): StatusFilter {
+  if (raw === 'all' || raw === 'today') return raw
+  if (raw && BOOKING_STATUS_ORDER.includes(raw as AdminBookingRow['status'])) {
+    return raw as AdminBookingRow['status']
+  }
+  return 'all'
 }
 
-const statuses: BookingStatus[] = ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled']
+function filterBookings(
+  all: AdminBookingRow[],
+  statusFilter: StatusFilter,
+  q: string,
+  from: string,
+  to: string,
+): AdminBookingRow[] {
+  const todayStr = format(new Date(), 'yyyy-MM-dd')
+  let rows = all
+
+  if (statusFilter === 'today') {
+    rows = rows.filter((b) => b.preferredDate === todayStr)
+  } else if (statusFilter !== 'all') {
+    rows = rows.filter((b) => b.status === statusFilter)
+  }
+
+  const needle = q.trim().toLowerCase()
+  if (needle) {
+    const digits = needle.replace(/\D/g, '')
+    rows = rows.filter((b) => {
+      const name = b.customerName.toLowerCase()
+      const addr = b.address.toLowerCase()
+      const phoneDigits = b.phone.replace(/\D/g, '')
+      return (
+        name.includes(needle) ||
+        addr.includes(needle) ||
+        (digits.length > 0 && phoneDigits.includes(digits))
+      )
+    })
+  }
+
+  if (from.trim()) {
+    rows = rows.filter((b) => b.preferredDate >= from.trim())
+  }
+  if (to.trim()) {
+    rows = rows.filter((b) => b.preferredDate <= to.trim())
+  }
+
+  return rows
+}
+
+function buildHref(params: {
+  status: string
+  q?: string
+  from?: string
+  to?: string
+  page?: number
+}): string {
+  const sp = new URLSearchParams()
+  sp.set('status', params.status)
+  if (params.q?.trim()) sp.set('q', params.q.trim())
+  if (params.from?.trim()) sp.set('from', params.from.trim())
+  if (params.to?.trim()) sp.set('to', params.to.trim())
+  if (params.page && params.page > 1) sp.set('page', String(params.page))
+  const q = sp.toString()
+  return q ? `/admin/bookings?${q}` : '/admin/bookings'
+}
 
 export default async function AdminBookingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>
+  searchParams: Promise<{ status?: string; q?: string; from?: string; to?: string; page?: string }>
 }) {
   const params = await searchParams
+  const statusFilter = parseStatus(params.status)
+  const q = params.q ?? ''
+  const from = params.from ?? ''
+  const to = params.to ?? ''
+  const pageNum = Math.max(1, Number.parseInt(params.page ?? '1', 10) || 1)
+
   const all = await getAdminBookings()
-  const statusFilter = statuses.includes(params.status as BookingStatus)
-    ? (params.status as BookingStatus)
-    : 'pending'
-  const rows = all.filter((booking) => booking.status === statusFilter)
+  const filtered = filterBookings(all, statusFilter, q, from, to)
+  const total = filtered.length
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  const page = Math.min(pageNum, pageCount)
+  const offset = (page - 1) * PAGE_SIZE
+  const rows = filtered.slice(offset, offset + PAGE_SIZE)
+
+  const tabItems: { key: string; label: string }[] = [
+    { key: 'all', label: 'All' },
+    { key: 'today', label: 'Today' },
+    ...BOOKING_STATUS_ORDER.map((s) => ({ key: s, label: bookingStatusLabel(s) })),
+  ]
+
+  const exportHref = (() => {
+    const sp = new URLSearchParams()
+    if (from.trim()) sp.set('from', from.trim())
+    if (to.trim()) sp.set('to', to.trim())
+    const qs = sp.toString()
+    return qs ? `/admin/bookings/export?${qs}` : '/admin/bookings/export'
+  })()
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Bookings</CardTitle>
-        <CardDescription>Track and manage your pipeline from request to completion.</CardDescription>
+      <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <CardTitle>Bookings</CardTitle>
+          <CardDescription>Track and manage your pipeline from request to completion.</CardDescription>
+        </div>
+        <Button variant="outline" size="sm" asChild>
+          <a href={exportHref}>Export CSV</a>
+        </Button>
       </CardHeader>
-      <CardContent>
-        <div className="mb-4 flex flex-wrap gap-2">
-          {statuses.map((status) => (
+      <CardContent className="space-y-4">
+        <form method="get" className="flex flex-wrap items-end gap-3">
+          <input type="hidden" name="status" value={statusFilter} />
+          <div className="space-y-1.5">
+            <Label htmlFor="q">Search</Label>
+            <Input id="q" name="q" placeholder="Name, phone, address" defaultValue={q} className="w-[min(100%,280px)]" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="from">From</Label>
+            <Input id="from" name="from" type="date" defaultValue={from} className="w-[160px]" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="to">To</Label>
+            <Input id="to" name="to" type="date" defaultValue={to} className="w-[160px]" />
+          </div>
+          <Button type="submit" size="sm">
+            Apply
+          </Button>
+        </form>
+
+        <div className="flex flex-wrap gap-2">
+          {tabItems.map((tab) => (
             <Button
-              key={status}
-              variant={status === statusFilter ? 'default' : 'outline'}
+              key={tab.key}
+              variant={tab.key === statusFilter ? 'default' : 'outline'}
               size="sm"
               asChild
             >
-              <a href={`/admin/bookings?status=${status}`}>{status.replace('_', ' ')}</a>
+              <a href={buildHref({ status: tab.key, q, from, to, page: 1 })}>{tab.label}</a>
             </Button>
           ))}
         </div>
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Booking</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Service</TableHead>
-              <TableHead>When</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((booking) => (
-              <TableRow key={booking.id}>
-                <TableCell className="font-medium">{booking.id.slice(0, 8)}</TableCell>
-                <TableCell>
-                  <p>{booking.customerName}</p>
-                  <p className="text-xs text-muted-foreground">{booking.phone}</p>
-                </TableCell>
-                <TableCell>{booking.serviceType}</TableCell>
-                <TableCell>
-                  <p>{booking.preferredDate}</p>
-                  <p className="text-xs text-muted-foreground">{booking.preferredTimeSlot}</p>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={statusVariant(booking.status)}>{booking.status.replace('_', ' ')}</Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex flex-wrap justify-end gap-2">
-                    <Button size="sm" variant="secondary" asChild>
-                      <a href={`/admin/bookings/${booking.id}`}>View</a>
-                    </Button>
-                    {booking.status !== 'confirmed' && (
-                      <form action={updateBookingStatus}>
-                        <input type="hidden" name="bookingId" value={booking.id} />
-                        <input type="hidden" name="status" value="confirmed" />
-                        <Button size="sm" variant="outline" type="submit">
-                          Confirm
-                        </Button>
-                      </form>
-                    )}
-                    {booking.status !== 'in_progress' && (
-                      <form action={updateBookingStatus}>
-                        <input type="hidden" name="bookingId" value={booking.id} />
-                        <input type="hidden" name="status" value="in_progress" />
-                        <Button size="sm" variant="outline" type="submit">
-                          Start
-                        </Button>
-                      </form>
-                    )}
-                    {booking.status !== 'completed' && (
-                      <form action={updateBookingStatus}>
-                        <input type="hidden" name="bookingId" value={booking.id} />
-                        <input type="hidden" name="status" value="completed" />
-                        <Button size="sm" type="submit">
-                          Complete
-                        </Button>
-                      </form>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-            {rows.length === 0 && (
+        <p className="text-xs text-muted-foreground">
+          Showing {total === 0 ? 0 : offset + 1}–{Math.min(offset + PAGE_SIZE, total)} of {total} (loaded up to 200 from
+          server). Refine with search and dates.
+        </p>
+
+        <div className="relative w-full overflow-x-auto rounded-md border">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
-                  No bookings in this status.
-                </TableCell>
+                <TableHead>Booking</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Service</TableHead>
+                <TableHead>When</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.map((booking) => (
+                <TableRow key={booking.id}>
+                  <TableCell className="font-medium">{booking.id.slice(0, 8)}</TableCell>
+                  <TableCell>
+                    <p>{booking.customerName}</p>
+                    <p className="text-xs text-muted-foreground">{booking.phone}</p>
+                  </TableCell>
+                  <TableCell>{booking.serviceType}</TableCell>
+                  <TableCell>
+                    <p>{booking.preferredDate}</p>
+                    <p className="text-xs text-muted-foreground">{booking.preferredTimeSlot}</p>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={bookingStatusVariant(booking.status)}>{bookingStatusLabel(booking.status)}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <Button size="sm" variant="secondary" asChild>
+                        <a href={`/admin/bookings/${booking.id}`}>View</a>
+                      </Button>
+                      {booking.status === 'pending' && (
+                        <form action={updateBookingStatus}>
+                          <input type="hidden" name="bookingId" value={booking.id} />
+                          <input type="hidden" name="status" value="confirmed" />
+                          <Button size="sm" variant="outline" type="submit">
+                            Confirm
+                          </Button>
+                        </form>
+                      )}
+                      {(booking.status === 'pending' || booking.status === 'confirmed') && (
+                        <form action={updateBookingStatus}>
+                          <input type="hidden" name="bookingId" value={booking.id} />
+                          <input type="hidden" name="status" value="in_progress" />
+                          <Button size="sm" variant="outline" type="submit">
+                            Start
+                          </Button>
+                        </form>
+                      )}
+                      {booking.status !== 'completed' && booking.status !== 'cancelled' && booking.status !== 'no_show' && (
+                        <form action={updateBookingStatus}>
+                          <input type="hidden" name="bookingId" value={booking.id} />
+                          <input type="hidden" name="status" value="completed" />
+                          <Button size="sm" type="submit">
+                            Complete
+                          </Button>
+                        </form>
+                      )}
+                      {booking.status !== 'cancelled' && booking.status !== 'completed' && booking.status !== 'no_show' && (
+                        <form action={updateBookingStatus}>
+                          <input type="hidden" name="bookingId" value={booking.id} />
+                          <input type="hidden" name="status" value="cancelled" />
+                          <Button size="sm" variant="outline" type="submit">
+                            Cancel
+                          </Button>
+                        </form>
+                      )}
+                      {booking.status !== 'no_show' && booking.status !== 'completed' && booking.status !== 'cancelled' && (
+                        <form action={updateBookingStatus}>
+                          <input type="hidden" name="bookingId" value={booking.id} />
+                          <input type="hidden" name="status" value="no_show" />
+                          <Button size="sm" variant="destructive" type="submit">
+                            No-show
+                          </Button>
+                        </form>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {rows.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} className="p-0">
+                    <AdminEmptyState
+                      title="No bookings match"
+                      description="Try All or Today, clear search, or widen the date range."
+                      actionLabel="Show all"
+                      actionHref="/admin/bookings?status=all"
+                    />
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {pageCount > 1 && (
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {page > 1 ? (
+              <Button variant="outline" size="sm" asChild>
+                <a href={buildHref({ status: statusFilter, q, from, to, page: page - 1 })}>Previous</a>
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" disabled>
+                Previous
+              </Button>
             )}
-          </TableBody>
-        </Table>
+            <span className="text-sm text-muted-foreground">
+              Page {page} of {pageCount}
+            </span>
+            {page < pageCount ? (
+              <Button variant="outline" size="sm" asChild>
+                <a href={buildHref({ status: statusFilter, q, from, to, page: page + 1 })}>Next</a>
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" disabled>
+                Next
+              </Button>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   )

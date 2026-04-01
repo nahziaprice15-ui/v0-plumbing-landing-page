@@ -3,7 +3,14 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 
-const allowedStatuses = new Set(['pending', 'confirmed', 'in_progress', 'completed', 'cancelled'])
+const allowedStatuses = new Set([
+  'pending',
+  'confirmed',
+  'in_progress',
+  'completed',
+  'cancelled',
+  'no_show',
+])
 
 export async function updateBookingStatus(formData: FormData) {
   const bookingId = String(formData.get('bookingId') ?? '')

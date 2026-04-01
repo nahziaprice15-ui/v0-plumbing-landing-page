@@ -1,15 +1,14 @@
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ExternalLink, MapPin } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { updateBookingStatus } from '@/app/admin/bookings/actions'
+import { bookingStatusLabel, bookingStatusVariant } from '@/lib/admin/booking-status'
 import { getAdminBookingDetail, getBookingEvents } from '@/lib/admin/queries'
 
-function statusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
-  if (status === 'completed') return 'secondary'
-  if (status === 'cancelled') return 'destructive'
-  if (status === 'pending') return 'outline'
-  return 'default'
+function mapsUrl(address: string): string {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
 }
 
 export default async function AdminBookingDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -32,6 +31,9 @@ export default async function AdminBookingDetailPage({ params }: { params: Promi
     )
   }
 
+  const canOps =
+    detail.status !== 'completed' && detail.status !== 'cancelled' && detail.status !== 'no_show'
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-3">
@@ -42,8 +44,58 @@ export default async function AdminBookingDetailPage({ params }: { params: Promi
           </Link>
         </Button>
         <h2 className="text-lg font-semibold">Booking {detail.id.slice(0, 8)}</h2>
-        <Badge variant={statusVariant(detail.status)}>{detail.status.replace('_', ' ')}</Badge>
+        <Badge variant={bookingStatusVariant(detail.status)}>{bookingStatusLabel(detail.status)}</Badge>
       </div>
+
+      {canOps ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Update status</CardTitle>
+            <CardDescription>Transitions are logged to booking events.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            {detail.status === 'pending' && (
+              <form action={updateBookingStatus}>
+                <input type="hidden" name="bookingId" value={detail.id} />
+                <input type="hidden" name="status" value="confirmed" />
+                <Button type="submit" variant="outline" size="sm">
+                  Confirm
+                </Button>
+              </form>
+            )}
+            {(detail.status === 'pending' || detail.status === 'confirmed') && (
+              <form action={updateBookingStatus}>
+                <input type="hidden" name="bookingId" value={detail.id} />
+                <input type="hidden" name="status" value="in_progress" />
+                <Button type="submit" variant="outline" size="sm">
+                  Start job
+                </Button>
+              </form>
+            )}
+            <form action={updateBookingStatus}>
+              <input type="hidden" name="bookingId" value={detail.id} />
+              <input type="hidden" name="status" value="completed" />
+              <Button type="submit" size="sm">
+                Complete
+              </Button>
+            </form>
+            <form action={updateBookingStatus}>
+              <input type="hidden" name="bookingId" value={detail.id} />
+              <input type="hidden" name="status" value="cancelled" />
+              <Button type="submit" variant="outline" size="sm">
+                Cancel
+              </Button>
+            </form>
+            <form action={updateBookingStatus}>
+              <input type="hidden" name="bookingId" value={detail.id} />
+              <input type="hidden" name="status" value="no_show" />
+              <Button type="submit" variant="destructive" size="sm">
+                Mark no-show
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Card>
         <CardHeader>
@@ -71,6 +123,13 @@ export default async function AdminBookingDetailPage({ params }: { params: Promi
           <div>
             <p className="text-xs text-muted-foreground">Address</p>
             <p className="text-sm">{detail.address}</p>
+            <Button className="mt-2" variant="outline" size="sm" asChild>
+              <a href={mapsUrl(detail.address)} target="_blank" rel="noopener noreferrer" className="gap-1.5">
+                <MapPin className="h-3.5 w-3.5" />
+                Open in Google Maps
+                <ExternalLink className="h-3 w-3 opacity-60" />
+              </a>
+            </Button>
           </div>
           <div className="sm:col-span-2">
             <p className="text-xs text-muted-foreground">Created</p>
