@@ -242,7 +242,7 @@ export function ServicesHub() {
 
   return (
     <>
-      <article className="container mx-auto px-4 pt-28 pb-24 md:pb-20 max-w-5xl">
+      <article className="container mx-auto px-4 pt-24 pb-24 md:pb-20 max-w-5xl">
         <HubHero onBook={openBooking} />
 
         <Tabs value={tab} onValueChange={setTabAndUrl} className="w-full gap-8">
@@ -303,7 +303,7 @@ export function ServicesHub() {
 
 export function ServicesHubFallback() {
   return (
-    <div className="container mx-auto px-4 pt-28 pb-24 max-w-5xl animate-pulse">
+    <div className="container mx-auto px-4 pt-24 pb-24 max-w-5xl animate-pulse">
       <div className="h-12 bg-muted rounded-lg max-w-md mx-auto mb-4" />
       <div className="h-6 bg-muted rounded max-w-2xl mx-auto mb-10" />
       <div className="h-11 bg-muted rounded-xl max-w-xl mx-auto mb-10" />

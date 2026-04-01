@@ -67,7 +67,7 @@ export default async function ArticlePage({ params }: Props) {
     <>
       <StructuredData data={structuredData} />
       <SiteChrome>
-        <article className="container mx-auto px-4 pt-28 pb-20 max-w-3xl">
+        <article className="container mx-auto px-4 pt-24 pb-20 max-w-3xl">
           <nav className="text-sm text-muted-foreground mb-8">
             <Link href="/" className="hover:text-foreground">
               Home
