@@ -1,5 +1,15 @@
-import { format } from 'date-fns'
-import { subDays } from 'date-fns'
+import { format, subDays, subHours } from 'date-fns'
+import { isAdminMockDataSource } from '@/lib/admin/data-source'
+import {
+  getMockAdminBookingDetail,
+  getMockAdminBookings,
+  getMockAdminDashboardMetrics,
+  getMockBookingEvents,
+  getMockCatalogServicesWithDemand,
+  getMockRecentBookingActivity,
+  getMockServiceCategories,
+  getMockServiceDemand,
+} from '@/lib/admin/mock-repository'
 import { getServiceRoleClient } from '@/lib/supabase/service-role'
 
 type BookingStatus = 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show'
@@ -108,6 +118,8 @@ function serviceLabelFromRow(row: {
 }
 
 export async function getAdminBookings(): Promise<AdminBookingRow[]> {
+  if (isAdminMockDataSource()) return getMockAdminBookings()
+
   const db = getServiceRoleClient()
   if (!db) return []
 
@@ -139,6 +151,8 @@ export async function getAdminBookings(): Promise<AdminBookingRow[]> {
 }
 
 export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics> {
+  if (isAdminMockDataSource()) return getMockAdminDashboardMetrics()
+
   const db = getServiceRoleClient()
   const empty: AdminDashboardMetrics = {
     bookingsCreatedToday: 0,
@@ -236,6 +250,8 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 }
 
 export async function getServiceDemand(): Promise<ServiceDemandRow[]> {
+  if (isAdminMockDataSource()) return getMockServiceDemand()
+
   const db = getServiceRoleClient()
   if (!db) return []
   const { data } = await db
@@ -252,6 +268,8 @@ export async function getServiceDemand(): Promise<ServiceDemandRow[]> {
 }
 
 export async function getServiceCategories(): Promise<ServiceCategoryRow[]> {
+  if (isAdminMockDataSource()) return getMockServiceCategories()
+
   const db = getServiceRoleClient()
   if (!db) return []
   const { data, error } = await db
@@ -268,6 +286,8 @@ export async function getServiceCategories(): Promise<ServiceCategoryRow[]> {
 }
 
 export async function getCatalogServicesWithDemand(): Promise<CatalogServiceRow[]> {
+  if (isAdminMockDataSource()) return getMockCatalogServicesWithDemand()
+
   const db = getServiceRoleClient()
   if (!db) return []
 
@@ -311,8 +331,7 @@ export async function getCatalogServicesWithDemand(): Promise<CatalogServiceRow[
   })
 }
 
-export async function getClientSummaries(): Promise<ClientSummaryRow[]> {
-  const bookings = await getAdminBookings()
+function clientSummariesFromBookings(bookings: AdminBookingRow[]): ClientSummaryRow[] {
   const map = new Map<string, ClientSummaryRow>()
 
   for (const row of bookings) {
@@ -340,6 +359,11 @@ export async function getClientSummaries(): Promise<ClientSummaryRow[]> {
   return [...map.values()].sort((a, b) => b.totalBookings - a.totalBookings)
 }
 
+export async function getClientSummaries(): Promise<ClientSummaryRow[]> {
+  const bookings = await getAdminBookings()
+  return clientSummariesFromBookings(bookings)
+}
+
 export type BookingEventRow = {
   id: string
   eventType: string
@@ -363,6 +387,8 @@ export type AdminBookingDetail = {
 }
 
 export async function getAdminBookingDetail(bookingId: string): Promise<AdminBookingDetail | null> {
+  if (isAdminMockDataSource()) return getMockAdminBookingDetail(bookingId)
+
   const db = getServiceRoleClient()
   if (!db) return null
 
@@ -395,6 +421,8 @@ export async function getAdminBookingDetail(bookingId: string): Promise<AdminBoo
 }
 
 export async function getBookingEvents(bookingId: string): Promise<BookingEventRow[]> {
+  if (isAdminMockDataSource()) return getMockBookingEvents(bookingId)
+
   const db = getServiceRoleClient()
   if (!db) return []
 
@@ -412,4 +440,206 @@ export async function getBookingEvents(bookingId: string): Promise<BookingEventR
     payload: (r.payload && typeof r.payload === 'object' ? r.payload : {}) as Record<string, unknown>,
     createdAt: String(r.created_at ?? ''),
   }))
+}
+
+export type AdminOperationalInsights = {
+  /** Count of `pending` bookings whose `created_at` is older than this many hours (SLA-style backlog). */
+  slaPendingThresholdHours: number
+  pendingOlderThanThreshold: number
+  emergencyBookingsLast30d: number
+  residentialBookingsCount: number
+  commercialBookingsCount: number
+  /** % of bookings created in the last 7 days that ended in `no_show`. */
+  noShowRate7d: number
+  /** % of bookings created in the last 7 days that ended in `cancelled`. */
+  cancelRate7d: number
+  /** Customers (by phone) with more than one emergency-typed booking in the last 30 days. */
+  repeatEmergencyCustomers30d: number
+}
+
+type OperationalBookingInput = {
+  status: BookingStatus
+  createdAt: string
+  preferredDate: string
+  phone: string
+  serviceTypeLabel: string
+  categorySlug: string | null
+}
+
+function inferCategorySlugFromLabel(serviceType: string): string | null {
+  if (/emergency/i.test(serviceType)) return 'emergency'
+  if (/commercial/i.test(serviceType)) return 'commercial'
+  return 'residential'
+}
+
+function isEmergencyBooking(b: OperationalBookingInput): boolean {
+  return b.categorySlug === 'emergency' || /emergency/i.test(b.serviceTypeLabel)
+}
+
+function isCommercialBooking(b: OperationalBookingInput): boolean {
+  return b.categorySlug === 'commercial' || /commercial/i.test(b.serviceTypeLabel)
+}
+
+function computeOperationalInsights(
+  inputs: OperationalBookingInput[],
+  slaHours: number,
+): AdminOperationalInsights {
+  const now = new Date()
+  const sevenAgo = subDays(now, 7)
+  const thirtyAgo = subDays(now, 30)
+  const thresholdTime = subHours(now, slaHours)
+
+  const pendingOlderThanThreshold = inputs.filter(
+    (b) => b.status === 'pending' && new Date(b.createdAt).getTime() < thresholdTime.getTime(),
+  ).length
+
+  const in30 = inputs.filter((b) => new Date(b.createdAt) >= thirtyAgo)
+  const emergencyBookingsLast30d = in30.filter((b) => isEmergencyBooking(b)).length
+
+  const residentialBookingsCount = inputs.filter((b) => !isCommercialBooking(b)).length
+  const commercialBookingsCount = inputs.filter((b) => isCommercialBooking(b)).length
+
+  const createdIn7d = inputs.filter((b) => new Date(b.createdAt) >= sevenAgo)
+  const denom7 = createdIn7d.length
+  const noShowRate7d =
+    denom7 > 0 ? Number(((createdIn7d.filter((b) => b.status === 'no_show').length / denom7) * 100).toFixed(1)) : 0
+  const cancelRate7d =
+    denom7 > 0 ? Number(((createdIn7d.filter((b) => b.status === 'cancelled').length / denom7) * 100).toFixed(1)) : 0
+
+  const emergencyIn30 = in30.filter((b) => isEmergencyBooking(b))
+  const byPhone = new Map<string, number>()
+  for (const b of emergencyIn30) {
+    const p = b.phone.trim()
+    if (!p) continue
+    byPhone.set(p, (byPhone.get(p) ?? 0) + 1)
+  }
+  const repeatEmergencyCustomers30d = [...byPhone.values()].filter((n) => n > 1).length
+
+  return {
+    slaPendingThresholdHours: slaHours,
+    pendingOlderThanThreshold,
+    emergencyBookingsLast30d,
+    residentialBookingsCount,
+    commercialBookingsCount,
+    noShowRate7d,
+    cancelRate7d,
+    repeatEmergencyCustomers30d,
+  }
+}
+
+async function getOperationalBookingInputs(): Promise<OperationalBookingInput[]> {
+  if (isAdminMockDataSource()) {
+    const rows = await getAdminBookings()
+    return rows.map((r) => ({
+      status: r.status,
+      createdAt: r.createdAt,
+      preferredDate: r.preferredDate,
+      phone: r.phone,
+      serviceTypeLabel: r.serviceType,
+      categorySlug: inferCategorySlugFromLabel(r.serviceType),
+    }))
+  }
+
+  const db = getServiceRoleClient()
+  if (!db) return []
+
+  const { data, error } = await db
+    .from('bookings')
+    .select(
+      `
+      status,
+      created_at,
+      preferred_date,
+      customers(phone),
+      service_types(
+        title,
+        service_categories(slug)
+      )
+    `,
+    )
+    .order('created_at', { ascending: false })
+    .limit(500)
+
+  if (error || !data) return []
+
+  return data.map((row) => {
+    const customer = Array.isArray(row.customers) ? row.customers[0] : row.customers
+    const st = Array.isArray(row.service_types) ? row.service_types[0] : row.service_types
+    const sc = st?.service_categories as { slug?: string } | { slug?: string }[] | null | undefined
+    const cat = Array.isArray(sc) ? sc[0] : sc
+    const slug = cat?.slug != null ? String(cat.slug) : null
+    const title = st && typeof st === 'object' && 'title' in st ? String((st as { title?: string }).title ?? '') : ''
+    return {
+      status: asStatus(String(row.status ?? 'pending')),
+      createdAt: String(row.created_at ?? ''),
+      preferredDate: String(row.preferred_date ?? ''),
+      phone: String(customer?.phone ?? ''),
+      serviceTypeLabel: title,
+      categorySlug: slug,
+    }
+  })
+}
+
+export async function getAdminOperationalInsights(): Promise<AdminOperationalInsights> {
+  const slaHours = 4
+  const inputs = await getOperationalBookingInputs()
+  return computeOperationalInsights(inputs, slaHours)
+}
+
+export type BookingActivityRow = {
+  id: string
+  bookingId: string
+  eventType: string
+  payload: Record<string, unknown>
+  createdAt: string
+  label: string
+}
+
+export async function getRecentBookingActivity(limit: number): Promise<BookingActivityRow[]> {
+  if (isAdminMockDataSource()) {
+    const rows = await getMockRecentBookingActivity(limit)
+    return rows.map((r) => ({
+      id: r.id,
+      bookingId: r.bookingId,
+      eventType: r.eventType,
+      payload: r.payload,
+      createdAt: r.createdAt,
+      label: r.label,
+    }))
+  }
+
+  const db = getServiceRoleClient()
+  if (!db) return []
+
+  const { data, error } = await db
+    .from('booking_events')
+    .select('id,booking_id,event_type,payload,created_at')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error || !data) return []
+
+  return data.map((r) => {
+    const payload = (r.payload && typeof r.payload === 'object' ? r.payload : {}) as Record<string, unknown>
+    const shortId = String(r.booking_id ?? '').slice(0, 8)
+    return {
+      id: String(r.id),
+      bookingId: String(r.booking_id ?? ''),
+      eventType: String(r.event_type ?? ''),
+      payload,
+      createdAt: String(r.created_at ?? ''),
+      label:
+        r.event_type === 'status_change'
+          ? `${shortId || 'booking'} · ${String(payload.from ?? '—')} → ${String(payload.to ?? '—')}`
+          : `${shortId || 'booking'} · ${String(r.event_type ?? '')}`,
+    }
+  })
+}
+
+export async function getBookingsForClientKey(clientKey: string): Promise<AdminBookingRow[]> {
+  const decoded = decodeURIComponent(clientKey)
+  const all = await getAdminBookings()
+  return all
+    .filter((b) => `${b.customerName}:${b.phone}` === decoded)
+    .sort((a, b) => (a.preferredDate < b.preferredDate ? 1 : -1))
 }
