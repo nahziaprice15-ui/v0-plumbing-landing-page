@@ -107,15 +107,12 @@ export async function POST(request: Request) {
 
     const confirmationCode = `PLM-${Math.floor(Math.random() * 90000) + 10000}`
 
-    const { data: catalogRow } = await db.from('service_types').select('id').eq('slug', p.service_type).maybeSingle()
-
     const { error: bookingError } = await db
       .from('bookings')
       .insert({
         customer_id: customer.id,
         confirmation_code: confirmationCode,
         service_type: p.service_type,
-        service_type_id: catalogRow?.id ?? null,
         description: p.description,
         preferred_date: p.preferred_date,
         preferred_time_slot: p.preferred_time_slot,
