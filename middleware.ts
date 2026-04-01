@@ -16,11 +16,6 @@ export async function middleware(request: NextRequest) {
 
   let supabaseResponse = NextResponse.next()
   const isAdminRoute = /^\/admin(?:\/|$)/.test(request.nextUrl.pathname)
-  const hasDemoAdminCookie = request.cookies.get('admin_demo')?.value === '1'
-
-  if (isAdminRoute && hasDemoAdminCookie) {
-    return supabaseResponse
-  }
 
   try {
     // Initialize Supabase lazily inside middleware so it never runs at import/build time.
@@ -46,7 +41,7 @@ export async function middleware(request: NextRequest) {
     if (isAdminRoute) {
       if (!user) {
         const redirectUrl = request.nextUrl.clone()
-        redirectUrl.pathname = '/'
+        redirectUrl.pathname = '/admin-login'
         return NextResponse.redirect(redirectUrl)
       }
 
@@ -60,7 +55,7 @@ export async function middleware(request: NextRequest) {
       const isAdmin = role === 'admin' || role === 'staff'
       if (profileError || !isAdmin) {
         const redirectUrl = request.nextUrl.clone()
-        redirectUrl.pathname = '/'
+        redirectUrl.pathname = '/admin-login'
         return NextResponse.redirect(redirectUrl)
       }
     }
@@ -70,7 +65,7 @@ export async function middleware(request: NextRequest) {
     console.warn('[middleware][supabase]', err)
     if (isAdminRoute) {
       const redirectUrl = request.nextUrl.clone()
-      redirectUrl.pathname = '/'
+      redirectUrl.pathname = '/admin-login'
       return NextResponse.redirect(redirectUrl)
     }
   }

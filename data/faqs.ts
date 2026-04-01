@@ -44,6 +44,16 @@ export const homeFaqs: FaqItem[] = [
     answer:
       "For most services, yes. However, if you can't be present, we can work with you to arrange access. We always provide a detailed summary and photos of completed work.",
   },
+  {
+    question: 'Do you work on commercial properties in New Orleans?',
+    answer:
+      'Yes. MS & P LLC handles select commercial plumbing—restaurants, small retail, offices, and property management turnarounds—alongside residential work. Tell us your building type and hours of operation so we can plan access and minimize disruption.',
+  },
+  {
+    question: 'Can you help with permits or code questions for plumbing work?',
+    answer:
+      'We coordinate permits when your project requires them and explain how local code applies to water heaters, backflow, gas lines, and major alterations. If something is outside our scope, we will point you to the right resource.',
+  },
 ]
 
 export function buildFaqPageJsonLd(faqs: FaqItem[]) {

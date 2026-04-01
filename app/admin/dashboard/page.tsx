@@ -14,14 +14,24 @@ function statusVariant(status: string): 'default' | 'secondary' | 'destructive' 
 export default async function AdminDashboardPage() {
   const [metrics, bookings] = await Promise.all([getAdminDashboardMetrics(), getAdminBookings()])
   const kpis = [
-    { label: "Today's Bookings", value: String(metrics.bookingsToday), note: 'Scheduled for today', icon: ClipboardList },
     {
-      label: 'Pending Confirmations',
+      label: 'Created today',
+      value: String(metrics.bookingsCreatedToday),
+      note: 'New requests submitted today (by created time)',
+      icon: ClipboardList,
+    },
+    {
+      label: 'Scheduled today',
+      value: String(metrics.bookingsScheduledToday),
+      note: 'Jobs with preferred date = today',
+      icon: Wrench,
+    },
+    {
+      label: 'Pending confirmations',
       value: String(metrics.pendingConfirmations),
-      note: 'Need callback',
+      note: 'All bookings still awaiting confirmation',
       icon: PhoneCall,
     },
-    { label: 'In Progress', value: String(metrics.inProgress), note: 'Active crews now', icon: Wrench },
     {
       label: 'Conversion (7d)',
       value: `${metrics.bookingConversionRate}%`,
@@ -72,7 +82,7 @@ export default async function AdminDashboardPage() {
                 <div className="flex items-center gap-2">
                   <Badge variant={statusVariant(booking.status)}>{booking.status.replace('_', ' ')}</Badge>
                   <Button variant="outline" size="sm" asChild>
-                    <a href={`/admin/bookings?status=${booking.status}`}>Open</a>
+                    <a href={`/admin/bookings/${booking.id}`}>Open</a>
                   </Button>
                 </div>
               </div>
@@ -93,9 +103,7 @@ export default async function AdminDashboardPage() {
                   <Badge variant="outline">{booking.serviceType}</Badge>
                 </div>
                 <p className="text-sm">{booking.preferredTimeSlot}</p>
-                <p className="text-xs text-muted-foreground">
-                  {booking.customerName}
-                </p>
+                <p className="text-xs text-muted-foreground">{booking.customerName}</p>
               </div>
             ))}
           </CardContent>
@@ -111,10 +119,11 @@ export default async function AdminDashboardPage() {
           <CardContent className="space-y-2">
             <p className="text-2xl font-semibold">{metrics.topBookedService}</p>
             <p className="text-sm text-muted-foreground">
-              Upcoming 7 days: {metrics.upcoming7Days} bookings
+              Upcoming 7 days: {metrics.upcoming7Days} bookings (by preferred date)
             </p>
             <p className="text-sm text-muted-foreground">
-              Completed today: {metrics.completedToday} · Cancelled today: {metrics.cancelledToday}
+              In progress (all): {metrics.inProgress} · Completed (scheduled today):{' '}
+              {metrics.completedScheduledToday} · Cancelled (scheduled today): {metrics.cancelledScheduledToday}
             </p>
           </CardContent>
         </Card>

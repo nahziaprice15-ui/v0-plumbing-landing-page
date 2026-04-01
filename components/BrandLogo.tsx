@@ -5,8 +5,9 @@ import { useState, useEffect } from 'react'
 type BrandLogoSize = 'nav' | 'footer'
 
 const innerHeights: Record<BrandLogoSize, string> = {
-  nav: 'h-[4.5rem] sm:h-20',
-  footer: 'h-24',
+  /** Tuned for a single-row nav bar (~64px total height). */
+  nav: 'h-12 sm:h-14',
+  footer: 'h-16',
 }
 
 const PNG = '/images/ms-p-logo.png'

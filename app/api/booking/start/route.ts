@@ -25,6 +25,9 @@ export async function POST(request: Request) {
   })
 
   if (error) {
+    if (error.code === 'PGRST205') {
+      return NextResponse.json({ success: true })
+    }
     return NextResponse.json({ success: false }, { status: 500 })
   }
   return NextResponse.json({ success: true })

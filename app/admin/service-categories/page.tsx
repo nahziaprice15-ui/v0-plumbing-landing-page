@@ -1,78 +1,80 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { getServiceDemand } from '@/lib/admin/queries'
-
-function serviceToCategory(serviceType: string): string {
-  if (serviceType.includes('emergency')) return 'Emergency'
-  if (serviceType.includes('drain')) return 'Drain'
-  if (serviceType.includes('water-heater')) return 'Water Heater'
-  if (serviceType.includes('installation')) return 'Installation'
-  if (serviceType.includes('leak')) return 'Leak Repair'
-  return 'General'
-}
+  createServiceCategory,
+  deleteServiceCategory,
+  updateServiceCategory,
+} from '@/lib/admin/catalog-actions'
+import { getServiceCategories } from '@/lib/admin/queries'
 
 export default async function AdminServiceCategoriesPage() {
-  const demand = await getServiceDemand()
-  const categoryMap = new Map<string, number>()
-  for (const row of demand) {
-    const category = serviceToCategory(row.serviceType)
-    categoryMap.set(category, (categoryMap.get(category) ?? 0) + row.bookings)
-  }
-  const categories = [...categoryMap.entries()]
-    .map(([name, bookings]) => ({ name, bookings }))
-    .sort((a, b) => b.bookings - a.bookings)
+  const categories = await getServiceCategories()
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Service Categories</CardTitle>
-          <CardDescription>Organize services by category for internal operations and reporting.</CardDescription>
-        </div>
-        <Button>Add Category</Button>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Category</TableHead>
-              <TableHead>Total Bookings</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {categories.map((category) => (
-              <TableRow key={category.name}>
-                <TableCell className="font-medium">{category.name}</TableCell>
-                <TableCell>{category.bookings}</TableCell>
-                <TableCell className="space-x-2 text-right">
-                  <Button size="sm" variant="outline">
-                    Edit
-                  </Button>
-                  <Button size="sm" variant="ghost">
-                    Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-            {categories.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={3} className="text-center text-muted-foreground">
-                  No category data yet.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Add category</CardTitle>
+          <CardDescription>Groups services for reporting and admin organization.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={createServiceCategory} className="flex flex-wrap items-end gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="cat-name">Name</Label>
+              <Input id="cat-name" name="name" placeholder="Emergency" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="cat-slug">Slug (optional)</Label>
+              <Input id="cat-slug" name="slug" placeholder="emergency" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="cat-sort">Sort order</Label>
+              <Input id="cat-sort" name="sortOrder" type="number" defaultValue={0} />
+            </div>
+            <Button type="submit">Add category</Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Categories</CardTitle>
+          <CardDescription>
+            Edit labels and ordering. Deleting a category clears its link on service types (FK set null).
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {categories.map((category) => (
+            <div
+              key={category.id}
+              className="flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-end sm:justify-between"
+            >
+              <form action={updateServiceCategory} className="flex flex-1 flex-wrap gap-2">
+                <input type="hidden" name="id" value={category.id} />
+                <Input name="name" defaultValue={category.name} className="max-w-[200px]" required />
+                <Input name="slug" defaultValue={category.slug} className="max-w-[160px]" />
+                <Input name="sortOrder" type="number" defaultValue={category.sortOrder} className="w-24" />
+                <Button size="sm" type="submit" variant="outline">
+                  Save
+                </Button>
+              </form>
+              <form action={deleteServiceCategory}>
+                <input type="hidden" name="id" value={category.id} />
+                <Button size="sm" variant="ghost" type="submit">
+                  Delete
+                </Button>
+              </form>
+            </div>
+          ))}
+          {categories.length === 0 && (
+            <p className="text-center text-sm text-muted-foreground">
+              No categories yet. Apply the service_categories migration or add one above.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   )
 }

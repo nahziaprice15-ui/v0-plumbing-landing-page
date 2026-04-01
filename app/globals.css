@@ -48,6 +48,8 @@
   --sidebar-ring: var(--patriot-blue);
 
   --brand: var(--patriot-blue);
+  /* Footer secondary text (links, captions) */
+  --footer-muted: rgba(255, 255, 255, 0.68);
 }
 
 .dark {
