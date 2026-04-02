@@ -61,6 +61,18 @@ function formatRouteError(error: unknown): string {
   return String(error)
 }
 
+function isUniqueViolation(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false
+  const code = (error as { code?: string }).code
+  return code === '23505'
+}
+
+function isMissingFunnelEventsTable(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false
+  const code = (error as { code?: string }).code
+  return code === 'PGRST205'
+}
+
 export async function POST(request: Request) {
   // Create anon client lazily so module evaluation doesn't run at build time.
   const db =
@@ -106,25 +118,40 @@ export async function POST(request: Request) {
     if (customerError) throw customerError
     if (!customer) throw new Error('Customer insert returned no row')
 
-    const confirmationCode = `PLM-${Math.floor(Math.random() * 90000) + 10000}`
+    let bookingRow: { id: string } | null = null
+    let confirmationCode = ''
+    let lastBookingError: unknown = null
 
-    const { data: bookingRow, error: bookingError } = await db
-      .from('bookings')
-      .insert({
-        customer_id: customer.id,
-        confirmation_code: confirmationCode,
-        service_type: p.service_type,
-        description: p.description,
-        preferred_date: p.preferred_date,
-        preferred_time_slot: p.preferred_time_slot,
-        urgency: p.urgency,
-        status: 'pending',
-      })
-      .select('id')
-      .single()
+    // Retry on rare confirmation-code collisions (bookings.confirmation_code is unique).
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      confirmationCode = `PLM-${Math.floor(Math.random() * 90000) + 10000}`
+      const { data, error } = await db
+        .from('bookings')
+        .insert({
+          customer_id: customer.id,
+          confirmation_code: confirmationCode,
+          service_type: p.service_type,
+          description: p.description,
+          preferred_date: p.preferred_date,
+          preferred_time_slot: p.preferred_time_slot,
+          urgency: p.urgency,
+          status: 'pending',
+        })
+        .select('id')
+        .single()
 
-    if (bookingError) throw bookingError
-    if (!bookingRow?.id) throw new Error('Booking insert returned no id')
+      if (!error) {
+        bookingRow = data
+        break
+      }
+      lastBookingError = error
+      if (!isUniqueViolation(error)) break
+    }
+
+    if (!bookingRow?.id) {
+      if (lastBookingError) throw lastBookingError
+      throw new Error('Booking insert returned no id')
+    }
 
     await notifyAllStaff({
       kind: 'new_booking',
@@ -134,11 +161,14 @@ export async function POST(request: Request) {
       dedupeKey: `new-booking-${bookingRow.id}`,
     })
 
-    await db.from('booking_funnel_events').insert({
+    const { error: funnelError } = await db.from('booking_funnel_events').insert({
       event_type: 'submit',
       source_path: p.source_path,
       form_variant: p.form_variant,
     })
+    if (funnelError && !isMissingFunnelEventsTable(funnelError)) {
+      console.error('[api/booking] funnel event insert failed', formatRouteError(funnelError))
+    }
 
     return NextResponse.json({
       success: true,
