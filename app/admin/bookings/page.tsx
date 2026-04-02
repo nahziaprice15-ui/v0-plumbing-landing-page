@@ -13,6 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { AdminEmptyState } from '@/components/admin/AdminEmptyState'
+import { BookingStatusActionForm } from '@/components/admin/BookingStatusActionForm'
 import { updateBookingStatus } from '@/app/admin/bookings/actions'
 import { BOOKING_STATUS_ORDER, bookingStatusLabel, bookingStatusVariant } from '@/lib/admin/booking-status'
 import { getAdminBookingsResult, type AdminBookingRow } from '@/lib/admin/queries'
@@ -175,6 +176,15 @@ export default async function AdminBookingsPage({
           </div>
         )}
 
+        {diagnostics.queryOk && diagnostics.errorCode === 'SCHEMA_DRIFT_42703' && (
+          <div className="rounded-md border border-amber-400/40 bg-amber-500/10 p-3 text-sm">
+            <p className="font-medium">Schema compatibility mode enabled</p>
+            <p className="text-muted-foreground">
+              Source: {diagnostics.dataSource}. {diagnostics.errorMessage}
+            </p>
+          </div>
+        )}
+
         {diagnostics.dataSource === 'mock' && (
           <div className="rounded-md border border-amber-400/40 bg-amber-500/10 p-3 text-sm">
             <p className="font-medium">Mock mode enabled</p>
@@ -236,49 +246,58 @@ export default async function AdminBookingsPage({
                         <a href={`/admin/bookings/${booking.id}`}>View</a>
                       </Button>
                       {booking.status === 'pending' && (
-                        <form action={updateBookingStatus}>
-                          <input type="hidden" name="bookingId" value={booking.id} />
-                          <input type="hidden" name="status" value="confirmed" />
-                          <Button size="sm" variant="outline" type="submit">
-                            Confirm
-                          </Button>
-                        </form>
+                        <BookingStatusActionForm
+                          action={updateBookingStatus}
+                          bookingId={booking.id}
+                          nextStatus="confirmed"
+                          size="sm"
+                          variant="outline"
+                        >
+                          Confirm
+                        </BookingStatusActionForm>
                       )}
                       {(booking.status === 'pending' || booking.status === 'confirmed') && (
-                        <form action={updateBookingStatus}>
-                          <input type="hidden" name="bookingId" value={booking.id} />
-                          <input type="hidden" name="status" value="in_progress" />
-                          <Button size="sm" variant="outline" type="submit">
-                            Start
-                          </Button>
-                        </form>
+                        <BookingStatusActionForm
+                          action={updateBookingStatus}
+                          bookingId={booking.id}
+                          nextStatus="in_progress"
+                          size="sm"
+                          variant="outline"
+                        >
+                          Start
+                        </BookingStatusActionForm>
                       )}
                       {booking.status !== 'completed' && booking.status !== 'cancelled' && booking.status !== 'no_show' && (
-                        <form action={updateBookingStatus}>
-                          <input type="hidden" name="bookingId" value={booking.id} />
-                          <input type="hidden" name="status" value="completed" />
-                          <Button size="sm" type="submit">
-                            Complete
-                          </Button>
-                        </form>
+                        <BookingStatusActionForm
+                          action={updateBookingStatus}
+                          bookingId={booking.id}
+                          nextStatus="completed"
+                          size="sm"
+                        >
+                          Complete
+                        </BookingStatusActionForm>
                       )}
                       {booking.status !== 'cancelled' && booking.status !== 'completed' && booking.status !== 'no_show' && (
-                        <form action={updateBookingStatus}>
-                          <input type="hidden" name="bookingId" value={booking.id} />
-                          <input type="hidden" name="status" value="cancelled" />
-                          <Button size="sm" variant="outline" type="submit">
-                            Cancel
-                          </Button>
-                        </form>
+                        <BookingStatusActionForm
+                          action={updateBookingStatus}
+                          bookingId={booking.id}
+                          nextStatus="cancelled"
+                          size="sm"
+                          variant="outline"
+                        >
+                          Cancel
+                        </BookingStatusActionForm>
                       )}
                       {booking.status !== 'no_show' && booking.status !== 'completed' && booking.status !== 'cancelled' && (
-                        <form action={updateBookingStatus}>
-                          <input type="hidden" name="bookingId" value={booking.id} />
-                          <input type="hidden" name="status" value="no_show" />
-                          <Button size="sm" variant="destructive" type="submit">
-                            No-show
-                          </Button>
-                        </form>
+                        <BookingStatusActionForm
+                          action={updateBookingStatus}
+                          bookingId={booking.id}
+                          nextStatus="no_show"
+                          size="sm"
+                          variant="destructive"
+                        >
+                          No-show
+                        </BookingStatusActionForm>
                       )}
                     </div>
                   </TableCell>
