@@ -91,6 +91,7 @@ async function verifyAdminDataPath() {
 
 async function run() {
   const payload = fakeBookingPayload()
+  const forcedFailureEnabled = process.env.BOOKING_API_ALLOW_TEST_FAILURE === '1'
 
   console.log('[case A] valid fake booking returns success + identifiers')
   const success = await postBooking(payload)
@@ -103,12 +104,16 @@ async function run() {
     `[pass] booking accepted: confirmation_code=${success.json.confirmation_code} booking_id=${success.json.booking_id}`,
   )
 
-  console.log('[case B] forced failure returns error with trace id')
-  const forcedFailure = await postBooking(payload, { 'x-test-force-db-failure': '1' })
-  assert(forcedFailure.response.status >= 400, 'Expected non-2xx for forced failure test')
-  assert(forcedFailure.json?.success === false, 'Expected success=false for forced failure test')
-  assert(typeof forcedFailure.json?.trace_id === 'string', 'Expected trace_id on forced failure response')
-  console.log(`[pass] forced failure produced trace_id=${forcedFailure.json.trace_id}`)
+  if (forcedFailureEnabled) {
+    console.log('[case B] forced failure returns error with trace id')
+    const forcedFailure = await postBooking(payload, { 'x-test-force-db-failure': '1' })
+    assert(forcedFailure.response.status >= 400, 'Expected non-2xx for forced failure test')
+    assert(forcedFailure.json?.success === false, 'Expected success=false for forced failure test')
+    assert(typeof forcedFailure.json?.trace_id === 'string', 'Expected trace_id on forced failure response')
+    console.log(`[pass] forced failure produced trace_id=${forcedFailure.json.trace_id}`)
+  } else {
+    console.log('[case B] skipped (set BOOKING_API_ALLOW_TEST_FAILURE=1 on server to enable)')
+  }
 
   console.log('[case C] successful response corresponds to durable booking row')
   const persisted = await verifyPersistedBooking(success.json.confirmation_code)

@@ -78,18 +78,41 @@ function getTraceId(): string {
   return `book-${raw.slice(0, 12)}`
 }
 
+function dbWriteFailedStatus(error: unknown): number {
+  if (!error || typeof error !== 'object') return 500
+  const code = (error as { code?: string }).code
+  // Common Postgres/Supabase request/data issues.
+  if (code === '23502' || code === '23503' || code === '22P02') return 400
+  return 500
+}
+
 export async function POST(request: Request) {
   const traceId = getTraceId()
+  const allowForcedFailure =
+    process.env.NODE_ENV !== 'production' && process.env.BOOKING_API_ALLOW_TEST_FAILURE === '1'
   const shouldForceDbFailure =
-    request.headers.get('x-test-force-db-failure') === '1' && process.env.NODE_ENV !== 'production'
+    allowForcedFailure && request.headers.get('x-test-force-db-failure') === '1'
 
-  // Create anon client lazily so module evaluation doesn't run at build time.
+  // Prefer service role; fall back to anon if present.
+  const serviceRoleClient = getServiceRoleClient()
+  const anonUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   const db =
-    getServiceRoleClient() ??
-    createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    serviceRoleClient ??
+    (anonUrl && anonKey
+      ? createClient(anonUrl, anonKey)
+      : null)
+  if (!db) {
+    console.error('[api/booking] database client unavailable', { traceId })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Booking service is temporarily unavailable. Please try again shortly.',
+        trace_id: traceId,
+      },
+      { status: 503 },
     )
+  }
 
   let body: Record<string, unknown>
   try {
@@ -184,13 +207,22 @@ export async function POST(request: Request) {
       confirmationCode,
     })
 
-    await notifyAllStaff({
-      kind: 'new_booking',
-      title: `New booking: ${p.full_name}`,
-      body: `${p.service_type} · ${p.preferred_date}`,
-      bookingId: String(bookingRow.id),
-      dedupeKey: `new-booking-${bookingRow.id}`,
-    })
+    try {
+      await notifyAllStaff({
+        kind: 'new_booking',
+        title: `New booking: ${p.full_name}`,
+        body: `${p.service_type} · ${p.preferred_date}`,
+        bookingId: String(bookingRow.id),
+        dedupeKey: `new-booking-${bookingRow.id}`,
+      })
+    } catch (notifyError) {
+      // Side effects should not fail a confirmed booking write.
+      console.error('[api/booking] staff notification failed', {
+        traceId,
+        bookingId: bookingRow.id,
+        error: formatRouteError(notifyError),
+      })
+    }
 
     const { error: funnelError } = await db.from('booking_funnel_events').insert({
       event_type: 'submit',
@@ -219,9 +251,10 @@ export async function POST(request: Request) {
   } catch (error) {
     const message = formatRouteError(error)
     console.error('[api/booking] request failed', { traceId, error })
+    const status = dbWriteFailedStatus(error)
     return NextResponse.json(
       { success: false, error: message, trace_id: traceId },
-      { status: 500 },
+      { status },
     )
   }
 }
