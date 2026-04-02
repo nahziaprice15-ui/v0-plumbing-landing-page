@@ -1,9 +1,17 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { notifyAllStaff } from '@/lib/admin/staff-notifications'
 import { createClient } from '@/lib/supabase/server'
 
-const allowedStatuses = new Set(['pending', 'confirmed', 'in_progress', 'completed', 'cancelled'])
+const allowedStatuses = new Set([
+  'pending',
+  'confirmed',
+  'in_progress',
+  'completed',
+  'cancelled',
+  'no_show',
+])
 
 export async function updateBookingStatus(formData: FormData) {
   const bookingId = String(formData.get('bookingId') ?? '')
@@ -32,9 +40,18 @@ export async function updateBookingStatus(formData: FormData) {
       event_type: 'status_change',
       payload: { from: previous ?? null, to: status },
     })
+
+    await notifyAllStaff({
+      kind: 'status_change',
+      title: `Booking ${bookingId.slice(0, 8)} → ${status}`,
+      body: `Was: ${String(previous ?? '—')}`,
+      bookingId,
+    })
   }
 
   revalidatePath('/admin/bookings')
   revalidatePath('/admin/dashboard')
+  revalidatePath('/admin/notifications')
+  revalidatePath('/admin/activity')
   revalidatePath(`/admin/bookings/${bookingId}`)
 }

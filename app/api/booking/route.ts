@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { getServiceRoleClient } from '@/lib/supabase/service-role'
+import { notifyAllStaff } from '@/lib/admin/staff-notifications'
 import { SITE } from '@/lib/site'
 import { NextResponse } from 'next/server'
 
@@ -107,7 +108,7 @@ export async function POST(request: Request) {
 
     const confirmationCode = `PLM-${Math.floor(Math.random() * 90000) + 10000}`
 
-    const { error: bookingError } = await db
+    const { data: bookingRow, error: bookingError } = await db
       .from('bookings')
       .insert({
         customer_id: customer.id,
@@ -119,10 +120,19 @@ export async function POST(request: Request) {
         urgency: p.urgency,
         status: 'pending',
       })
-      .select()
+      .select('id')
       .single()
 
     if (bookingError) throw bookingError
+    if (!bookingRow?.id) throw new Error('Booking insert returned no id')
+
+    await notifyAllStaff({
+      kind: 'new_booking',
+      title: `New booking: ${p.full_name}`,
+      body: `${p.service_type} · ${p.preferred_date}`,
+      bookingId: String(bookingRow.id),
+      dedupeKey: `new-booking-${bookingRow.id}`,
+    })
 
     await db.from('booking_funnel_events').insert({
       event_type: 'submit',

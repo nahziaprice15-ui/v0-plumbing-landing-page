@@ -32,11 +32,12 @@ export async function createServiceCategory(formData: FormData) {
   const slug = slugRaw ? slugify(slugRaw) : slugify(name)
   if (!name || !slug) return
 
-  await supabase.from('service_categories').insert({
+  const { error } = await supabase.from('service_categories').insert({
     name,
     slug,
     sort_order: Number.isFinite(sortOrder) ? sortOrder : 0,
   })
+  if (error) console.error('[catalog] createServiceCategory', error.message)
   revalidatePath('/admin/service-categories')
 }
 
@@ -52,7 +53,7 @@ export async function updateServiceCategory(formData: FormData) {
   const slug = slugRaw ? slugify(slugRaw) : slugify(name)
   if (!slug) return
 
-  await supabase
+  const { error } = await supabase
     .from('service_categories')
     .update({
       name,
@@ -60,6 +61,7 @@ export async function updateServiceCategory(formData: FormData) {
       sort_order: Number.isFinite(sortOrder) ? sortOrder : 0,
     })
     .eq('id', id)
+  if (error) console.error('[catalog] updateServiceCategory', error.message)
   revalidatePath('/admin/service-categories')
 }
 
@@ -70,7 +72,8 @@ export async function deleteServiceCategory(formData: FormData) {
   const id = String(formData.get('id') ?? '')
   if (!id) return
 
-  await supabase.from('service_categories').delete().eq('id', id)
+  const { error } = await supabase.from('service_categories').delete().eq('id', id)
+  if (error) console.error('[catalog] deleteServiceCategory', error.message)
   revalidatePath('/admin/service-categories')
   revalidatePath('/admin/services')
 }
@@ -86,13 +89,14 @@ export async function createServiceType(formData: FormData) {
   const slug = slugRaw ? slugify(slugRaw) : slugify(title)
   if (!title || !slug) return
 
-  await supabase.from('service_types').insert({
+  const { error } = await supabase.from('service_types').insert({
     slug,
     title,
     category_id: categoryId || null,
     duration_minutes: Number.isFinite(durationMinutes) && durationMinutes > 0 ? durationMinutes : 60,
     is_active: true,
   })
+  if (error) console.error('[catalog] createServiceType', error.message)
   revalidatePath('/admin/services')
 }
 
@@ -109,7 +113,7 @@ export async function updateServiceType(formData: FormData) {
   const slug = slugRaw ? slugify(slugRaw) : slugify(title)
   if (!slug) return
 
-  await supabase
+  const { error } = await supabase
     .from('service_types')
     .update({
       slug,
@@ -118,6 +122,7 @@ export async function updateServiceType(formData: FormData) {
       duration_minutes: Number.isFinite(durationMinutes) && durationMinutes > 0 ? durationMinutes : 60,
     })
     .eq('id', id)
+  if (error) console.error('[catalog] updateServiceType', error.message)
   revalidatePath('/admin/services')
 }
 
@@ -129,6 +134,7 @@ export async function setServiceTypeActive(formData: FormData) {
   const active = String(formData.get('active') ?? '') === '1'
   if (!id) return
 
-  await supabase.from('service_types').update({ is_active: active }).eq('id', id)
+  const { error } = await supabase.from('service_types').update({ is_active: active }).eq('id', id)
+  if (error) console.error('[catalog] setServiceTypeActive', error.message)
   revalidatePath('/admin/services')
 }

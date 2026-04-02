@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { AdminShell } from '@/components/admin/AdminShell'
+import { getNotificationBadgeCount } from '@/lib/admin/notifications-feed'
+import { getAdminOperationalInsights } from '@/lib/admin/queries'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
@@ -24,5 +26,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect('/admin-login')
   }
 
-  return <AdminShell>{children}</AdminShell>
+  const [insights, unreadNotifications] = await Promise.all([
+    getAdminOperationalInsights(),
+    getNotificationBadgeCount(user.id),
+  ])
+
+  return (
+    <AdminShell pendingSlaCount={insights.pendingOlderThanThreshold} unreadNotifications={unreadNotifications}>
+      {children}
+    </AdminShell>
+  )
 }
