@@ -554,9 +554,33 @@ function stripBookingRow(r: MockBookingRecord): AdminBookingRow {
   }
 }
 
+/** In-memory overrides when `ADMIN_DATA_SOURCE=mock` (same Node process only). */
+const mockBookingStatusById = new Map<string, AdminBookingRow['status']>()
+
+/** Apply a status change for demo bookings; returns false if id is not in the mock dataset. */
+export function applyMockBookingStatus(bookingId: string, status: AdminBookingRow['status']): boolean {
+  const anchor = new Date()
+  const exists = buildMockBookingRecords(anchor).some((b) => b.id === bookingId)
+  if (!exists) return false
+  mockBookingStatusById.set(bookingId, status)
+  return true
+}
+
+function statusWithMockOverride(
+  bookingId: string,
+  base: AdminBookingRow['status'],
+): AdminBookingRow['status'] {
+  return mockBookingStatusById.get(bookingId) ?? base
+}
+
 export async function getMockAdminBookings(): Promise<AdminBookingRow[]> {
   const anchor = new Date()
-  return buildMockBookingRecords(anchor).map(stripBookingRow)
+  return buildMockBookingRecords(anchor).map((r) =>
+    stripBookingRow({
+      ...r,
+      status: statusWithMockOverride(r.id, r.status),
+    }),
+  )
 }
 
 export async function getMockAdminDashboardMetrics(): Promise<AdminDashboardMetrics> {
@@ -595,7 +619,7 @@ export async function getMockAdminBookingDetail(bookingId: string): Promise<Admi
   if (!row) return null
   return {
     id: row.id,
-    status: row.status,
+    status: statusWithMockOverride(row.id, row.status),
     confirmationCode: row.confirmationCode,
     serviceTypeLabel: row.serviceType,
     description: row.description,
