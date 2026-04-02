@@ -69,11 +69,21 @@ export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
             </div>
           </div>
 
-          {/* Zone 3: CTA + mobile toggle */}
-          <div className="flex items-center justify-end gap-2 sm:gap-3 shrink-0 md:pl-4 md:border-l md:border-white/15">
+          {/* Zone 3a: Desktop CTA */}
+          <div className="hidden md:flex items-center justify-end gap-3 shrink-0 md:pl-4 md:border-l md:border-white/15">
             <Button
               onClick={onBookingClick}
-              className="bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-sm font-semibold text-sm h-10 px-4 sm:px-5 transition-colors"
+              className="bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-sm font-semibold text-sm h-10 px-5 transition-colors"
+            >
+              Book service
+            </Button>
+          </div>
+
+          {/* Zone 3b: Mobile CTA + toggle */}
+          <div className="md:hidden ml-auto flex items-center justify-end gap-2 shrink-0">
+            <Button
+              onClick={onBookingClick}
+              className="bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-sm font-semibold text-sm h-11 px-3.5 transition-colors"
             >
               Book service
             </Button>
@@ -81,7 +91,7 @@ export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen((o) => !o)}
-              className="md:hidden text-white p-2.5 -mr-0.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors"
+              className="text-white h-11 w-11 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors"
               aria-expanded={isMobileMenuOpen}
               aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
             >
