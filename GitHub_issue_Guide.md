@@ -138,6 +138,59 @@ Before ending substantive work:
 
 ---
 
+## 13. Supabase schema drift playbook (bookings)
+
+If admin pages fail with errors like:
+
+- `column bookings.service_type_id does not exist` (`42703`)
+- PostgREST relationship/cache errors involving `bookings` and `service_types`
+
+Use Supabase MCP and apply this DDL patch to the active project:
+
+```sql
+alter table if exists public.bookings
+  add column if not exists service_type_id uuid;
+
+do $$
+begin
+  if exists (
+    select 1
+    from information_schema.tables
+    where table_schema = 'public'
+      and table_name = 'service_types'
+  ) and not exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.bookings'::regclass
+      and conname = 'bookings_service_type_id_fkey'
+  ) then
+    alter table public.bookings
+      add constraint bookings_service_type_id_fkey
+      foreign key (service_type_id)
+      references public.service_types(id)
+      on delete set null;
+  end if;
+end
+$$;
+
+create index if not exists bookings_service_type_id_idx
+  on public.bookings(service_type_id);
+```
+
+Then verify:
+
+```sql
+select column_name, data_type
+from information_schema.columns
+where table_schema = 'public'
+  and table_name = 'bookings'
+  and column_name = 'service_type_id';
+```
+
+Expected result: one row with `service_type_id` / `uuid`.
+
+---
+
 ## Quick copy — agent checklist
 
 - [ ] Confirmed milestone context  
