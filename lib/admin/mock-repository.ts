@@ -546,6 +546,7 @@ function stripBookingRow(r: MockBookingRecord): AdminBookingRow {
     email: r.email,
     address: r.address,
     serviceType: r.serviceType,
+    confirmationCode: r.confirmationCode,
     preferredDate: r.preferredDate,
     preferredTimeSlot: r.preferredTimeSlot,
     status: r.status,

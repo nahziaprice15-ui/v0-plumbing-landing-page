@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "verify:supabase": "node scripts/verify-supabase-schema.mjs"
+    "verify:supabase": "node scripts/verify-supabase-schema.mjs",
+    "test:booking-confirmation": "node scripts/fake-booking-confirmation-test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

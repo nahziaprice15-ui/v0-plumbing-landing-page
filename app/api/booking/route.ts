@@ -73,7 +73,16 @@ function isMissingFunnelEventsTable(error: unknown): boolean {
   return code === 'PGRST205'
 }
 
+function getTraceId(): string {
+  const raw = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`
+  return `book-${raw.slice(0, 12)}`
+}
+
 export async function POST(request: Request) {
+  const traceId = getTraceId()
+  const shouldForceDbFailure =
+    request.headers.get('x-test-force-db-failure') === '1' && process.env.NODE_ENV !== 'production'
+
   // Create anon client lazily so module evaluation doesn't run at build time.
   const db =
     getServiceRoleClient() ??
@@ -86,20 +95,33 @@ export async function POST(request: Request) {
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ success: false, error: 'Invalid JSON body' }, { status: 400 })
+    return NextResponse.json(
+      { success: false, error: 'Invalid JSON body', trace_id: traceId },
+      { status: 400 },
+    )
   }
 
   try {
     const p = normalizeBookingPayload(body)
+    console.info('[api/booking] payload accepted', {
+      traceId,
+      sourcePath: p.source_path,
+      formVariant: p.form_variant,
+      serviceType: p.service_type,
+    })
 
     if (!p.full_name || !p.phone || !p.address || !p.service_type) {
       return NextResponse.json(
         {
           success: false,
           error: 'Missing required fields (name, phone, address, service type).',
+          trace_id: traceId,
         },
         { status: 400 }
       )
+    }
+    if (shouldForceDbFailure) {
+      throw new Error('Forced DB failure for booking API test')
     }
 
     const { data: customer, error: customerError } = await db
@@ -117,6 +139,10 @@ export async function POST(request: Request) {
 
     if (customerError) throw customerError
     if (!customer) throw new Error('Customer insert returned no row')
+    console.info('[api/booking] customer insert succeeded', {
+      traceId,
+      customerId: customer.id,
+    })
 
     let bookingRow: { id: string } | null = null
     let confirmationCode = ''
@@ -152,6 +178,11 @@ export async function POST(request: Request) {
       if (lastBookingError) throw lastBookingError
       throw new Error('Booking insert returned no id')
     }
+    console.info('[api/booking] booking insert succeeded', {
+      traceId,
+      bookingId: bookingRow.id,
+      confirmationCode,
+    })
 
     await notifyAllStaff({
       kind: 'new_booking',
@@ -167,16 +198,30 @@ export async function POST(request: Request) {
       form_variant: p.form_variant,
     })
     if (funnelError && !isMissingFunnelEventsTable(funnelError)) {
-      console.error('[api/booking] funnel event insert failed', formatRouteError(funnelError))
+      console.error('[api/booking] funnel event insert failed', {
+        traceId,
+        error: formatRouteError(funnelError),
+      })
     }
+
+    console.info('[api/booking] confirmation generated', {
+      traceId,
+      bookingId: bookingRow.id,
+      confirmationCode,
+    })
 
     return NextResponse.json({
       success: true,
       confirmation_code: confirmationCode,
+      booking_id: String(bookingRow.id),
+      trace_id: traceId,
     })
   } catch (error) {
     const message = formatRouteError(error)
-    console.error('[api/booking]', error)
-    return NextResponse.json({ success: false, error: message }, { status: 500 })
+    console.error('[api/booking] request failed', { traceId, error })
+    return NextResponse.json(
+      { success: false, error: message, trace_id: traceId },
+      { status: 500 },
+    )
   }
 }

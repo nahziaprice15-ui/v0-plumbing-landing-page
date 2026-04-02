@@ -21,10 +21,25 @@ export type AdminBookingRow = {
   email: string
   address: string
   serviceType: string
+  confirmationCode: string
   preferredDate: string
   preferredTimeSlot: string
   status: BookingStatus
   createdAt: string
+}
+
+export type AdminBookingsDiagnostics = {
+  dataSource: 'mock' | 'live'
+  serviceRoleReady: boolean
+  queryOk: boolean
+  errorCode: string | null
+  errorMessage: string | null
+  rowCount: number
+}
+
+export type AdminBookingsResult = {
+  rows: AdminBookingRow[]
+  diagnostics: AdminBookingsDiagnostics
 }
 
 export type AdminDashboardMetrics = {
@@ -117,23 +132,61 @@ function serviceLabelFromRow(row: {
   return String(row.service_type ?? 'other')
 }
 
-export async function getAdminBookings(): Promise<AdminBookingRow[]> {
-  if (isAdminMockDataSource()) return getMockAdminBookings()
+export async function getAdminBookingsResult(): Promise<AdminBookingsResult> {
+  if (isAdminMockDataSource()) {
+    const rows = await getMockAdminBookings()
+    return {
+      rows,
+      diagnostics: {
+        dataSource: 'mock',
+        serviceRoleReady: Boolean(getServiceRoleClient()),
+        queryOk: true,
+        errorCode: null,
+        errorMessage: null,
+        rowCount: rows.length,
+      },
+    }
+  }
 
   const db = getServiceRoleClient()
-  if (!db) return []
+  if (!db) {
+    return {
+      rows: [],
+      diagnostics: {
+        dataSource: 'live',
+        serviceRoleReady: false,
+        queryOk: false,
+        errorCode: 'SERVICE_ROLE_MISSING',
+        errorMessage:
+          'Service-role Supabase client is unavailable. Set SUPABASE_SERVICE_ROLE_KEY for admin live data.',
+        rowCount: 0,
+      },
+    }
+  }
 
   const { data, error } = await db
     .from('bookings')
     .select(
-      'id,service_type,service_type_id,preferred_date,preferred_time_slot,status,created_at,customers(full_name,phone,email,address),service_types(title,slug)',
+      'id,confirmation_code,service_type,service_type_id,preferred_date,preferred_time_slot,status,created_at,customers(full_name,phone,email,address),service_types(title,slug)',
     )
     .order('created_at', { ascending: false })
     .limit(200)
 
-  if (error || !data) return []
+  if (error || !data) {
+    return {
+      rows: [],
+      diagnostics: {
+        dataSource: 'live',
+        serviceRoleReady: true,
+        queryOk: false,
+        errorCode: error?.code ?? 'BOOKINGS_QUERY_FAILED',
+        errorMessage: error?.message ?? 'Bookings query returned no data.',
+        rowCount: 0,
+      },
+    }
+  }
 
-  return data.map((row) => {
+  const rows = data.map((row) => {
     const customer = Array.isArray(row.customers) ? row.customers[0] : row.customers
     return {
       id: String(row.id),
@@ -142,12 +195,30 @@ export async function getAdminBookings(): Promise<AdminBookingRow[]> {
       email: String(customer?.email ?? '—'),
       address: String(customer?.address ?? '—'),
       serviceType: serviceLabelFromRow(row as Parameters<typeof serviceLabelFromRow>[0]),
+      confirmationCode: String(row.confirmation_code ?? ''),
       preferredDate: String(row.preferred_date ?? ''),
       preferredTimeSlot: String(row.preferred_time_slot ?? '—'),
       status: asStatus(String(row.status ?? 'pending')),
       createdAt: String(row.created_at ?? ''),
     }
   })
+
+  return {
+    rows,
+    diagnostics: {
+      dataSource: 'live',
+      serviceRoleReady: true,
+      queryOk: true,
+      errorCode: null,
+      errorMessage: null,
+      rowCount: rows.length,
+    },
+  }
+}
+
+export async function getAdminBookings(): Promise<AdminBookingRow[]> {
+  const result = await getAdminBookingsResult()
+  return result.rows
 }
 
 export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics> {
