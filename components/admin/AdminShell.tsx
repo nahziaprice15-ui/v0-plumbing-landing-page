@@ -30,6 +30,7 @@ const navItems = [
   { href: '/admin/service-categories', label: 'Service Categories', icon: Tags },
   { href: '/admin/clients', label: 'Clients', icon: Users },
   { href: '/admin/insights', label: 'Insights', icon: ChartColumnIncreasing },
+  { href: '/admin/notifications', label: 'Notifications', icon: Bell },
   { href: '/admin/activity', label: 'Activity', icon: ScrollText },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ] as const
@@ -37,15 +38,22 @@ const navItems = [
 function NavLinks({
   pathname,
   onNavigate,
+  unreadNotifications = 0,
 }: {
   pathname: string
   onNavigate?: () => void
+  unreadNotifications?: number
 }) {
   return (
     <nav className="space-y-1">
       {navItems.map((item) => {
         const Icon = item.icon
-        const active = pathname === item.href || (item.href !== '/admin/dashboard' && pathname.startsWith(item.href + '/'))
+        const active =
+          pathname === item.href ||
+          (item.href !== '/admin/dashboard' &&
+            item.href !== '/admin/notifications' &&
+            pathname.startsWith(item.href + '/'))
+        const showUnread = item.href === '/admin/notifications' && unreadNotifications > 0
         return (
           <Link
             key={item.href}
@@ -59,7 +67,14 @@ function NavLinks({
             )}
           >
             <Icon className="h-4 w-4 shrink-0" />
-            {item.label}
+            <span className="flex min-w-0 flex-1 items-center justify-between gap-2">
+              {item.label}
+              {showUnread ? (
+                <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-semibold text-destructive-foreground">
+                  {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                </span>
+              ) : null}
+            </span>
           </Link>
         )
       })}
@@ -70,9 +85,11 @@ function NavLinks({
 export function AdminShell({
   children,
   pendingSlaCount = 0,
+  unreadNotifications = 0,
 }: {
   children: React.ReactNode
   pendingSlaCount?: number
+  unreadNotifications?: number
 }) {
   const pathname = usePathname()
   const meta = getAdminRouteMeta(pathname)
@@ -85,7 +102,7 @@ export function AdminShell({
             <p className="text-xs uppercase tracking-wide text-white/75">MS & P LLC</p>
             <h1 className="text-lg font-semibold">Admin Portal</h1>
           </div>
-          <NavLinks pathname={pathname} />
+          <NavLinks pathname={pathname} unreadNotifications={unreadNotifications} />
         </aside>
 
         <section className="min-w-0 p-4 md:p-6">
@@ -106,7 +123,7 @@ export function AdminShell({
                     <p className="font-semibold">Admin Portal</p>
                   </div>
                   <div className="mt-4">
-                    <NavLinks pathname={pathname} />
+                    <NavLinks pathname={pathname} unreadNotifications={unreadNotifications} />
                   </div>
                 </SheetContent>
               </Sheet>
@@ -149,6 +166,14 @@ export function AdminShell({
                     <li>
                       <Link href="/admin/bookings?status=pending" className="text-primary underline-offset-4 hover:underline">
                         Open pending bookings
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/admin/notifications"
+                        className="text-primary underline-offset-4 hover:underline"
+                      >
+                        View all notifications
                       </Link>
                     </li>
                   </ul>

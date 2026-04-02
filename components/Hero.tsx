@@ -2,13 +2,12 @@
 
 import { ArrowRight, Clock, Shield, Wrench } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import Image from 'next/image'
 
 export function Hero({ onBookingClick }: { onBookingClick: () => void }) {
   return (
     <section className="relative min-h-[90vh] flex items-center pt-20 bg-gradient-to-br from-brand via-brand to-brand-deep text-white">
       <div className="container mx-auto px-4 py-16 md:py-24">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
+        <div className="max-w-5xl">
           {/* Left Content */}
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
             <div className="inline-flex items-center gap-2 bg-secondary/10 text-secondary px-4 py-2 rounded-full text-sm font-semibold">
@@ -85,36 +84,6 @@ export function Hero({ onBookingClick }: { onBookingClick: () => void }) {
             </div>
           </div>
 
-          {/* Right Image */}
-          <div className="relative animate-in fade-in slide-in-from-right-8 duration-700 delay-300">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-              <Image
-                src="/images/plumber-hero.svg"
-                alt="Professional plumber from MS & P LLC"
-                width={600}
-                height={700}
-                className="w-full h-auto object-cover"
-                priority
-              />
-              {/* Floating Badge */}
-              <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-border">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="font-semibold text-card-foreground">Same-Day Service</div>
-                    <div className="text-sm text-muted-foreground">Book within 2 hours</div>
-                  </div>
-                  <Button
-                    onClick={onBookingClick}
-                    size="sm"
-                    className="bg-gradient-to-r from-secondary to-secondary/90 text-secondary-foreground hover:shadow-lg hover:shadow-secondary/40 hover:scale-110 transition-all duration-300 relative overflow-hidden group"
-                  >
-                    <span className="relative z-10">Book Now</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </section>

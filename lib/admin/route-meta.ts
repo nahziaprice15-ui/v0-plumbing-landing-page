@@ -39,6 +39,10 @@ export const ADMIN_ROUTE_META: Record<
     title: 'Settings',
     description: 'Dispatch reference — hours, area, after-hours',
   },
+  '/admin/notifications': {
+    title: 'Notifications',
+    description: 'Action items, new requests, and status updates',
+  },
 }
 
 export function getAdminRouteMeta(pathname: string): { title: string; description: string } {
