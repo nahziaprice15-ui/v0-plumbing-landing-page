@@ -1,4 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
+import {
+  checkBookingCapacity,
+  isDateNotBeforeToday,
+  normalizePreferredTimeSlot,
+  parseIsoDateOnly,
+} from '@/lib/booking-capacity'
 import { getServiceRoleClient } from '@/lib/supabase/service-role'
 import { notifyAllStaff } from '@/lib/admin/staff-notifications'
 import { SITE } from '@/lib/site'
@@ -19,8 +25,9 @@ function normalizeBookingPayload(body: Record<string, unknown>) {
   const preferred_raw = str(body.preferred_date) || str(body.preferredDate)
   const preferred_date =
     preferred_raw.length > 0 ? preferred_raw : new Date().toISOString().slice(0, 10)
-  const preferred_time_slot =
-    str(body.preferred_time_slot) || str(body.preferredTime) || 'Morning'
+  const preferred_time_slot = normalizePreferredTimeSlot(
+    str(body.preferred_time_slot) || str(body.preferredTime) || 'morning',
+  )
   const urgency = str(body.urgency) || 'standard'
   const source_path = str(body.sourcePath) || '/'
   const form_variant = str(body.formVariant) || 'unknown'
@@ -143,6 +150,45 @@ export async function POST(request: Request) {
         { status: 400 }
       )
     }
+
+    const preferredDateOnly = parseIsoDateOnly(p.preferred_date)
+    if (!preferredDateOnly) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Preferred date must be a valid YYYY-MM-DD calendar date.',
+          trace_id: traceId,
+        },
+        { status: 400 },
+      )
+    }
+    if (!isDateNotBeforeToday(preferredDateOnly)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Preferred date must be today or a future date.',
+          trace_id: traceId,
+        },
+        { status: 400 },
+      )
+    }
+
+    // Capacity is enforced here and immediately again after customer insert. Two concurrent
+    // requests can still slip through the first check; the second check + customer delete on
+    // failure narrows that window. For a hard guarantee, add a DB trigger or single RPC.
+
+    const capacityBefore = await checkBookingCapacity(db, preferredDateOnly, p.preferred_time_slot)
+    if (!capacityBefore.ok) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: capacityBefore.message,
+          trace_id: traceId,
+        },
+        { status: 409 },
+      )
+    }
+
     if (shouldForceDbFailure) {
       throw new Error('Forced DB failure for booking API test')
     }
@@ -167,6 +213,19 @@ export async function POST(request: Request) {
       customerId: customer.id,
     })
 
+    const capacityAfter = await checkBookingCapacity(db, preferredDateOnly, p.preferred_time_slot)
+    if (!capacityAfter.ok) {
+      await db.from('customers').delete().eq('id', customer.id)
+      return NextResponse.json(
+        {
+          success: false,
+          error: capacityAfter.message,
+          trace_id: traceId,
+        },
+        { status: 409 },
+      )
+    }
+
     let bookingRow: { id: string } | null = null
     let confirmationCode = ''
     let lastBookingError: unknown = null
@@ -181,7 +240,7 @@ export async function POST(request: Request) {
           confirmation_code: confirmationCode,
           service_type: p.service_type,
           description: p.description,
-          preferred_date: p.preferred_date,
+          preferred_date: preferredDateOnly,
           preferred_time_slot: p.preferred_time_slot,
           urgency: p.urgency,
           status: 'pending',

@@ -1,6 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { BOOKING_DATE_FULL_MESSAGE } from '@/lib/booking-messages'
+import {
+  addCalendarDaysYmd,
+  fetchBookingAvailability,
+  getClientTodayDateString,
+  type BookingAvailabilityDates,
+} from '@/lib/booking-availability-ui'
 
 type FormData = {
   full_name: string
@@ -35,6 +42,17 @@ export default function BookingPage() {
   const [confirmation, setConfirmation] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [availability, setAvailability] = useState<BookingAvailabilityDates>({})
+  const [availabilityLoading, setAvailabilityLoading] = useState(false)
+  const [dateFieldError, setDateFieldError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const today = getClientTodayDateString()
+    setAvailabilityLoading(true)
+    void fetchBookingAvailability(today, addCalendarDaysYmd(today, 90))
+      .then(setAvailability)
+      .finally(() => setAvailabilityLoading(false))
+  }, [])
 
   useEffect(() => {
     void fetch('/api/booking/start', {
@@ -48,6 +66,14 @@ export default function BookingPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target
+    if (name === 'preferred_date') {
+      const row = availability[value]
+      if (value && row && !row.available) {
+        setDateFieldError(BOOKING_DATE_FULL_MESSAGE)
+      } else {
+        setDateFieldError(null)
+      }
+    }
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
@@ -55,6 +81,24 @@ export default function BookingPage() {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    setDateFieldError(null)
+
+    const today = getClientTodayDateString()
+    if (formData.preferred_date && formData.preferred_date < today) {
+      setError('Preferred date must be today or a future date.')
+      setLoading(false)
+      return
+    }
+
+    if (
+      formData.preferred_date &&
+      availability[formData.preferred_date] &&
+      !availability[formData.preferred_date].available
+    ) {
+      setDateFieldError(BOOKING_DATE_FULL_MESSAGE)
+      setLoading(false)
+      return
+    }
 
     try {
       const res = await fetch('/api/booking', {
@@ -176,10 +220,16 @@ export default function BookingPage() {
         <input
           name="preferred_date"
           type="date"
+          min={getClientTodayDateString()}
           onChange={handleChange}
           required
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+          disabled={availabilityLoading}
+          className="rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
         />
+        {availabilityLoading ? (
+          <p className="text-xs text-muted-foreground">Loading availability…</p>
+        ) : null}
+        {dateFieldError ? <p className="text-sm text-destructive">{dateFieldError}</p> : null}
         <textarea
           name="description"
           placeholder="Describe the issue..."
