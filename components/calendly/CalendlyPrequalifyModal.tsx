@@ -23,10 +23,10 @@ type QualifyData = {
   urgency: string
   address: string
   customerType: string
-  timeframe: string
   details: string
   name: string
   email: string
+  phone: string
 }
 
 const initialData: QualifyData = {
@@ -34,10 +34,10 @@ const initialData: QualifyData = {
   urgency: '',
   address: '',
   customerType: '',
-  timeframe: '',
   details: '',
   name: '',
   email: '',
+  phone: '',
 }
 
 export function CalendlyPrequalifyModal({ isOpen, onClose, onContinue }: Props) {
@@ -54,8 +54,11 @@ export function CalendlyPrequalifyModal({ isOpen, onClose, onContinue }: Props) 
   if (!isOpen) return null
 
   const canGoNext =
-    data.serviceType && data.urgency && data.address.trim().length >= 5 && data.customerType && data.timeframe
-  const canContinue = data.name.trim().length >= 2 && /\S+@\S+\.\S+/.test(data.email)
+    data.serviceType && data.urgency && data.address.trim().length >= 5 && data.customerType
+  const canContinue =
+    data.name.trim().length >= 2 &&
+    /\S+@\S+\.\S+/.test(data.email) &&
+    data.phone.replace(/\D/g, '').length >= 10
 
   const closeAndReset = () => {
     setStep(1)
@@ -77,8 +80,8 @@ export function CalendlyPrequalifyModal({ isOpen, onClose, onContinue }: Props) 
           a2: data.urgency,
           a3: data.address.trim(),
           a4: data.customerType,
-          a5: data.timeframe,
-          a6: data.details.trim() || undefined,
+          a5: data.details.trim() || undefined,
+          a6: data.phone.trim(),
         },
       })
       closeAndReset()
@@ -173,19 +176,6 @@ export function CalendlyPrequalifyModal({ isOpen, onClose, onContinue }: Props) 
             </div>
 
             <div className="space-y-2">
-              <Label>5) What timeframe works best?</Label>
-              <Select value={data.timeframe} onValueChange={(v) => setData((p) => ({ ...p, timeframe: v }))}>
-                <SelectTrigger><SelectValue placeholder="Select preferred timeframe" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="morning">Morning (8am-12pm)</SelectItem>
-                  <SelectItem value="afternoon">Afternoon (12pm-5pm)</SelectItem>
-                  <SelectItem value="evening">Evening (5pm-8pm)</SelectItem>
-                  <SelectItem value="flexible">Flexible</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="details">Optional notes</Label>
               <Textarea
                 id="details"
@@ -231,6 +221,16 @@ export function CalendlyPrequalifyModal({ isOpen, onClose, onContinue }: Props) 
                 placeholder="jane@email.com"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone number</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={data.phone}
+                onChange={(e) => setData((p) => ({ ...p, phone: e.target.value }))}
+                placeholder="(601) 569-0211"
+              />
+            </div>
             <div className="rounded-xl border border-border/80 bg-card p-3 text-sm">
               <p className="mb-2 font-medium text-foreground">Review before opening Calendly</p>
               <ul className="space-y-1 text-muted-foreground">
@@ -238,7 +238,7 @@ export function CalendlyPrequalifyModal({ isOpen, onClose, onContinue }: Props) 
                 <li>Urgency: {data.urgency || '—'}</li>
                 <li>Address: {data.address || '—'}</li>
                 <li>Customer: {data.customerType || '—'}</li>
-                <li>Timeframe: {data.timeframe || '—'}</li>
+                <li>Phone: {data.phone || '—'}</li>
               </ul>
             </div>
             <div className="flex justify-between">

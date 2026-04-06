@@ -103,10 +103,22 @@ Match your Calendly invitee question order to avoid retyping:
 - `a2`: urgency
 - `a3`: service address
 - `a4`: customer type (new/returning)
-- `a5`: preferred timeframe
-- `a6`: optional notes
+- `a5`: optional notes
+- `a6`: phone number
 
 If these questions are absent or in a different order in Calendly, values may not prefill.
+
+### Calendly -> Admin CRM sync (required)
+
+Admin bookings only update from Calendly when webhook delivery is configured:
+
+- Endpoint: `POST /api/calendly/webhook`
+- Recommended: include token query string and set `CALENDLY_WEBHOOK_TOKEN`.
+- Required events:
+  - `invitee.created`
+  - `invitee.canceled`
+
+If webhook is not configured (or failing), bookings can still appear in Google Calendar but will not land in the admin CRM tables.
 
 ## Build note
 
