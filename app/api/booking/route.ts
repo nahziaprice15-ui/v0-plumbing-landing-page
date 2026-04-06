@@ -1,4 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
+import {
+  checkBookingCapacity,
+  isDateNotBeforeToday,
+  normalizePreferredTimeSlot,
+  parseIsoDateOnly,
+} from '@/lib/booking-capacity'
 import { getServiceRoleClient } from '@/lib/supabase/service-role'
 import { notifyAllStaff } from '@/lib/admin/staff-notifications'
 import { SITE } from '@/lib/site'
@@ -19,8 +25,9 @@ function normalizeBookingPayload(body: Record<string, unknown>) {
   const preferred_raw = str(body.preferred_date) || str(body.preferredDate)
   const preferred_date =
     preferred_raw.length > 0 ? preferred_raw : new Date().toISOString().slice(0, 10)
-  const preferred_time_slot =
-    str(body.preferred_time_slot) || str(body.preferredTime) || 'Morning'
+  const preferred_time_slot = normalizePreferredTimeSlot(
+    str(body.preferred_time_slot) || str(body.preferredTime) || 'morning',
+  )
   const urgency = str(body.urgency) || 'standard'
   const source_path = str(body.sourcePath) || '/'
   const form_variant = str(body.formVariant) || 'unknown'
@@ -61,33 +68,129 @@ function formatRouteError(error: unknown): string {
   return String(error)
 }
 
+function isUniqueViolation(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false
+  const code = (error as { code?: string }).code
+  return code === '23505'
+}
+
+function isMissingFunnelEventsTable(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false
+  const code = (error as { code?: string }).code
+  return code === 'PGRST205'
+}
+
+function getTraceId(): string {
+  const raw = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`
+  return `book-${raw.slice(0, 12)}`
+}
+
+function dbWriteFailedStatus(error: unknown): number {
+  if (!error || typeof error !== 'object') return 500
+  const code = (error as { code?: string }).code
+  // Common Postgres/Supabase request/data issues.
+  if (code === '23502' || code === '23503' || code === '22P02') return 400
+  return 500
+}
+
 export async function POST(request: Request) {
-  // Create anon client lazily so module evaluation doesn't run at build time.
+  const traceId = getTraceId()
+  const allowForcedFailure =
+    process.env.NODE_ENV !== 'production' && process.env.BOOKING_API_ALLOW_TEST_FAILURE === '1'
+  const shouldForceDbFailure =
+    allowForcedFailure && request.headers.get('x-test-force-db-failure') === '1'
+
+  // Prefer service role; fall back to anon if present.
+  const serviceRoleClient = getServiceRoleClient()
+  const anonUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   const db =
-    getServiceRoleClient() ??
-    createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    serviceRoleClient ??
+    (anonUrl && anonKey
+      ? createClient(anonUrl, anonKey)
+      : null)
+  if (!db) {
+    console.error('[api/booking] database client unavailable', { traceId })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Booking service is temporarily unavailable. Please try again shortly.',
+        trace_id: traceId,
+      },
+      { status: 503 },
     )
+  }
 
   let body: Record<string, unknown>
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ success: false, error: 'Invalid JSON body' }, { status: 400 })
+    return NextResponse.json(
+      { success: false, error: 'Invalid JSON body', trace_id: traceId },
+      { status: 400 },
+    )
   }
 
   try {
     const p = normalizeBookingPayload(body)
+    console.info('[api/booking] payload accepted', {
+      traceId,
+      sourcePath: p.source_path,
+      formVariant: p.form_variant,
+      serviceType: p.service_type,
+    })
 
     if (!p.full_name || !p.phone || !p.address || !p.service_type) {
       return NextResponse.json(
         {
           success: false,
           error: 'Missing required fields (name, phone, address, service type).',
+          trace_id: traceId,
         },
         { status: 400 }
       )
+    }
+
+    const preferredDateOnly = parseIsoDateOnly(p.preferred_date)
+    if (!preferredDateOnly) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Preferred date must be a valid YYYY-MM-DD calendar date.',
+          trace_id: traceId,
+        },
+        { status: 400 },
+      )
+    }
+    if (!isDateNotBeforeToday(preferredDateOnly)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Preferred date must be today or a future date.',
+          trace_id: traceId,
+        },
+        { status: 400 },
+      )
+    }
+
+    // Capacity is enforced here and immediately again after customer insert. Two concurrent
+    // requests can still slip through the first check; the second check + customer delete on
+    // failure narrows that window. For a hard guarantee, add a DB trigger or single RPC.
+
+    const capacityBefore = await checkBookingCapacity(db, preferredDateOnly, p.preferred_time_slot)
+    if (!capacityBefore.ok) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: capacityBefore.message,
+          trace_id: traceId,
+        },
+        { status: 409 },
+      )
+    }
+
+    if (shouldForceDbFailure) {
+      throw new Error('Forced DB failure for booking API test')
     }
 
     const { data: customer, error: customerError } = await db
@@ -105,48 +208,112 @@ export async function POST(request: Request) {
 
     if (customerError) throw customerError
     if (!customer) throw new Error('Customer insert returned no row')
-
-    const confirmationCode = `PLM-${Math.floor(Math.random() * 90000) + 10000}`
-
-    const { data: bookingRow, error: bookingError } = await db
-      .from('bookings')
-      .insert({
-        customer_id: customer.id,
-        confirmation_code: confirmationCode,
-        service_type: p.service_type,
-        description: p.description,
-        preferred_date: p.preferred_date,
-        preferred_time_slot: p.preferred_time_slot,
-        urgency: p.urgency,
-        status: 'pending',
-      })
-      .select('id')
-      .single()
-
-    if (bookingError) throw bookingError
-    if (!bookingRow?.id) throw new Error('Booking insert returned no id')
-
-    await notifyAllStaff({
-      kind: 'new_booking',
-      title: `New booking: ${p.full_name}`,
-      body: `${p.service_type} · ${p.preferred_date}`,
-      bookingId: String(bookingRow.id),
-      dedupeKey: `new-booking-${bookingRow.id}`,
+    console.info('[api/booking] customer insert succeeded', {
+      traceId,
+      customerId: customer.id,
     })
 
-    await db.from('booking_funnel_events').insert({
+    const capacityAfter = await checkBookingCapacity(db, preferredDateOnly, p.preferred_time_slot)
+    if (!capacityAfter.ok) {
+      await db.from('customers').delete().eq('id', customer.id)
+      return NextResponse.json(
+        {
+          success: false,
+          error: capacityAfter.message,
+          trace_id: traceId,
+        },
+        { status: 409 },
+      )
+    }
+
+    let bookingRow: { id: string } | null = null
+    let confirmationCode = ''
+    let lastBookingError: unknown = null
+
+    // Retry on rare confirmation-code collisions (bookings.confirmation_code is unique).
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      confirmationCode = `PLM-${Math.floor(Math.random() * 90000) + 10000}`
+      const { data, error } = await db
+        .from('bookings')
+        .insert({
+          customer_id: customer.id,
+          confirmation_code: confirmationCode,
+          service_type: p.service_type,
+          description: p.description,
+          preferred_date: preferredDateOnly,
+          preferred_time_slot: p.preferred_time_slot,
+          urgency: p.urgency,
+          status: 'pending',
+        })
+        .select('id')
+        .single()
+
+      if (!error) {
+        bookingRow = data
+        break
+      }
+      lastBookingError = error
+      if (!isUniqueViolation(error)) break
+    }
+
+    if (!bookingRow?.id) {
+      if (lastBookingError) throw lastBookingError
+      throw new Error('Booking insert returned no id')
+    }
+    console.info('[api/booking] booking insert succeeded', {
+      traceId,
+      bookingId: bookingRow.id,
+      confirmationCode,
+    })
+
+    try {
+      await notifyAllStaff({
+        kind: 'new_booking',
+        title: `New booking: ${p.full_name}`,
+        body: `${p.service_type} · ${p.preferred_date}`,
+        bookingId: String(bookingRow.id),
+        dedupeKey: `new-booking-${bookingRow.id}`,
+      })
+    } catch (notifyError) {
+      // Side effects should not fail a confirmed booking write.
+      console.error('[api/booking] staff notification failed', {
+        traceId,
+        bookingId: bookingRow.id,
+        error: formatRouteError(notifyError),
+      })
+    }
+
+    const { error: funnelError } = await db.from('booking_funnel_events').insert({
       event_type: 'submit',
       source_path: p.source_path,
       form_variant: p.form_variant,
+    })
+    if (funnelError && !isMissingFunnelEventsTable(funnelError)) {
+      console.error('[api/booking] funnel event insert failed', {
+        traceId,
+        error: formatRouteError(funnelError),
+      })
+    }
+
+    console.info('[api/booking] confirmation generated', {
+      traceId,
+      bookingId: bookingRow.id,
+      confirmationCode,
     })
 
     return NextResponse.json({
       success: true,
       confirmation_code: confirmationCode,
+      booking_id: String(bookingRow.id),
+      trace_id: traceId,
     })
   } catch (error) {
     const message = formatRouteError(error)
-    console.error('[api/booking]', error)
-    return NextResponse.json({ success: false, error: message }, { status: 500 })
+    console.error('[api/booking] request failed', { traceId, error })
+    const status = dbWriteFailedStatus(error)
+    return NextResponse.json(
+      { success: false, error: message, trace_id: traceId },
+      { status },
+    )
   }
 }

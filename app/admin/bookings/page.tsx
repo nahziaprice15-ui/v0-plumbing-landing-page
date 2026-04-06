@@ -13,9 +13,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { AdminEmptyState } from '@/components/admin/AdminEmptyState'
+import { BookingStatusActionForm } from '@/components/admin/BookingStatusActionForm'
 import { updateBookingStatus } from '@/app/admin/bookings/actions'
 import { BOOKING_STATUS_ORDER, bookingStatusLabel, bookingStatusVariant } from '@/lib/admin/booking-status'
-import { getAdminBookings, type AdminBookingRow } from '@/lib/admin/queries'
+import { getAdminBookingsResult, type AdminBookingRow } from '@/lib/admin/queries'
 
 const PAGE_SIZE = 20
 
@@ -51,10 +52,12 @@ function filterBookings(
     rows = rows.filter((b) => {
       const name = b.customerName.toLowerCase()
       const addr = b.address.toLowerCase()
+      const confirmationCode = b.confirmationCode.toLowerCase()
       const phoneDigits = b.phone.replace(/\D/g, '')
       return (
         name.includes(needle) ||
         addr.includes(needle) ||
+        confirmationCode.includes(needle) ||
         (digits.length > 0 && phoneDigits.includes(digits))
       )
     })
@@ -99,7 +102,7 @@ export default async function AdminBookingsPage({
   const to = params.to ?? ''
   const pageNum = Math.max(1, Number.parseInt(params.page ?? '1', 10) || 1)
 
-  const all = await getAdminBookings()
+  const { rows: all, diagnostics } = await getAdminBookingsResult()
   const filtered = filterBookings(all, statusFilter, q, from, to)
   const total = filtered.length
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE))
@@ -127,6 +130,9 @@ export default async function AdminBookingsPage({
         <div>
           <CardTitle>Bookings</CardTitle>
           <CardDescription>Track and manage your pipeline from request to completion.</CardDescription>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Data source: {diagnostics.dataSource} ({diagnostics.queryOk ? 'connected' : 'issue detected'})
+          </p>
         </div>
         <Button variant="outline" size="sm" asChild>
           <a href={exportHref}>Export CSV</a>
@@ -137,7 +143,13 @@ export default async function AdminBookingsPage({
           <input type="hidden" name="status" value={statusFilter} />
           <div className="space-y-1.5">
             <Label htmlFor="q">Search</Label>
-            <Input id="q" name="q" placeholder="Name, phone, address" defaultValue={q} className="w-[min(100%,280px)]" />
+            <Input
+              id="q"
+              name="q"
+              placeholder="Name, phone, address, confirmation code"
+              defaultValue={q}
+              className="w-[min(100%,340px)]"
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="from">From</Label>
@@ -151,6 +163,36 @@ export default async function AdminBookingsPage({
             Apply
           </Button>
         </form>
+
+        {!diagnostics.queryOk && (
+          <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">
+            <p className="font-medium">Admin bookings data is unavailable</p>
+            <p className="text-muted-foreground">
+              Source: {diagnostics.dataSource}. {diagnostics.errorMessage ?? 'Unknown query failure.'}
+            </p>
+            {diagnostics.errorCode && (
+              <p className="text-xs text-muted-foreground">Code: {diagnostics.errorCode}</p>
+            )}
+          </div>
+        )}
+
+        {diagnostics.queryOk && diagnostics.errorCode === 'SCHEMA_DRIFT_42703' && (
+          <div className="rounded-md border border-amber-400/40 bg-amber-500/10 p-3 text-sm">
+            <p className="font-medium">Schema compatibility mode enabled</p>
+            <p className="text-muted-foreground">
+              Source: {diagnostics.dataSource}. {diagnostics.errorMessage}
+            </p>
+          </div>
+        )}
+
+        {diagnostics.dataSource === 'mock' && (
+          <div className="rounded-md border border-amber-400/40 bg-amber-500/10 p-3 text-sm">
+            <p className="font-medium">Mock mode enabled</p>
+            <p className="text-muted-foreground">
+              You are viewing demo bookings. Real website submissions will not appear until live mode is enabled.
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-wrap gap-2">
           {tabItems.map((tab) => (
@@ -167,7 +209,7 @@ export default async function AdminBookingsPage({
 
         <p className="text-xs text-muted-foreground">
           Showing {total === 0 ? 0 : offset + 1}–{Math.min(offset + PAGE_SIZE, total)} of {total} (loaded up to 200 from
-          server). Refine with search and dates.
+          server). Refine with search, confirmation code, and dates.
         </p>
 
         <div className="relative w-full overflow-x-auto rounded-md border">
@@ -204,49 +246,58 @@ export default async function AdminBookingsPage({
                         <a href={`/admin/bookings/${booking.id}`}>View</a>
                       </Button>
                       {booking.status === 'pending' && (
-                        <form action={updateBookingStatus}>
-                          <input type="hidden" name="bookingId" value={booking.id} />
-                          <input type="hidden" name="status" value="confirmed" />
-                          <Button size="sm" variant="outline" type="submit">
-                            Confirm
-                          </Button>
-                        </form>
+                        <BookingStatusActionForm
+                          action={updateBookingStatus}
+                          bookingId={booking.id}
+                          nextStatus="confirmed"
+                          size="sm"
+                          variant="outline"
+                        >
+                          Confirm
+                        </BookingStatusActionForm>
                       )}
                       {(booking.status === 'pending' || booking.status === 'confirmed') && (
-                        <form action={updateBookingStatus}>
-                          <input type="hidden" name="bookingId" value={booking.id} />
-                          <input type="hidden" name="status" value="in_progress" />
-                          <Button size="sm" variant="outline" type="submit">
-                            Start
-                          </Button>
-                        </form>
+                        <BookingStatusActionForm
+                          action={updateBookingStatus}
+                          bookingId={booking.id}
+                          nextStatus="in_progress"
+                          size="sm"
+                          variant="outline"
+                        >
+                          Start
+                        </BookingStatusActionForm>
                       )}
                       {booking.status !== 'completed' && booking.status !== 'cancelled' && booking.status !== 'no_show' && (
-                        <form action={updateBookingStatus}>
-                          <input type="hidden" name="bookingId" value={booking.id} />
-                          <input type="hidden" name="status" value="completed" />
-                          <Button size="sm" type="submit">
-                            Complete
-                          </Button>
-                        </form>
+                        <BookingStatusActionForm
+                          action={updateBookingStatus}
+                          bookingId={booking.id}
+                          nextStatus="completed"
+                          size="sm"
+                        >
+                          Complete
+                        </BookingStatusActionForm>
                       )}
                       {booking.status !== 'cancelled' && booking.status !== 'completed' && booking.status !== 'no_show' && (
-                        <form action={updateBookingStatus}>
-                          <input type="hidden" name="bookingId" value={booking.id} />
-                          <input type="hidden" name="status" value="cancelled" />
-                          <Button size="sm" variant="outline" type="submit">
-                            Cancel
-                          </Button>
-                        </form>
+                        <BookingStatusActionForm
+                          action={updateBookingStatus}
+                          bookingId={booking.id}
+                          nextStatus="cancelled"
+                          size="sm"
+                          variant="outline"
+                        >
+                          Cancel
+                        </BookingStatusActionForm>
                       )}
                       {booking.status !== 'no_show' && booking.status !== 'completed' && booking.status !== 'cancelled' && (
-                        <form action={updateBookingStatus}>
-                          <input type="hidden" name="bookingId" value={booking.id} />
-                          <input type="hidden" name="status" value="no_show" />
-                          <Button size="sm" variant="destructive" type="submit">
-                            No-show
-                          </Button>
-                        </form>
+                        <BookingStatusActionForm
+                          action={updateBookingStatus}
+                          bookingId={booking.id}
+                          nextStatus="no_show"
+                          size="sm"
+                          variant="destructive"
+                        >
+                          No-show
+                        </BookingStatusActionForm>
                       )}
                     </div>
                   </TableCell>

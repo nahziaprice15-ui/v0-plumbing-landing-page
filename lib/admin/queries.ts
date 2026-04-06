@@ -21,10 +21,25 @@ export type AdminBookingRow = {
   email: string
   address: string
   serviceType: string
+  confirmationCode: string
   preferredDate: string
   preferredTimeSlot: string
   status: BookingStatus
   createdAt: string
+}
+
+export type AdminBookingsDiagnostics = {
+  dataSource: 'mock' | 'live'
+  serviceRoleReady: boolean
+  queryOk: boolean
+  errorCode: string | null
+  errorMessage: string | null
+  rowCount: number
+}
+
+export type AdminBookingsResult = {
+  rows: AdminBookingRow[]
+  diagnostics: AdminBookingsDiagnostics
 }
 
 export type AdminDashboardMetrics = {
@@ -117,23 +132,138 @@ function serviceLabelFromRow(row: {
   return String(row.service_type ?? 'other')
 }
 
-export async function getAdminBookings(): Promise<AdminBookingRow[]> {
-  if (isAdminMockDataSource()) return getMockAdminBookings()
+function serviceLabelFromFallback(
+  serviceType: string | null | undefined,
+  serviceTypeId: string | null | undefined,
+  byId: Map<string, string>,
+  bySlug: Map<string, string>,
+): string {
+  if (serviceTypeId) {
+    const fromId = byId.get(String(serviceTypeId))
+    if (fromId) return fromId
+  }
+  if (serviceType) {
+    const fromSlug = bySlug.get(String(serviceType))
+    if (fromSlug) return fromSlug
+    return String(serviceType)
+  }
+  return 'other'
+}
+
+function isMissingServiceTypeIdError(error: { code?: string | null; message?: string | null } | null): boolean {
+  if (!error) return false
+  if (error.code === '42703' && String(error.message ?? '').includes('bookings.service_type_id')) return true
+  return false
+}
+
+async function getServiceTypeTitleMaps(
+  db: ReturnType<typeof getServiceRoleClient>,
+): Promise<{ byId: Map<string, string>; bySlug: Map<string, string> }> {
+  const byId = new Map<string, string>()
+  const bySlug = new Map<string, string>()
+  if (!db) return { byId, bySlug }
+  const { data, error } = await db.from('service_types').select('id,slug,title')
+  if (error || !data) return { byId, bySlug }
+  for (const row of data) {
+    const title = String(row.title ?? '')
+    if (!title) continue
+    if (row.id) byId.set(String(row.id), title)
+    if (row.slug) bySlug.set(String(row.slug), title)
+  }
+  return { byId, bySlug }
+}
+
+async function selectBookingsWithOptionalServiceTypeId(
+  db: NonNullable<ReturnType<typeof getServiceRoleClient>>,
+  selectWithColumn: string,
+  selectWithoutColumn: string,
+): Promise<{
+  data: Array<Record<string, unknown>> | null
+  error: { code?: string; message?: string } | null
+  missingServiceTypeId: boolean
+}> {
+  const primary = await db
+    .from('bookings')
+    .select(selectWithColumn)
+    .order('created_at', { ascending: false })
+
+  if (!isMissingServiceTypeIdError(primary.error)) {
+    return {
+      data: (primary.data as Array<Record<string, unknown>> | null) ?? null,
+      error: primary.error ? { code: primary.error.code, message: primary.error.message } : null,
+      missingServiceTypeId: false,
+    }
+  }
+
+  const fallback = await db
+    .from('bookings')
+    .select(selectWithoutColumn)
+    .order('created_at', { ascending: false })
+
+  return {
+    data: (fallback.data as Array<Record<string, unknown>> | null) ?? null,
+    error: fallback.error ? { code: fallback.error.code, message: fallback.error.message } : null,
+    missingServiceTypeId: true,
+  }
+}
+
+export async function getAdminBookingsResult(): Promise<AdminBookingsResult> {
+  if (isAdminMockDataSource()) {
+    const rows = await getMockAdminBookings()
+    return {
+      rows,
+      diagnostics: {
+        dataSource: 'mock',
+        serviceRoleReady: Boolean(getServiceRoleClient()),
+        queryOk: true,
+        errorCode: null,
+        errorMessage: null,
+        rowCount: rows.length,
+      },
+    }
+  }
 
   const db = getServiceRoleClient()
-  if (!db) return []
+  if (!db) {
+    return {
+      rows: [],
+      diagnostics: {
+        dataSource: 'live',
+        serviceRoleReady: false,
+        queryOk: false,
+        errorCode: 'SERVICE_ROLE_MISSING',
+        errorMessage:
+          'Service-role Supabase client is unavailable. Set SUPABASE_SERVICE_ROLE_KEY for admin live data.',
+        rowCount: 0,
+      },
+    }
+  }
 
-  const { data, error } = await db
-    .from('bookings')
-    .select(
-      'id,service_type,service_type_id,preferred_date,preferred_time_slot,status,created_at,customers(full_name,phone,email,address),service_types(title,slug)',
-    )
-    .order('created_at', { ascending: false })
-    .limit(200)
+  const bookingsResult = await selectBookingsWithOptionalServiceTypeId(
+    db,
+    'id,confirmation_code,service_type,service_type_id,preferred_date,preferred_time_slot,status,created_at,customers(full_name,phone,email,address)',
+    'id,confirmation_code,service_type,preferred_date,preferred_time_slot,status,created_at,customers(full_name,phone,email,address)',
+  )
+  const data = (bookingsResult.data ?? []).slice(0, 200)
+  const error = bookingsResult.error
 
-  if (error || !data) return []
+  if (error || !data) {
+    return {
+      rows: [],
+      diagnostics: {
+        dataSource: 'live',
+        serviceRoleReady: true,
+        queryOk: false,
+        errorCode: error?.code ?? 'BOOKINGS_QUERY_FAILED',
+        errorMessage: error?.message ?? 'Bookings query returned no data.',
+        rowCount: 0,
+      },
+    }
+  }
 
-  return data.map((row) => {
+  const { byId, bySlug } = await getServiceTypeTitleMaps(db)
+
+  const rows = data.map((row) => {
     const customer = Array.isArray(row.customers) ? row.customers[0] : row.customers
     return {
       id: String(row.id),
@@ -141,13 +271,33 @@ export async function getAdminBookings(): Promise<AdminBookingRow[]> {
       phone: String(customer?.phone ?? '—'),
       email: String(customer?.email ?? '—'),
       address: String(customer?.address ?? '—'),
-      serviceType: serviceLabelFromRow(row as Parameters<typeof serviceLabelFromRow>[0]),
+      serviceType: serviceLabelFromFallback(row.service_type, row.service_type_id, byId, bySlug),
+      confirmationCode: String(row.confirmation_code ?? ''),
       preferredDate: String(row.preferred_date ?? ''),
       preferredTimeSlot: String(row.preferred_time_slot ?? '—'),
       status: asStatus(String(row.status ?? 'pending')),
       createdAt: String(row.created_at ?? ''),
     }
   })
+
+  return {
+    rows,
+    diagnostics: {
+      dataSource: 'live',
+      serviceRoleReady: true,
+      queryOk: true,
+        errorCode: bookingsResult.missingServiceTypeId ? 'SCHEMA_DRIFT_42703' : null,
+        errorMessage: bookingsResult.missingServiceTypeId
+          ? 'Live DB is missing bookings.service_type_id. Using compatibility mode; run phase1 schema migration.'
+          : null,
+      rowCount: rows.length,
+    },
+  }
+}
+
+export async function getAdminBookings(): Promise<AdminBookingRow[]> {
+  const result = await getAdminBookingsResult()
+  return result.rows
 }
 
 export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics> {
@@ -177,15 +327,18 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
   const now = new Date()
   const plus7 = subDays(now, -7)
 
-  const [{ data: allBookings }, { data: funnel }] = await Promise.all([
-    db
-      .from('bookings')
-      .select('status,service_type,service_type_id,preferred_date,created_at,service_types(title)'),
+  const [bookingQuery, { data: funnel }] = await Promise.all([
+    selectBookingsWithOptionalServiceTypeId(
+      db,
+      'status,service_type,service_type_id,preferred_date,created_at',
+      'status,service_type,preferred_date,created_at',
+    ),
     db.from('booking_funnel_events').select('event_type,source_path').gte('created_at', sevenDayStart),
   ])
 
-  const all = allBookings ?? []
+  const all = bookingQuery.data ?? []
   const funnelRows = funnel ?? []
+  const { byId, bySlug } = await getServiceTypeTitleMaps(db)
 
   const bookingsCreatedToday = all.filter(
     (b) => String(b.created_at ?? '') >= todayStart && String(b.created_at ?? '') <= todayEnd,
@@ -211,7 +364,7 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 
   const serviceCounts = new Map<string, number>()
   for (const row of all) {
-    const key = serviceLabelFromRow(row as Parameters<typeof serviceLabelFromRow>[0])
+    const key = serviceLabelFromFallback(row.service_type, row.service_type_id, byId, bySlug)
     serviceCounts.set(key, (serviceCounts.get(key) ?? 0) + 1)
   }
   const topBookedService =
@@ -254,12 +407,16 @@ export async function getServiceDemand(): Promise<ServiceDemandRow[]> {
 
   const db = getServiceRoleClient()
   if (!db) return []
-  const { data } = await db
-    .from('bookings')
-    .select('service_type,service_type_id,service_types(title)')
+  const bookingsResult = await selectBookingsWithOptionalServiceTypeId(
+    db,
+    'service_type,service_type_id',
+    'service_type',
+  )
+  const data = bookingsResult.data
+  const { byId, bySlug } = await getServiceTypeTitleMaps(db)
   const counts = new Map<string, number>()
   for (const row of data ?? []) {
-    const key = serviceLabelFromRow(row as Parameters<typeof serviceLabelFromRow>[0])
+    const key = serviceLabelFromFallback(row.service_type, row.service_type_id, byId, bySlug)
     counts.set(key, (counts.get(key) ?? 0) + 1)
   }
   return [...counts.entries()]
@@ -291,18 +448,18 @@ export async function getCatalogServicesWithDemand(): Promise<CatalogServiceRow[
   const db = getServiceRoleClient()
   if (!db) return []
 
-  const [{ data: types }, { data: bookingRows }, catsResult] = await Promise.all([
+  const [{ data: types }, bookingRowsResult, catsResult] = await Promise.all([
     db.from('service_types').select('id,slug,title,category_id,is_active,duration_minutes').order('sort_order', {
       ascending: true,
     }),
-    db.from('bookings').select('service_type,service_type_id'),
+    selectBookingsWithOptionalServiceTypeId(db, 'service_type,service_type_id', 'service_type'),
     db.from('service_categories').select('id,name'),
   ])
   const cats = catsResult.error ? [] : (catsResult.data ?? [])
 
   if (!types?.length) return []
 
-  const bookings = bookingRows ?? []
+  const bookings = bookingRowsResult.data ?? []
   const catMap = new Map(cats.map((c) => [String(c.id), String(c.name)]))
 
   return types.map((t) => {
@@ -392,23 +549,35 @@ export async function getAdminBookingDetail(bookingId: string): Promise<AdminBoo
   const db = getServiceRoleClient()
   if (!db) return null
 
-  const { data, error } = await db
+  const primary = await db
     .from('bookings')
     .select(
-      'id,status,confirmation_code,service_type,service_type_id,description,preferred_date,preferred_time_slot,created_at,customers(full_name,phone,email,address),service_types(title,slug)',
+      'id,status,confirmation_code,service_type,service_type_id,description,preferred_date,preferred_time_slot,created_at,customers(full_name,phone,email,address)',
     )
     .eq('id', bookingId)
     .maybeSingle()
+  const fallback = isMissingServiceTypeIdError(primary.error)
+    ? await db
+        .from('bookings')
+        .select(
+          'id,status,confirmation_code,service_type,description,preferred_date,preferred_time_slot,created_at,customers(full_name,phone,email,address)',
+        )
+        .eq('id', bookingId)
+        .maybeSingle()
+    : null
+  const data = (fallback?.data ?? primary.data) as (typeof primary.data & { service_type_id?: string | null }) | null
+  const error = fallback?.error ?? primary.error
 
   if (error || !data) return null
 
   const customer = Array.isArray(data.customers) ? data.customers[0] : data.customers
+  const { byId, bySlug } = await getServiceTypeTitleMaps(db)
 
   return {
     id: String(data.id),
     status: asStatus(String(data.status ?? 'pending')),
     confirmationCode: String(data.confirmation_code ?? ''),
-    serviceTypeLabel: serviceLabelFromRow(data as Parameters<typeof serviceLabelFromRow>[0]),
+    serviceTypeLabel: serviceLabelFromFallback(data.service_type, data.service_type_id, byId, bySlug),
     description: String(data.description ?? ''),
     preferredDate: String(data.preferred_date ?? ''),
     preferredTimeSlot: String(data.preferred_time_slot ?? ''),
@@ -543,39 +712,28 @@ async function getOperationalBookingInputs(): Promise<OperationalBookingInput[]>
   const db = getServiceRoleClient()
   if (!db) return []
 
-  const { data, error } = await db
-    .from('bookings')
-    .select(
-      `
-      status,
-      created_at,
-      preferred_date,
-      customers(phone),
-      service_types(
-        title,
-        service_categories(slug)
-      )
-    `,
-    )
-    .order('created_at', { ascending: false })
-    .limit(500)
+  const bookingsResult = await selectBookingsWithOptionalServiceTypeId(
+    db,
+    'status,created_at,preferred_date,service_type,service_type_id,customers(phone)',
+    'status,created_at,preferred_date,service_type,customers(phone)',
+  )
+  const data = (bookingsResult.data ?? []).slice(0, 500)
+  const error = bookingsResult.error
 
   if (error || !data) return []
 
+  const { byId, bySlug } = await getServiceTypeTitleMaps(db)
+
   return data.map((row) => {
     const customer = Array.isArray(row.customers) ? row.customers[0] : row.customers
-    const st = Array.isArray(row.service_types) ? row.service_types[0] : row.service_types
-    const sc = st?.service_categories as { slug?: string } | { slug?: string }[] | null | undefined
-    const cat = Array.isArray(sc) ? sc[0] : sc
-    const slug = cat?.slug != null ? String(cat.slug) : null
-    const title = st && typeof st === 'object' && 'title' in st ? String((st as { title?: string }).title ?? '') : ''
+    const serviceTypeLabel = serviceLabelFromFallback(row.service_type, row.service_type_id, byId, bySlug)
     return {
       status: asStatus(String(row.status ?? 'pending')),
       createdAt: String(row.created_at ?? ''),
       preferredDate: String(row.preferred_date ?? ''),
       phone: String(customer?.phone ?? ''),
-      serviceTypeLabel: title,
-      categorySlug: slug,
+      serviceTypeLabel,
+      categorySlug: inferCategorySlugFromLabel(serviceTypeLabel),
     }
   })
 }

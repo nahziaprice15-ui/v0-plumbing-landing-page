@@ -17,6 +17,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { BOOKING_DATE_FULL_MESSAGE } from '@/lib/booking-messages'
+import {
+  addCalendarDaysYmd,
+  fetchBookingAvailability,
+  getClientTodayDateString,
+  type BookingAvailabilityDates,
+} from '@/lib/booking-availability-ui'
 import { SITE } from '@/lib/site'
 import type { BookingServiceTypeId } from '@/lib/bookingServiceType'
 
@@ -57,10 +64,7 @@ const bookingSchema = z.object({
   serviceType: z.string().min(1, 'Please select a service type'),
   preferredDate: z.string().optional().refine((date) => {
     if (!date) return true
-    const selectedDate = new Date(date)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    return selectedDate >= today
+    return date >= getClientTodayDateString()
   }, 'Preferred date must be today or in the future'),
   preferredTime: z.string().optional(),
   notes: z.string().max(500, 'Notes must be less than 500 characters').optional(),
@@ -70,6 +74,8 @@ type BookingFormData = z.infer<typeof bookingSchema>
 
 export function BookingModal({ isOpen, onClose, presetServiceType = null }: BookingModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [availability, setAvailability] = useState<BookingAvailabilityDates>({})
+  const [availabilityLoading, setAvailabilityLoading] = useState(false)
   const modalRef = useRef<HTMLDivElement>(null)
   const firstInputRef = useRef<HTMLInputElement>(null)
   const focusableElementsRef = useRef<HTMLElement[]>([])
@@ -81,6 +87,8 @@ export function BookingModal({ isOpen, onClose, presetServiceType = null }: Book
     formState: { errors },
     reset,
     setValue,
+    setError,
+    clearErrors,
     watch,
     control,
   } = useForm<BookingFormData>({
@@ -98,6 +106,30 @@ export function BookingModal({ isOpen, onClose, presetServiceType = null }: Book
   })
 
   const phoneValue = watch('phone')
+  const preferredDateValue = watch('preferredDate')
+
+  useEffect(() => {
+    if (!isOpen) return
+    const today = getClientTodayDateString()
+    const to = addCalendarDaysYmd(today, 90)
+    setAvailabilityLoading(true)
+    void fetchBookingAvailability(today, to)
+      .then(setAvailability)
+      .finally(() => setAvailabilityLoading(false))
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!preferredDateValue) {
+      clearErrors('preferredDate')
+      return
+    }
+    const row = availability[preferredDateValue]
+    if (row && !row.available) {
+      setError('preferredDate', { type: 'manual', message: BOOKING_DATE_FULL_MESSAGE })
+    } else {
+      clearErrors('preferredDate')
+    }
+  }, [preferredDateValue, availability, setError, clearErrors])
 
   // Fresh form when the modal opens (and apply service preset from the CTA that opened it).
   useEffect(() => {
@@ -207,6 +239,19 @@ export function BookingModal({ isOpen, onClose, presetServiceType = null }: Book
   if (!isOpen) return null
 
   const onSubmit = async (data: BookingFormData) => {
+    if (
+      data.preferredDate &&
+      availability[data.preferredDate] &&
+      !availability[data.preferredDate].available
+    ) {
+      setError('preferredDate', { type: 'manual', message: BOOKING_DATE_FULL_MESSAGE })
+      toast.error('This date is fully booked', {
+        description: BOOKING_DATE_FULL_MESSAGE,
+        duration: 6000,
+      })
+      return
+    }
+
     setIsSubmitting(true)
     try {
       const response = await fetch('/api/booking', {
@@ -440,11 +485,16 @@ export function BookingModal({ isOpen, onClose, presetServiceType = null }: Book
                 <Input
                   id="preferredDate"
                   type="date"
+                  min={getClientTodayDateString()}
                   {...register('preferredDate')}
                   aria-invalid={errors.preferredDate ? 'true' : 'false'}
                   aria-describedby={errors.preferredDate ? 'preferredDate-error' : undefined}
                   className={errors.preferredDate ? 'border-destructive' : ''}
+                  disabled={availabilityLoading}
                 />
+                {availabilityLoading ? (
+                  <p className="text-xs text-muted-foreground">Loading availability…</p>
+                ) : null}
                 {errors.preferredDate && (
                   <p id="preferredDate-error" className="text-sm text-destructive" role="alert">
                     {errors.preferredDate.message}

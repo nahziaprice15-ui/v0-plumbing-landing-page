@@ -3,6 +3,7 @@ import { ArrowLeft, ExternalLink, MapPin } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { BookingStatusActionForm } from '@/components/admin/BookingStatusActionForm'
 import { updateBookingStatus } from '@/app/admin/bookings/actions'
 import { bookingStatusLabel, bookingStatusVariant } from '@/lib/admin/booking-status'
 import { getAdminBookingDetail, getBookingEvents } from '@/lib/admin/queries'
@@ -55,44 +56,53 @@ export default async function AdminBookingDetailPage({ params }: { params: Promi
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
             {detail.status === 'pending' && (
-              <form action={updateBookingStatus}>
-                <input type="hidden" name="bookingId" value={detail.id} />
-                <input type="hidden" name="status" value="confirmed" />
-                <Button type="submit" variant="outline" size="sm">
-                  Confirm
-                </Button>
-              </form>
+              <BookingStatusActionForm
+                action={updateBookingStatus}
+                bookingId={detail.id}
+                nextStatus="confirmed"
+                variant="outline"
+                size="sm"
+              >
+                Confirm
+              </BookingStatusActionForm>
             )}
             {(detail.status === 'pending' || detail.status === 'confirmed') && (
-              <form action={updateBookingStatus}>
-                <input type="hidden" name="bookingId" value={detail.id} />
-                <input type="hidden" name="status" value="in_progress" />
-                <Button type="submit" variant="outline" size="sm">
-                  Start job
-                </Button>
-              </form>
+              <BookingStatusActionForm
+                action={updateBookingStatus}
+                bookingId={detail.id}
+                nextStatus="in_progress"
+                variant="outline"
+                size="sm"
+              >
+                Start job
+              </BookingStatusActionForm>
             )}
-            <form action={updateBookingStatus}>
-              <input type="hidden" name="bookingId" value={detail.id} />
-              <input type="hidden" name="status" value="completed" />
-              <Button type="submit" size="sm">
-                Complete
-              </Button>
-            </form>
-            <form action={updateBookingStatus}>
-              <input type="hidden" name="bookingId" value={detail.id} />
-              <input type="hidden" name="status" value="cancelled" />
-              <Button type="submit" variant="outline" size="sm">
-                Cancel
-              </Button>
-            </form>
-            <form action={updateBookingStatus}>
-              <input type="hidden" name="bookingId" value={detail.id} />
-              <input type="hidden" name="status" value="no_show" />
-              <Button type="submit" variant="destructive" size="sm">
-                Mark no-show
-              </Button>
-            </form>
+            <BookingStatusActionForm
+              action={updateBookingStatus}
+              bookingId={detail.id}
+              nextStatus="completed"
+              size="sm"
+            >
+              Complete
+            </BookingStatusActionForm>
+            <BookingStatusActionForm
+              action={updateBookingStatus}
+              bookingId={detail.id}
+              nextStatus="cancelled"
+              variant="outline"
+              size="sm"
+            >
+              Cancel
+            </BookingStatusActionForm>
+            <BookingStatusActionForm
+              action={updateBookingStatus}
+              bookingId={detail.id}
+              nextStatus="no_show"
+              variant="destructive"
+              size="sm"
+            >
+              Mark no-show
+            </BookingStatusActionForm>
           </CardContent>
         </Card>
       ) : null}

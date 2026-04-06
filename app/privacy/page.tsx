@@ -46,6 +46,15 @@ export default function PrivacyPage() {
       </section>
 
       <section className="space-y-3">
+        <h2 className="text-xl font-semibold">Third-Party Scheduling (Calendly)</h2>
+        <p className="text-muted-foreground">
+          Our booking experience is embedded through Calendly. When you use the scheduler, the details
+          you submit are processed by Calendly and may be subject to Calendly&apos;s cookies and privacy
+          practices.
+        </p>
+      </section>
+
+      <section className="space-y-3">
         <h2 className="text-xl font-semibold">Your Rights</h2>
         <p className="text-muted-foreground">
           Depending on your location, you may have rights to access, correct, or request deletion of
