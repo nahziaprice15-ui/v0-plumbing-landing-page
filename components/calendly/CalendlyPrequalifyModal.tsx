@@ -8,7 +8,9 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { AddressAutocompleteInput } from '@/components/address/AddressAutocompleteInput'
+import { loadGoogleMapsPlacesScript } from '@/lib/google-maps-script'
 import type { CalendlyPrefill } from '@/lib/calendly'
+import { useEffect } from 'react'
 
 type Props = {
   isOpen: boolean
@@ -42,6 +44,12 @@ export function CalendlyPrequalifyModal({ isOpen, onClose, onContinue }: Props) 
   const [step, setStep] = useState<1 | 2>(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [data, setData] = useState<QualifyData>(initialData)
+
+  useEffect(() => {
+    if (!isOpen) return
+    // Warm Google Places while the modal opens so suggestions appear faster on first keystroke.
+    void loadGoogleMapsPlacesScript().catch(() => undefined)
+  }, [isOpen])
 
   if (!isOpen) return null
 
