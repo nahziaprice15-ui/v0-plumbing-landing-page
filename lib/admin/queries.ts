@@ -156,6 +156,12 @@ function isMissingServiceTypeIdError(error: { code?: string | null; message?: st
   return false
 }
 
+function isMissingBookingEventsTableError(error: { code?: string | null; message?: string | null } | null): boolean {
+  if (!error) return false
+  if (error.code === '42P01' && String(error.message ?? '').includes('booking_events')) return true
+  return false
+}
+
 async function getServiceTypeTitleMaps(
   db: ReturnType<typeof getServiceRoleClient>,
 ): Promise<{ byId: Map<string, string>; bySlug: Map<string, string> }> {
@@ -601,6 +607,10 @@ export async function getBookingEvents(bookingId: string): Promise<BookingEventR
     .eq('booking_id', bookingId)
     .order('created_at', { ascending: false })
 
+  if (isMissingBookingEventsTableError(error)) {
+    console.warn('[admin/queries] booking_events table missing; returning empty booking detail events')
+    return []
+  }
   if (error || !data) return []
 
   return data.map((r) => ({
@@ -775,6 +785,10 @@ export async function getRecentBookingActivity(limit: number): Promise<BookingAc
     .order('created_at', { ascending: false })
     .limit(limit)
 
+  if (isMissingBookingEventsTableError(error)) {
+    console.warn('[admin/queries] booking_events table missing; returning empty activity feed')
+    return []
+  }
   if (error || !data) return []
 
   return data.map((r) => {
