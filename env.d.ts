@@ -8,6 +8,8 @@ declare namespace NodeJS {
     NEXT_PUBLIC_CALENDLY_BACKGROUND_COLOR?: string | undefined
     NEXT_PUBLIC_CALENDLY_HIDE_GDPR_BANNER?: '0' | '1' | undefined
     NEXT_PUBLIC_CALENDLY_USE_POPUP_FLOW?: '0' | '1' | undefined
+    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?: string | undefined
+    CALENDLY_WEBHOOK_TOKEN?: string | undefined
     /** Server-only; optional. When set, /api/booking uses this client and bypasses RLS. */
     SUPABASE_SERVICE_ROLE_KEY?: string | undefined
   }

@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { AddressAutocompleteInput } from '@/components/address/AddressAutocompleteInput'
 import { BOOKING_DATE_FULL_MESSAGE } from '@/lib/booking-messages'
 import {
   addCalendarDaysYmd,
@@ -418,14 +419,19 @@ export function BookingModal({ isOpen, onClose, presetServiceType = null }: Book
               </Label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="address"
-                  placeholder="123 Bourbon St, New Orleans, LA"
-                  className={`pl-10 ${errors.address ? 'border-destructive' : ''}`}
-                  {...register('address')}
-                  aria-invalid={errors.address ? 'true' : 'false'}
-                  aria-describedby={errors.address ? 'address-error' : undefined}
-                  aria-required="true"
+                <Controller
+                  control={control}
+                  name="address"
+                  render={({ field }) => (
+                    <AddressAutocompleteInput
+                      id="address"
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      placeholder="123 Bourbon St, New Orleans, LA"
+                      className={`pl-10 ${errors.address ? 'border-destructive' : ''}`}
+                    />
+                  )}
                 />
               </div>
               {errors.address && (

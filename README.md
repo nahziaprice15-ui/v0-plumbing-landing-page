@@ -72,8 +72,27 @@ The **`/issues`** route is a developer-facing landing page for reporting website
 | `NEXT_PUBLIC_CALENDLY_BACKGROUND_COLOR` | Calendly embed `background_color` in 6-digit hex without `#` (e.g. `eef2f8`). |
 | `NEXT_PUBLIC_CALENDLY_HIDE_GDPR_BANNER` | `0` to show Calendly GDPR banner, `1` to hide (use per policy/legal guidance). |
 | `NEXT_PUBLIC_CALENDLY_USE_POPUP_FLOW` | `0` keeps CTA behavior on onsite modal fallback; `1` enables Calendly popup for CTA entry points. |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Browser key used for booking modal address autocomplete (Google Maps JavaScript API + Places). |
+| `CALENDLY_WEBHOOK_TOKEN` | Optional shared token for `/api/calendly/webhook?token=...` so webhook ingestion can be authenticated. |
 
 Set these in `.env.local` for local SEO checks and in your host’s environment for production.
+
+### Google Maps key restrictions (recommended)
+
+- Application restriction: **HTTP referrers** only.
+- Allowed referrers:
+  - `http://localhost:3000/*`
+  - `https://msandpllc.com/*` (and any production aliases)
+  - `https://*.vercel.app/*` (preview deployments)
+- API restriction: allow only **Maps JavaScript API** and **Places API**.
+
+### Address autocomplete QA checklist
+
+- Booking modal address field shows suggestions after typing 3+ characters.
+- Arrow up/down + enter + escape keyboard behavior works.
+- Clicking a suggestion fills the full formatted address.
+- Safari + Chrome behavior is consistent on desktop and mobile widths.
+- If Google script fails or is blocked, manual address typing still works and form submits.
 
 ## Build note
 
