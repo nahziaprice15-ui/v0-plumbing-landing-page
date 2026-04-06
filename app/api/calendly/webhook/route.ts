@@ -24,6 +24,13 @@ type CalendlyPayload = {
   }
 }
 
+function isMissingBookingEventsTable(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false
+  const code = (error as { code?: string }).code
+  const message = String((error as { message?: string }).message ?? '')
+  return code === '42P01' || message.includes('booking_events')
+}
+
 function deriveTimeSlot(startIso?: string): string {
   if (!startIso) return 'asap'
   const hour = new Date(startIso).getHours()
@@ -132,12 +139,19 @@ async function findBookingByInviteeUri(
   db: NonNullable<ReturnType<typeof getServiceRoleClient>>,
   inviteeUri: string,
 ): Promise<string | null> {
-  const { data } = await db
+  const { data, error } = await db
     .from('booking_events')
     .select('booking_id')
     .eq('event_type', 'calendly_invitee_created')
     .contains('payload', { invitee_uri: inviteeUri })
     .maybeSingle()
+  if (error) {
+    if (isMissingBookingEventsTable(error)) {
+      console.warn('[api/calendly/webhook] booking_events table missing; dedupe unavailable')
+      return null
+    }
+    throw error
+  }
   return data?.booking_id ? String(data.booking_id) : null
 }
 
@@ -219,7 +233,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: bookingError?.message ?? 'Booking insert failed' }, { status: 500 })
     }
 
-    await db.from('booking_events').insert({
+    const { error: eventInsertError } = await db.from('booking_events').insert({
       booking_id: booking.id,
       event_type: 'calendly_invitee_created',
       payload: {
@@ -230,6 +244,15 @@ export async function POST(request: Request) {
         answers,
       },
     })
+    if (eventInsertError) {
+      if (isMissingBookingEventsTable(eventInsertError)) {
+        console.warn('[api/calendly/webhook] booking_events missing; booking created without event log', {
+          bookingId: booking.id,
+        })
+      } else {
+        console.error('[api/calendly/webhook] event insert failed', eventInsertError)
+      }
+    }
 
     revalidatePath('/admin/bookings')
     revalidatePath('/admin/dashboard')
@@ -247,7 +270,7 @@ export async function POST(request: Request) {
     }
 
     await db.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId)
-    await db.from('booking_events').insert({
+    const { error: cancelEventInsertError } = await db.from('booking_events').insert({
       booking_id: bookingId,
       event_type: 'calendly_invitee_canceled',
       payload: {
@@ -256,6 +279,15 @@ export async function POST(request: Request) {
         invitee_uri: inviteeUri,
       },
     })
+    if (cancelEventInsertError) {
+      if (isMissingBookingEventsTable(cancelEventInsertError)) {
+        console.warn('[api/calendly/webhook] booking_events missing; cancellation logged only on bookings table', {
+          bookingId,
+        })
+      } else {
+        console.error('[api/calendly/webhook] cancellation event insert failed', cancelEventInsertError)
+      }
+    }
 
     revalidatePath('/admin/bookings')
     revalidatePath('/admin/dashboard')
