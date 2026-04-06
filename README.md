@@ -94,6 +94,20 @@ Set these in `.env.local` for local SEO checks and in your host’s environment 
 - Safari + Chrome behavior is consistent on desktop and mobile widths.
 - If Google script fails or is blocked, manual address typing still works and form submits.
 
+### Calendly prefill question mapping
+
+When popup flow is enabled, pre-qualification answers are passed through Calendly `prefill.customAnswers`.
+Match your Calendly invitee question order to avoid retyping:
+
+- `a1`: service type
+- `a2`: urgency
+- `a3`: service address
+- `a4`: customer type (new/returning)
+- `a5`: preferred timeframe
+- `a6`: optional notes
+
+If these questions are absent or in a different order in Calendly, values may not prefill.
+
 ## Build note
 
 `next.config.mjs` currently sets `typescript.ignoreBuildErrors: true`, so TypeScript errors will not fail `next build`. Prefer fixing types and turning this off when the codebase is clean.

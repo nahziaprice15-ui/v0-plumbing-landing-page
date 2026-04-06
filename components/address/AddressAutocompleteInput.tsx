@@ -15,7 +15,7 @@ type Prediction = {
 
 type AddressAutocompleteInputProps = {
   id: string
-  value: string
+  value?: string
   placeholder?: string
   className?: string
   disabled?: boolean
@@ -41,6 +41,7 @@ export function AddressAutocompleteInput({
   onBlur,
   onAddressSelect,
 }: AddressAutocompleteInputProps) {
+  const safeValue = value ?? ''
   const [predictions, setPredictions] = useState<Prediction[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
@@ -100,7 +101,7 @@ export function AddressAutocompleteInput({
   useEffect(() => {
     if (!serviceReady || hasServiceError || disabled) return
 
-    if (!value.trim() || value.trim().length < 3) {
+    if (!safeValue.trim() || safeValue.trim().length < 3) {
       setPredictions([])
       setIsOpen(false)
       setActiveIndex(-1)
@@ -114,7 +115,7 @@ export function AddressAutocompleteInput({
     debounceRef.current = window.setTimeout(() => {
       serviceRef.current?.getPlacePredictions(
         {
-          input: value,
+          input: safeValue,
           componentRestrictions: { country: 'us' },
           locationBias: BIAS_BOUNDS,
           types: ['address'],
@@ -132,7 +133,7 @@ export function AddressAutocompleteInput({
     return () => {
       if (debounceRef.current) window.clearTimeout(debounceRef.current)
     }
-  }, [value, serviceReady, hasServiceError, disabled])
+  }, [safeValue, serviceReady, hasServiceError, disabled])
 
   const pickPrediction = (prediction: Prediction) => {
     const placeId = prediction.place_id
@@ -163,7 +164,7 @@ export function AddressAutocompleteInput({
     <div ref={rootRef} className="relative">
       <Input
         id={id}
-        value={value}
+        value={safeValue}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
