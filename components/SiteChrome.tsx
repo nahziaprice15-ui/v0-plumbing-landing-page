@@ -6,6 +6,8 @@ import { Footer } from '@/components/Footer'
 import { LiveBadge } from '@/components/LiveBadge'
 import { BookingModal } from '@/components/BookingModal'
 import { BookingOpenProvider, type OpenBookingOptions } from '@/components/BookingOpenContext'
+import { buildCalendlyUrl, getCalendlyConfig } from '@/lib/calendly'
+import { openCalendlyPopup } from '@/lib/calendly-script'
 import type { BookingServiceTypeId } from '@/lib/bookingServiceType'
 
 export function SiteChrome({ children }: { children: React.ReactNode }) {
@@ -14,9 +16,17 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
     null,
   )
   const [lastActiveElement, setLastActiveElement] = useState<HTMLElement | null>(null)
+  const calendlyConfig = getCalendlyConfig()
 
-  const openBookingModal = (opts?: OpenBookingOptions) => {
+  const openBookingModal = async (opts?: OpenBookingOptions) => {
     setLastActiveElement(document.activeElement as HTMLElement | null)
+
+    if (calendlyConfig?.usePopupFlow) {
+      const calendlyUrl = buildCalendlyUrl(calendlyConfig)
+      const opened = await openCalendlyPopup(calendlyUrl)
+      if (opened) return
+    }
+
     setBookingPresetServiceType(opts?.serviceType ?? null)
     setIsBookingModalOpen(true)
   }

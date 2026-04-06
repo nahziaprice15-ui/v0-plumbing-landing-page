@@ -66,6 +66,12 @@ The **`/issues`** route is a developer-facing landing page for reporting website
 |----------|-------------|
 | `NEXT_PUBLIC_SITE_URL` | Canonical site origin (no trailing slash). Used for metadata, sitemap, and structured data. Defaults to `https://msandpllc.com` in code if unset. |
 | `NEXT_PUBLIC_GITHUB_ISSUES_URL` | Full URL to this repository’s GitHub Issues tab (e.g. `https://github.com/your-org/your-repo/issues`). When set, the `/issues` page shows a button to open it. If unset, that page falls back to the business email for feedback. |
+| `NEXT_PUBLIC_CALENDLY_EVENT_URL` | Calendly event type URL used for booking embeds and popup flow. |
+| `NEXT_PUBLIC_CALENDLY_PRIMARY_COLOR` | Calendly embed `primary_color` in 6-digit hex without `#` (e.g. `0b3a62`). |
+| `NEXT_PUBLIC_CALENDLY_TEXT_COLOR` | Calendly embed `text_color` in 6-digit hex without `#` (e.g. `0f172a`). |
+| `NEXT_PUBLIC_CALENDLY_BACKGROUND_COLOR` | Calendly embed `background_color` in 6-digit hex without `#` (e.g. `eef2f8`). |
+| `NEXT_PUBLIC_CALENDLY_HIDE_GDPR_BANNER` | `0` to show Calendly GDPR banner, `1` to hide (use per policy/legal guidance). |
+| `NEXT_PUBLIC_CALENDLY_USE_POPUP_FLOW` | `0` keeps CTA behavior on onsite modal fallback; `1` enables Calendly popup for CTA entry points. |
 
 Set these in `.env.local` for local SEO checks and in your host’s environment for production.
 
