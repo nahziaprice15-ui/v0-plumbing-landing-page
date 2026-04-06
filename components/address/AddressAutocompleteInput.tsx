@@ -35,6 +35,11 @@ export function AddressAutocompleteInput({
   const safeValue = value ?? ''
   const [hasServiceError, setHasServiceError] = useState(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
+  const autocompleteRef = useRef<{
+    getPlace: () => { formatted_address?: string } | undefined
+    addListener: (eventName: string, handler: () => void) => { remove: () => void }
+  } | null>(null)
+  const placeChangedListenerRef = useRef<{ remove: () => void } | null>(null)
 
   useEffect(() => {
     let active = true
@@ -42,32 +47,28 @@ export function AddressAutocompleteInput({
     void loadGoogleMapsPlacesScript()
       .then(() => {
         if (!active || !window.google?.maps?.places || !inputRef.current) return
-        const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
-          fields: ['formatted_address'],
-          componentRestrictions: { country: 'us' },
-          bounds: BIAS_BOUNDS,
-          strictBounds: false,
-          types: ['address'],
-        })
+        if (!autocompleteRef.current) {
+          autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
+            fields: ['formatted_address'],
+            componentRestrictions: { country: 'us' },
+            bounds: BIAS_BOUNDS,
+            strictBounds: false,
+            types: ['address'],
+          })
+        }
 
-        const placeListener = autocomplete.addListener('place_changed', () => {
-          const place = autocomplete.getPlace() as { formatted_address?: string } | undefined
+        if (placeChangedListenerRef.current) {
+          placeChangedListenerRef.current.remove()
+          placeChangedListenerRef.current = null
+        }
+
+        placeChangedListenerRef.current = autocompleteRef.current.addListener('place_changed', () => {
+          const place = autocompleteRef.current?.getPlace() as { formatted_address?: string } | undefined
           const selected = place?.formatted_address?.trim() || inputRef.current?.value.trim() || ''
           if (!selected) return
           onChange(selected)
           onAddressSelect?.(selected)
         })
-
-        const nativeInputHandler = () => {
-          if (!inputRef.current) return
-          onChange(inputRef.current.value)
-        }
-        inputRef.current.addEventListener('input', nativeInputHandler)
-
-        return () => {
-          placeListener.remove()
-          inputRef.current?.removeEventListener('input', nativeInputHandler)
-        }
       })
       .catch(() => {
         if (active) setHasServiceError(true)
@@ -75,6 +76,10 @@ export function AddressAutocompleteInput({
 
     return () => {
       active = false
+      if (placeChangedListenerRef.current) {
+        placeChangedListenerRef.current.remove()
+        placeChangedListenerRef.current = null
+      }
     }
   }, [onAddressSelect, onChange])
 
