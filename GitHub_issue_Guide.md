@@ -191,6 +191,35 @@ Expected result: one row with `service_type_id` / `uuid`.
 
 ---
 
+## 14. Images, `public/`, and deployed sites (e.g. Vercel)
+
+Broken images on production are often **404s**: the code references a path that **does not exist** under `public/`, not a misconfigured `next/image` prop.
+
+### 14.1 Rules of thumb
+
+- **Static assets** live under `public/`. A file at `public/images/hero.svg` is served at **`/images/hero.svg`** (no `public` in the URL).
+- **`next/image`** `src` for those files should be that URL string (e.g. `src="/images/hero.svg"`) or a static import. Use **`fill`** only inside a positioned parent (`relative` + explicit size); set **`sizes`** when using `fill` for responsive layouts.
+- **SVG** with `next/image`: paths ending in `.svg` are typically served **unoptimized** by Next.js; no extra config is required for normal local SVGs.
+- **Do not reference assets that are not committed**: if the gallery or metadata points at `/images/foo.png`, `public/images/foo.png` must exist or production will show broken images.
+
+### 14.2 Checklist before closing an issue that touches images
+
+- [ ] Every **`src`** used by `next/image` or `<img>` matches a real file under **`public/`** (case-sensitive on Linux/Vercel).
+- [ ] **`metadata.icons`** / Open Graph / Twitter image URLs in `app/layout.tsx` (and `app/page.tsx` if duplicated) point at **existing** files (e.g. `/icon.svg`, not missing `favicon.ico` / `apple-icon.png` unless those files are added).
+- [ ] **`components/BrandLogo.tsx`** uses a real logo file (e.g. **`/images/ms-p-logo.svg`**); avoid probing optional PNGs unless **`public/images/ms-p-logo.png`** exists.
+- [ ] **`components/QualityWorkGallery.tsx`** (or any carousel) lists only paths that exist; replace missing “future” PNGs with committed assets or add the files in the same PR.
+
+### 14.3 Related files (this repo)
+
+| Area | Typical files |
+|------|-----------------|
+| Gallery / hero visuals | `components/QualityWorkGallery.tsx`, `public/images/*` |
+| Logo | `components/BrandLogo.tsx`, `public/images/ms-p-logo.svg` |
+| Site icons & social preview | `app/layout.tsx`, `app/page.tsx`, `public/icon.svg`, `public/images/plumber-hero.svg` |
+| Schema / absolute URLs | `lib/schema.ts` (uses `metadataBase` + image paths) |
+
+---
+
 ## Quick copy — agent checklist
 
 - [ ] Confirmed milestone context  
@@ -198,6 +227,7 @@ Expected result: one row with `service_type_id` / `uuid`.
 - [ ] Created or updated issue with goal, scope, acceptance criteria  
 - [ ] Linked PR with `Fixes` / `Refs` as appropriate  
 - [ ] Left a final comment when stopping or when work completes  
+- [ ] If the work added or changed images or icon metadata: verified paths under §14  
 
 ---
 

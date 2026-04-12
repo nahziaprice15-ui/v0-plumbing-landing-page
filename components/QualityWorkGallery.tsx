@@ -32,55 +32,55 @@ type ProjectSlide = ProjectSlideSingle | ProjectSlideGallery
 const projects: ProjectSlide[] = [
   {
     layout: 'single',
-    title: 'Residential underground installation',
-    image: '/images/residential-underground-installation-1.png',
+    title: 'Residential bathroom renovation',
+    image: '/images/before-after-1-before.svg',
     description:
-      'PVC drain and vent rough-in in trenches with vertical risers, ready for slab—clean layout in compacted clay.',
-    alt: 'White PVC plumbing rough-in in dug trenches with multiple pipe runs and vertical risers at a residential site',
+      'Fixture and finish upgrades with coordinated tile work, careful rough-in, and protection of surrounding spaces.',
+    alt: 'Bathroom renovation in progress showing updated wall tile, tub and shower area, and plumbing fixtures',
   },
   {
     layout: 'single',
-    title: 'Sewer line installation',
-    image: '/images/sewer-line-installation-1.png',
+    title: 'Completed bathroom transformation',
+    image: '/images/before-after-1-after.svg',
     description:
-      'New sewer run in a straight yard trench from the home—proper depth, bedding, and alignment before backfill.',
-    alt: 'Residential backyard trench with white PVC sewer pipe running from a modern two-story house toward the lawn',
+      'The same space finished—walk-in shower, modern vanity, and polished details ready for daily use.',
+    alt: 'Completed modern bathroom with walk-in shower, vanity, and updated tile finishes',
   },
   {
     layout: 'gallery',
-    title: 'Bathroom installation',
+    title: 'Full bathroom fit-out',
     description:
-      'Full bathroom fit-out: freestanding tub and floor-mounted filler, walk-in shower with rain and handheld fixtures, and marble vanity with vessel sink and toilet—all coordinated tile and trim.',
-    a11yPhotoLabels: 'freestanding tub area, walk-in shower, vanity and toilet',
+      'Multiple views from one project: tub and shower zones, vanity wall, and coordinated fixtures and tile.',
+    a11yPhotoLabels: 'tub and shower area, shower and tile detail, vanity and toilet wall',
     images: [
       {
-        src: '/images/bathroom-installation-tub.png',
-        alt: 'Modern bathroom with freestanding white tub, floor-mounted chrome faucet, large grey wall tiles, and blue geometric floor tile with recessed niche',
+        src: '/images/before-after-2-before.svg',
+        alt: 'Bathroom showing tub and shower wall with tile and fixtures',
       },
       {
-        src: '/images/bathroom-installation-shower.png',
-        alt: 'Walk-in shower with light marble-look wall tile, square rain showerhead, handheld on slide bar, chrome valves, and dark geometric accent tile in niche and on floor',
+        src: '/images/before-after-2-after.svg',
+        alt: 'Updated shower area with glass enclosure, tile, and modern fixtures',
       },
       {
-        src: '/images/bathroom-installation-vanity.png',
-        alt: 'White bathroom vanity with marble countertop, scalloped white vessel sink, waterfall faucet, and modern white toilet on a white wall',
+        src: '/images/before-after-3-before.svg',
+        alt: 'Vanity wall with toilet and sink area during renovation',
       },
     ],
   },
   {
     layout: 'gallery',
-    title: 'Commercial Boiler Installation',
+    title: 'Commercial and large-scale projects',
     description:
-      'Hotel boiler mechanical room: commercial piping, pumps, and overhead distribution—heavy-duty equipment hung and coordinated on schedule.',
-    a11yPhotoLabels: 'boiler room pump station with overhead piping, mechanical room overview',
+      'Coordinated installs across homes and businesses—same attention to detail on bigger jobs and tighter schedules.',
+    a11yPhotoLabels: 'finished bath renovation, MS & P branding',
     images: [
       {
-        src: '/images/hotel-commercial-pipe-install-1.png',
-        alt: 'Hotel boiler mechanical room with red vertical pumps, large black overhead piping, and city view at an upper floor',
+        src: '/images/before-after-3-after.svg',
+        alt: 'Completed bathroom renovation with walk-in shower and premium finishes',
       },
       {
-        src: '/images/hotel-commercial-pipe-install-2.png',
-        alt: 'Hotel boiler mechanical room with row of red and yellow pumps on steel frame, black overhead pipes, and teal wall section',
+        src: '/images/plumber-hero.svg',
+        alt: 'MS & P LLC professional plumber illustration',
       },
     ],
   },
