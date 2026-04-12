@@ -3,22 +3,20 @@ import Link from 'next/link'
 import { SiteChrome } from '@/components/SiteChrome'
 import { articles } from '@/data/articles'
 import { formatDisplayDate } from '@/lib/freshness'
-import { getSiteUrl } from '@/lib/site'
-
-const siteUrl = getSiteUrl()
+import { absoluteUrl } from '@/lib/site'
 
 export const metadata: Metadata = {
   title: 'Plumbing tips & articles | New Orleans | MS & P LLC',
   description:
     'Practical plumbing guidance for New Orleans homeowners—emergencies, water heaters, drains, and more from MS & P LLC.',
   alternates: {
-    canonical: '/articles',
+    canonical: absoluteUrl('/articles'),
   },
   openGraph: {
     title: 'Plumbing tips & articles | MS & P LLC',
     description:
       'Practical plumbing guidance for New Orleans homeowners—emergencies, water heaters, drains, and more.',
-    url: `${siteUrl}/articles`,
+    url: absoluteUrl('/articles'),
     type: 'website',
   },
   twitter: {

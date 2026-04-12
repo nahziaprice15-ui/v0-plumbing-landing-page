@@ -12,7 +12,7 @@ import {
   buildBreadcrumbListJsonLd,
   buildServicePageJsonLd,
 } from '@/lib/schema'
-import { getSiteUrl } from '@/lib/site'
+import { absoluteUrl } from '@/lib/site'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -26,17 +26,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const s = getServiceBySlug(slug)
   if (!s) return {}
-  const siteUrl = getSiteUrl()
   return {
     title: s.title,
     description: s.description,
     alternates: {
-      canonical: `/services/${slug}`,
+      canonical: absoluteUrl(`/services/${slug}`),
     },
     openGraph: {
       title: s.title,
       description: s.description,
-      url: `${siteUrl}/services/${slug}`,
+      url: absoluteUrl(`/services/${slug}`),
       type: 'article',
     },
     twitter: {
