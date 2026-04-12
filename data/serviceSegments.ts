@@ -34,12 +34,6 @@ export type SegmentOffering = {
   iconKey: OfferingIconKey
 }
 
-export type SegmentPricingRow = {
-  label: string
-  display: string
-  note?: string
-}
-
 export type ServiceSegment = {
   id: SegmentId
   tabLabel: string
@@ -47,8 +41,6 @@ export type ServiceSegment = {
   subhead: string
   intro: string
   offerings: SegmentOffering[]
-  pricing: SegmentPricingRow[]
-  pricingDisclaimer: string
 }
 
 export const serviceSegments: ServiceSegment[] = [
@@ -102,14 +94,6 @@ export const serviceSegments: ServiceSegment[] = [
         bullets: ['Pre-purchase / seasonal', 'Shutoff labeling'],
       },
     ],
-    pricing: [
-      { label: 'Service call & diagnosis', display: 'Starting at $89', note: 'Waived toward approved same-day repair in many cases—ask when you call.' },
-      { label: 'Standard labor window', display: '$125–$195 / hr', note: 'Most residential repairs quoted as a flat range after we see the job.' },
-      { label: 'Drain opening (typical branch)', display: 'From $195', note: 'Main line or jetting may differ; we confirm before work.' },
-      { label: 'Water heater swap (like-for-like)', display: 'From $1,850', note: 'Includes standard tank, labor, and disposal; upgrades quoted on site.' },
-    ],
-    pricingDisclaimer:
-      'Prices are examples for planning only. Final pricing follows on-site diagnosis and your written approval before we start major work.',
   },
   {
     id: 'commercial',
@@ -160,14 +144,6 @@ export const serviceSegments: ServiceSegment[] = [
         detailSlug: 'water-heater-service',
       },
     ],
-    pricing: [
-      { label: 'Commercial service call', display: 'From $125', note: 'Covers trip and assessment; proposal provided for larger scopes.' },
-      { label: 'Labor (business hours)', display: '$145–$225 / hr', note: 'Two-tech jobs and confined-space work quoted in advance.' },
-      { label: 'Preventive maintenance agreement', display: 'Custom quote', note: 'Quarterly or monthly jetting, fixture sweeps, and priority response.' },
-      { label: 'After-hours / weekend commercial', display: '1.5× standard', note: 'We confirm rates before dispatch.' },
-    ],
-    pricingDisclaimer:
-      'Commercial work is quoted from walk-through or plans. Net-30 may be available for established accounts—ask our office.',
   },
   {
     id: 'emergency',
@@ -210,14 +186,6 @@ export const serviceSegments: ServiceSegment[] = [
         detailSlug: 'pipe-repair',
       },
     ],
-    pricing: [
-      { label: 'Emergency response fee', display: 'From $195', note: 'Covers after-hours dispatch and first hour of assessment—varies by time and distance.' },
-      { label: 'Emergency labor', display: '$195–$275 / hr', note: 'Nights, weekends, and holidays at premium; we quote expectations on the phone.' },
-      { label: 'Materials & parts', display: 'Pass-through + 15%', note: 'Or use your approved PO process for institutional clients.' },
-      { label: 'True property-threatening flood', display: 'Priority queue', note: 'Tell the dispatcher if standing water is spreading—we triage life-safety and damage first.' },
-    ],
-    pricingDisclaimer:
-      'Emergency pricing reflects immediate response and on-call staffing. We communicate rates before you commit whenever safety allows.',
   },
 ]
 

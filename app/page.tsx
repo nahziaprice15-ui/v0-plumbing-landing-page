@@ -14,7 +14,7 @@ const siteUrl = getSiteUrl()
 export const metadata: Metadata = {
   title: 'New Orleans Plumber | 24/7 Emergency Plumbing | MS & P LLC',
   description:
-    'Licensed New Orleans plumber for emergencies, drain cleaning, water heaters, leaks, and repipes. Fast response, upfront pricing. Book online or call MS & P LLC.',
+    'Licensed New Orleans plumber for emergencies, drain cleaning, water heaters, leaks, and repipes. Fast response and clear estimates. Book online or call MS & P LLC.',
   alternates: {
     canonical: '/',
   },

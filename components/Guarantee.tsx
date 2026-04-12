@@ -22,7 +22,7 @@ const guaranteePoints = [
   {
     icon: ThumbsUp,
     title: 'No Hidden Fees',
-    description: 'Transparent pricing with detailed estimates before we start',
+    description: 'Detailed written estimates and scope before we start',
   },
 ]
 

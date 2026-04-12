@@ -14,7 +14,7 @@ const testimonials = [
     name: 'Michael Chen',
     location: 'French Quarter',
     rating: 5,
-    text: 'Outstanding service! They replaced our water heater quickly and at a fair price. The technician was knowledgeable and cleaned up perfectly.',
+    text: 'Outstanding service! They replaced our water heater quickly and professionally. The technician was knowledgeable and cleaned up perfectly.',
     date: '1 month ago',
   },
   {
@@ -35,7 +35,7 @@ const testimonials = [
     name: 'Jennifer Wilson',
     location: 'Mid-City',
     rating: 5,
-    text: 'Called them for a leak detection and they found issues I didn\'t even know existed. Honest, reliable, and fair pricing. Will use again!',
+    text: 'Called them for a leak detection and they found issues I didn\'t even know existed. Honest, reliable, and straightforward. Will use again!',
     date: '2 months ago',
   },
 ]

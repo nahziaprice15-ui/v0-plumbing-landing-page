@@ -7,7 +7,6 @@ import { QualityWorkGallery } from '@/components/QualityWorkGallery'
 import { Testimonials } from '@/components/Testimonials'
 import { FAQ } from '@/components/FAQ'
 import { Guarantee } from '@/components/Guarantee'
-import { Pricing } from '@/components/Pricing'
 import { useOpenBooking } from '@/components/BookingOpenContext'
 
 export function HomePageClient() {
@@ -20,7 +19,6 @@ export function HomePageClient() {
       <QualityWorkGallery />
       <Testimonials />
       <Guarantee onBookingClick={onBookingClick} />
-      <Pricing onBookingClick={onBookingClick} />
       <FAQ />
     </>
   )

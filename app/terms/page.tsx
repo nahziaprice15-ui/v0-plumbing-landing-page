@@ -23,7 +23,7 @@ export default function TermsPage() {
         <h2 className="text-xl font-semibold">Services</h2>
         <p className="text-muted-foreground">
           We provide residential and commercial plumbing services in the New Orleans area. Service
-          details, pricing, and availability may vary and will be confirmed at the time of booking.
+          details, scope, and availability may vary and will be confirmed at the time of booking.
         </p>
       </section>
 

@@ -38,46 +38,6 @@ export const services = [
   },
 ];
 
-// Pricing Tiers
-export const pricingTiers = [
-  {
-    id: 1,
-    name: "Basic Service Call",
-    price: "$99",
-    description: "Diagnosis and simple repairs",
-    features: ["Service call + diagnosis", "Basic repairs included", "1-hour response"],
-    recommended: false,
-    cta: "Book Now",
-  },
-  {
-    id: 2,
-    name: "Standard Service",
-    price: "$199",
-    description: "Most popular for general maintenance",
-    features: ["Service call + diagnosis", "Parts and labor", "Extended warranty", "Priority booking"],
-    recommended: true,
-    cta: "Get Started",
-  },
-  {
-    id: 3,
-    name: "Premium Package",
-    price: "$399",
-    description: "Complete solution with peace of mind",
-    features: ["Unlimited service calls", "All parts covered", "24/7 emergency access", "Annual maintenance"],
-    recommended: false,
-    cta: "Choose Plan",
-  },
-  {
-    id: 4,
-    name: "Emergency Service",
-    price: "$149",
-    description: "Fast response for urgent issues",
-    features: ["30-minute response", "Holiday service available", "Expert technicians", "Same-day completion goal"],
-    recommended: false,
-    cta: "Call Now",
-  },
-];
-
 // Testimonials
 export const testimonials = [
   {
@@ -100,7 +60,7 @@ export const testimonials = [
     id: 3,
     name: "Lisa Rodriguez",
     service: "Leak Detection",
-    text: "Found a hidden leak that was costing us hundreds. Their technology is impressive and pricing is fair.",
+    text: "Found a hidden leak that was costing us hundreds. Their technology is impressive and they were straightforward from start to finish.",
     rating: 5,
     image: "/images/testimonial-3.svg",
   },
@@ -152,7 +112,7 @@ export const faqs = [
     id: 5,
     question: "How much does a service call cost?",
     answer:
-      "Service calls start at $99 for diagnosis. If you choose us for repairs, we credit that fee toward your bill. No hidden costs!",
+      "It depends on the scope of work and timing. We review estimates with you before major work begins so there are no surprises.",
   },
   {
     id: 6,
@@ -164,7 +124,7 @@ export const faqs = [
     id: 7,
     question: "What if I need service on a holiday?",
     answer:
-      "We're open for emergency service on holidays. Holiday service rates may apply, but we're here when you need us most.",
+      "We're open for emergency service on holidays. Availability may vary; we're here when you need us most.",
   },
   {
     id: 8,
@@ -203,8 +163,8 @@ export const guaranteePoints = [
   },
   {
     id: 2,
-    title: "Fair Pricing",
-    description: "No surprises, transparent cost estimates",
+    title: "Clear estimates",
+    description: "No surprises—scope confirmed before we start",
     icon: "DollarSign",
   },
   {

@@ -30,7 +30,7 @@ export const services: ServiceDefinition[] = [
       {
         heading: 'What we do on an emergency visit',
         paragraphs: [
-          'We locate the source of the problem, shut off water where needed to protect your property, and explain repair or replacement options with clear pricing before major work begins when possible.',
+          'We locate the source of the problem, shut off water where needed to protect your property, and explain repair or replacement options with a clear scope and written approval before major work begins when possible.',
           'Our team carries common parts for typical emergencies so many repairs can be completed in one visit.',
         ],
       },
@@ -50,7 +50,7 @@ export const services: ServiceDefinition[] = [
       {
         question: 'Do you charge more for after-hours emergency plumbing?',
         answer:
-          'Yes. Emergency and after-hours calls include a premium for immediate response and on-call availability. We discuss pricing expectations up front whenever possible.',
+          'Yes. Emergency and after-hours calls reflect immediate response and on-call availability. We discuss what to expect before you approve work whenever possible.',
       },
       {
         question: 'What should I do before the plumber arrives?',
@@ -234,7 +234,7 @@ export const services: ServiceDefinition[] = [
       {
         heading: 'Repair or repipe?',
         paragraphs: [
-          'A single burst in accessible piping is often a straightforward repair. Multiple leaks, poor water quality, visible corrosion, or outdated materials may justify repiping. We give honest recommendations with cost ranges so you can plan.',
+          'A single burst in accessible piping is often a straightforward repair. Multiple leaks, poor water quality, visible corrosion, or outdated materials may justify repiping. We give honest recommendations and written scope so you can plan.',
         ],
       },
       {
