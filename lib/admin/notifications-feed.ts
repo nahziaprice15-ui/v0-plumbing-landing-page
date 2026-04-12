@@ -22,10 +22,15 @@ export async function getAdminNotificationsFeed(
 }
 
 export async function getNotificationBadgeCount(userId: string): Promise<number> {
-  if (isAdminMockDataSource()) {
-    const all = await getComputedAdminNotifications('all')
-    return all.filter((n) => n.severity === 'action_required').length
-  }
+  try {
+    if (isAdminMockDataSource()) {
+      const all = await getComputedAdminNotifications('all')
+      return all.filter((n) => n.severity === 'action_required').length
+    }
 
-  return countUnreadDbNotifications(userId)
+    return countUnreadDbNotifications(userId)
+  } catch (err) {
+    console.error('[admin/notifications-feed] getNotificationBadgeCount failed', err)
+    return 0
+  }
 }
