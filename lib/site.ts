@@ -3,6 +3,14 @@ export function getSiteUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://msandpllc.com').replace(/\/$/, '')
 }
 
+/** Absolute HTTPS URL for metadata and sitemap entries (no trailing slash except root → …/). */
+export function absoluteUrl(path: string) {
+  const base = getSiteUrl()
+  const normalized = path.startsWith('/') ? path : `/${path}`
+  if (normalized === '/') return `${base}/`
+  return `${base}${normalized}`
+}
+
 /** GitHub Issues tab URL for this repo; unset until configured in the host environment. */
 export function getGithubIssuesUrl(): string | undefined {
   const raw = process.env.NEXT_PUBLIC_GITHUB_ISSUES_URL?.trim()
