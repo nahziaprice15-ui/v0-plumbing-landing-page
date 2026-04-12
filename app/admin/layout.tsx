@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   },
 }
 
+/** Admin uses Supabase SSR (`cookies()`); must not be statically generated at build time. */
+export const dynamic = 'force-dynamic'
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const {
