@@ -68,20 +68,32 @@ const projects: ProjectSlide[] = [
     ],
   },
   {
-    layout: 'single',
-    title: 'Water Heater Installation',
-    image: '/images/before-after-3-after.svg',
-    description: 'Installed energy-efficient tankless water heater',
-    alt: 'Professional tankless water heater installation',
+    layout: 'gallery',
+    title: 'Commercial Boiler Installation',
+    description:
+      'Hotel boiler mechanical room: commercial piping, pumps, and overhead distribution—heavy-duty equipment hung and coordinated on schedule.',
+    a11yPhotoLabels: 'boiler room pump station with overhead piping, mechanical room overview',
+    images: [
+      {
+        src: '/images/hotel-commercial-pipe-install-1.png',
+        alt: 'Hotel boiler mechanical room with red vertical pumps, large black overhead piping, and city view at an upper floor',
+      },
+      {
+        src: '/images/hotel-commercial-pipe-install-2.png',
+        alt: 'Hotel boiler mechanical room with row of red and yellow pumps on steel frame, black overhead pipes, and teal wall section',
+      },
+    ],
   },
 ]
 
 function SlideHero({ project, slideIndex }: { project: ProjectSlide; slideIndex: number }) {
   if (project.layout === 'gallery') {
+    const galleryCols =
+      project.images.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'
     return (
       <div className="bg-gray-100 p-2 md:p-3">
         <div
-          className="grid grid-cols-1 gap-2 md:grid-cols-3 md:gap-3"
+          className={`grid grid-cols-1 gap-2 ${galleryCols} md:gap-3`}
           role="group"
           aria-label={`${project.title}: ${project.images.length} photos`}
         >
@@ -134,7 +146,7 @@ export function QualityWorkGallery() {
 
   const liveMessage =
     current.layout === 'gallery'
-      ? `Slide ${currentIndex + 1} of ${projects.length}: ${current.title}. Three photos shown together: ${current.a11yPhotoLabels}.`
+      ? `Slide ${currentIndex + 1} of ${projects.length}: ${current.title}. ${current.images.length} photos shown together: ${current.a11yPhotoLabels}.`
       : `Slide ${currentIndex + 1} of ${projects.length}: ${current.title}`
 
   return (
