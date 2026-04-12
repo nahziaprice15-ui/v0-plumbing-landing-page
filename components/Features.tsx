@@ -60,7 +60,7 @@ export function Features({ onBookingClick }: { onBookingClick: () => void }) {
           </h2>
           <p className="text-lg text-muted-foreground text-pretty">
             From emergency repairs to routine maintenance, we handle homes, businesses, and urgent
-            calls. See everything by category, pricing guides, and one-tap call on our services hub.
+            calls. See everything by category and one-tap call on our services hub.
           </p>
         </div>
 
@@ -111,7 +111,7 @@ export function Features({ onBookingClick }: { onBookingClick: () => void }) {
               Book Your Service Now
             </Button>
             <Button size="lg" variant="outline" className="font-semibold text-lg px-8 border-brand text-brand hover:bg-brand/10" asChild>
-              <Link href="/services">Services &amp; pricing by category</Link>
+              <Link href="/services">Browse services by category</Link>
             </Button>
           </div>
         </div>

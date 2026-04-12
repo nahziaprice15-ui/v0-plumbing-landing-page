@@ -73,11 +73,6 @@ export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
                 </Link>
               </li>
               <li>
-                <Link href="/#pricing" className={`${footerMuted} hover:text-white transition-colors text-[15px]`}>
-                  Pricing
-                </Link>
-              </li>
-              <li>
                 <Link href="/#testimonials" className={`${footerMuted} hover:text-white transition-colors text-[15px]`}>
                   Testimonials
                 </Link>

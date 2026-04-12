@@ -22,7 +22,7 @@ export const homeFaqs: FaqItem[] = [
   {
     question: 'How much do your services cost?',
     answer:
-      'Pricing varies depending on the service needed. We offer free estimates for most jobs and transparent pricing with no hidden fees. Emergency services have a premium rate due to immediate response requirements.',
+      'Every job is different. We provide free estimates for most work and review scope with you before major work begins. Emergency calls prioritize fast response; we walk through what to expect before you approve work whenever it is safe to do so.',
   },
   {
     question: 'Do you provide warranties on your work?',

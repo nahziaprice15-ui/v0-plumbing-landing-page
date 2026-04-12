@@ -131,7 +131,10 @@ export default async function AdminBookingsPage({
           <CardTitle>Bookings</CardTitle>
           <CardDescription>Track and manage your pipeline from request to completion.</CardDescription>
           <p className="mt-1 text-xs text-muted-foreground">
-            Data source: {diagnostics.dataSource} ({diagnostics.queryOk ? 'connected' : 'issue detected'})
+            Data source: {diagnostics.dataSource}
+            {diagnostics.liveReadMode === 'user_session' ? ' · session' : null}
+            {diagnostics.liveReadMode === 'service_role' ? ' · service role' : null} (
+            {diagnostics.queryOk ? 'connected' : 'issue detected'})
           </p>
         </div>
         <Button variant="outline" size="sm" asChild>
@@ -193,6 +196,20 @@ export default async function AdminBookingsPage({
             </p>
           </div>
         )}
+
+        {diagnostics.queryOk &&
+          diagnostics.dataSource === 'live' &&
+          diagnostics.liveReadMode === 'user_session' && (
+            <div className="rounded-md border border-amber-400/40 bg-amber-500/10 p-3 text-sm">
+              <p className="font-medium">Signed-in session mode</p>
+              <p className="text-muted-foreground">
+                Live bookings are loaded with your admin login because{' '}
+                <code className="rounded bg-muted px-1 py-0.5 text-xs">SUPABASE_SERVICE_ROLE_KEY</code> is not set on
+                this server. Add it for Calendly webhooks and other server jobs. The public booking form may still
+                write using the anon key.
+              </p>
+            </div>
+          )}
 
         <div className="flex flex-wrap gap-2">
           {tabItems.map((tab) => (

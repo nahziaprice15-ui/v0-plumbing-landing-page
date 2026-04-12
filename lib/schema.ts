@@ -27,7 +27,6 @@ export function buildLocalBusinessJsonLd() {
     },
     geo: NOLA_GEO,
     hasMap: `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`,
-    priceRange: '$',
     areaServed: {
       '@type': 'AdministrativeArea',
       name: `${SITE.city}, ${SITE.state}`,

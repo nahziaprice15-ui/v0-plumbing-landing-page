@@ -65,27 +65,6 @@ function SegmentPanel({ segment }: { segment: ServiceSegment }) {
           <OfferingCard key={offering.title} offering={offering} onBook={openBooking} />
         ))}
       </div>
-
-      <div className="rounded-xl border border-border bg-muted/30 p-6 md:p-8">
-        <h3 className="text-lg font-bold text-foreground mb-4">Pricing guide — {segment.tabLabel}</h3>
-        <ul className="space-y-4">
-          {segment.pricing.map((row) => (
-            <li
-              key={row.label}
-              className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 border-b border-border/60 pb-4 last:border-0 last:pb-0"
-            >
-              <div>
-                <span className="font-medium text-foreground">{row.label}</span>
-                {row.note ? (
-                  <p className="text-sm text-muted-foreground mt-1 max-w-xl">{row.note}</p>
-                ) : null}
-              </div>
-              <span className="text-base font-semibold text-brand shrink-0">{row.display}</span>
-            </li>
-          ))}
-        </ul>
-        <p className="text-xs text-muted-foreground mt-6 leading-relaxed">{segment.pricingDisclaimer}</p>
-      </div>
     </div>
   )
 }
