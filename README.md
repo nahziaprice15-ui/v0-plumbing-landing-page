@@ -64,7 +64,7 @@ The **`/issues`** route is a developer-facing landing page for reporting website
 
 | Variable | Description |
 |----------|-------------|
-| `NEXT_PUBLIC_SITE_URL` | Canonical site origin (no trailing slash). Used for metadata, sitemap, and structured data. Defaults to `https://msandpllc.com` in code if unset. |
+| `NEXT_PUBLIC_SITE_URL` | **Canonical site origin** (HTTPS, no trailing slash). Drives metadata, `<link rel="canonical">`, `/sitemap.xml`, `/robots.txt`, and JSON-LD. If unset, code defaults to `https://mspllcs.com`. **In production, set this in Vercel** to your real hostname; a stale value (e.g. an old domain) overrides the code default and will confuse Google Search Console. |
 | `NEXT_PUBLIC_GITHUB_ISSUES_URL` | Full URL to this repository’s GitHub Issues tab (e.g. `https://github.com/your-org/your-repo/issues`). When set, the `/issues` page shows a button to open it. If unset, that page falls back to the business email for feedback. |
 | `NEXT_PUBLIC_CALENDLY_EVENT_URL` | Calendly event type URL used for booking embeds and popup flow. |
 | `NEXT_PUBLIC_CALENDLY_PRIMARY_COLOR` | Calendly embed `primary_color` in 6-digit hex without `#` (e.g. `0b3a62`). |
@@ -75,14 +75,26 @@ The **`/issues`** route is a developer-facing landing page for reporting website
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Browser key used for booking modal address autocomplete (Google Maps JavaScript API + Places). |
 | `CALENDLY_WEBHOOK_TOKEN` | Optional shared token for `/api/calendly/webhook?token=...` so webhook ingestion can be authenticated. |
 
-Set these in `.env.local` for local SEO checks and in your host’s environment for production.
+Set these in `.env.local` for local SEO checks and in your host’s environment for production. See [`.env.example`](.env.example) for a minimal template.
+
+### Canonical domain (SEO)
+
+1. **Vercel (Production):** Project → **Settings** → **Environment Variables**. Set `NEXT_PUBLIC_SITE_URL` to exactly one origin, e.g. `https://mspllcs.com`. Remove any value pointing at a legacy or alternate hostname. Redeploy after changing it (`NEXT_PUBLIC_*` is inlined at build time).
+2. **Match `www` vs apex:** [`vercel.json`](vercel.json) includes a **301** redirect from `www.mspllcs.com` to `https://mspllcs.com`. If your canonical host is **`https://www.mspllcs.com`** instead, set `NEXT_PUBLIC_SITE_URL` to that URL and invert the redirect rule (apex → www).
+3. **Never** point `NEXT_PUBLIC_SITE_URL` at a domain you do not intend to rank; it must match the URL users see after any host redirect.
+
+### Google Search Console
+
+- Prefer a **Domain** property for `mspllcs.com` (covers both `www` and apex) **or** a single **URL-prefix** property that matches your canonical host.
+- Submit the sitemap at **`https://mspllcs.com/sitemap.xml`** (or your canonical host + `/sitemap.xml`). Avoid submitting the same sitemap under two unrelated properties unless you understand duplicate reporting.
+- After deploying with the correct `NEXT_PUBLIC_SITE_URL`, use **URL Inspection** on key URLs and request indexing if needed. Old alternate URLs in the index usually consolidate once redirects and canonicals are consistent.
 
 ### Google Maps key restrictions (recommended)
 
 - Application restriction: **HTTP referrers** only.
 - Allowed referrers:
   - `http://localhost:3000/*`
-  - `https://msandpllc.com/*` (and any production aliases)
+  - `https://mspllcs.com/*` (and any production aliases)
   - `https://*.vercel.app/*` (preview deployments)
 - API restriction: allow only **Maps JavaScript API** and **Places API**.
 
@@ -127,6 +139,8 @@ If webhook is not configured (or failing), bookings can still appear in Google C
 ## Deployment
 
 The stack is a standard Next.js app and deploys cleanly on [Vercel](https://vercel.com/) (Analytics is already integrated). Any Node-compatible host that supports Next.js 16 works if configured appropriately.
+
+Set **`NEXT_PUBLIC_SITE_URL`** in the Vercel project to your production origin before or after the first production deploy so sitemaps, canonical tags, and structured data use one hostname (see **Canonical domain (SEO)** above).
 
 Keep **`pnpm-lock.yaml` committed and in sync** with `package.json` (add or upgrade deps with `pnpm add` / `pnpm install`). CI uses a **frozen** install; an outdated lockfile makes `pnpm install` exit with code 1. Use the default Vercel install command (`pnpm install`—not a typo like `pnpm istall`), or leave the install command empty so Vercel infers it.
 
