@@ -3,11 +3,11 @@ export function getSiteUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://msandpllc.com').replace(/\/$/, '')
 }
 
-/** Absolute HTTPS URL for metadata and sitemap entries (no trailing slash except root → …/). */
+/** Absolute HTTPS URL for metadata and sitemap entries (home has no trailing slash; paths are /path). */
 export function absoluteUrl(path: string) {
   const base = getSiteUrl()
   const normalized = path.startsWith('/') ? path : `/${path}`
-  if (normalized === '/') return `${base}/`
+  if (normalized === '/') return base
   return `${base}${normalized}`
 }
 
