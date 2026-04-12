@@ -4,21 +4,19 @@ import { SiteChrome } from '@/components/SiteChrome'
 import { articles } from '@/data/articles'
 import { services } from '@/data/services'
 import { formatDisplayDate, SITE_WIDE_LAST_UPDATED_ISO } from '@/lib/freshness'
-import { getSiteUrl } from '@/lib/site'
-
-const siteUrl = getSiteUrl()
+import { absoluteUrl } from '@/lib/site'
 
 export const metadata: Metadata = {
   title: 'Site map | MS & P LLC Plumbing',
   description:
     'Every public page we list for search engines, plus the XML sitemap for crawlers. MS & P LLC — New Orleans plumbing.',
   alternates: {
-    canonical: '/site-map',
+    canonical: absoluteUrl('/site-map'),
   },
   openGraph: {
     title: 'Site map | MS & P LLC',
     description: 'Browse all indexable pages and access the XML sitemap.',
-    url: `${siteUrl}/site-map`,
+    url: absoluteUrl('/site-map'),
     type: 'website',
   },
 }
@@ -63,6 +61,11 @@ export default function SiteMapPage() {
             <li>
               <Link href="/services" className="text-primary hover:underline">
                 All services
+              </Link>
+            </li>
+            <li>
+              <Link href="/book" className="text-primary hover:underline">
+                Book a service
               </Link>
             </li>
             <li>

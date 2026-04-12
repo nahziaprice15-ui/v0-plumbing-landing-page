@@ -3,9 +3,7 @@ import Link from 'next/link'
 import { ExternalLink, Mail } from 'lucide-react'
 import { SiteChrome } from '@/components/SiteChrome'
 import { Button } from '@/components/ui/button'
-import { getGithubIssuesUrl, getSiteUrl, SITE } from '@/lib/site'
-
-const siteUrl = getSiteUrl()
+import { absoluteUrl, getGithubIssuesUrl, SITE } from '@/lib/site'
 
 export const metadata: Metadata = {
   title: 'Report a website issue | MS & P LLC',
@@ -13,12 +11,12 @@ export const metadata: Metadata = {
     'Report bugs or suggest improvements for this website. Issues are tracked on GitHub when configured.',
   robots: { index: false, follow: true },
   alternates: {
-    canonical: '/issues',
+    canonical: absoluteUrl('/issues'),
   },
   openGraph: {
     title: 'Report a website issue | MS & P LLC',
     description: 'Report bugs or suggest improvements for this website.',
-    url: `${siteUrl}/issues`,
+    url: absoluteUrl('/issues'),
   },
 }
 

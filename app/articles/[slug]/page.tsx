@@ -6,7 +6,7 @@ import { StructuredData } from '@/components/StructuredData'
 import { getAllArticleSlugs, getArticleBySlug } from '@/data/articles'
 import { formatDisplayDate } from '@/lib/freshness'
 import { combineJsonLd, buildArticleJsonLd, buildBreadcrumbListJsonLd } from '@/lib/schema'
-import { getSiteUrl } from '@/lib/site'
+import { absoluteUrl } from '@/lib/site'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -20,17 +20,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const a = getArticleBySlug(slug)
   if (!a) return {}
-  const siteUrl = getSiteUrl()
   return {
     title: `${a.title} | MS & P LLC`,
     description: a.description,
     alternates: {
-      canonical: `/articles/${slug}`,
+      canonical: absoluteUrl(`/articles/${slug}`),
     },
     openGraph: {
       title: a.title,
       description: a.description,
-      url: `${siteUrl}/articles/${slug}`,
+      url: absoluteUrl(`/articles/${slug}`),
       type: 'article',
       publishedTime: a.datePublished,
       modifiedTime: a.dateModified,

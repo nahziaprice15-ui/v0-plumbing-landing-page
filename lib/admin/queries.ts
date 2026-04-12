@@ -232,87 +232,102 @@ export async function getAdminBookingsResult(): Promise<AdminBookingsResult> {
     }
   }
 
-  const access = await getAdminDatabaseClient()
-  if (!access.client) {
-    const message =
-      access.reason === 'not_signed_in'
-        ? 'No admin session. Sign in at /admin-login.'
-        : 'Could not load bookings: add SUPABASE_SERVICE_ROLE_KEY to the server environment, or ensure your profile role is admin or staff.'
-    return {
-      rows: [],
-      diagnostics: {
-        dataSource: 'live',
-        serviceRoleReady: Boolean(getServiceRoleClient()),
-        queryOk: false,
-        errorCode:
-          access.reason === 'not_signed_in' ? 'ADMIN_SESSION_REQUIRED' : 'LIVE_DATA_UNAVAILABLE',
-        errorMessage: message,
-        rowCount: 0,
-      },
+  try {
+    const access = await getAdminDatabaseClient()
+    if (!access.client) {
+      const message =
+        access.reason === 'not_signed_in'
+          ? 'No admin session. Sign in at /admin-login.'
+          : 'Could not load bookings: add SUPABASE_SERVICE_ROLE_KEY to the server environment, or ensure your profile role is admin or staff.'
+      return {
+        rows: [],
+        diagnostics: {
+          dataSource: 'live',
+          serviceRoleReady: Boolean(getServiceRoleClient()),
+          queryOk: false,
+          errorCode:
+            access.reason === 'not_signed_in' ? 'ADMIN_SESSION_REQUIRED' : 'LIVE_DATA_UNAVAILABLE',
+          errorMessage: message,
+          rowCount: 0,
+        },
+      }
     }
-  }
 
-  const db = access.client
-  const bookingsResult = await selectBookingsWithOptionalServiceTypeId(
-    db,
-    'id,confirmation_code,service_type,service_type_id,preferred_date,preferred_time_slot,status,created_at,customers(full_name,phone,email,address)',
-    'id,confirmation_code,service_type,preferred_date,preferred_time_slot,status,created_at,customers(full_name,phone,email,address)',
-  )
-  const data = (bookingsResult.data ?? []).slice(0, 200)
-  const error = bookingsResult.error
+    const db = access.client
+    const bookingsResult = await selectBookingsWithOptionalServiceTypeId(
+      db,
+      'id,confirmation_code,service_type,service_type_id,preferred_date,preferred_time_slot,status,created_at,customers(full_name,phone,email,address)',
+      'id,confirmation_code,service_type,preferred_date,preferred_time_slot,status,created_at,customers(full_name,phone,email,address)',
+    )
+    const data = (bookingsResult.data ?? []).slice(0, 200)
+    const error = bookingsResult.error
 
-  if (error || !data) {
+    if (error || !data) {
+      return {
+        rows: [],
+        diagnostics: {
+          dataSource: 'live',
+          serviceRoleReady: Boolean(getServiceRoleClient()),
+          queryOk: false,
+          errorCode: error?.code ?? 'BOOKINGS_QUERY_FAILED',
+          errorMessage: error?.message ?? 'Bookings query returned no data.',
+          rowCount: 0,
+          liveReadMode: access.liveReadMode,
+        },
+      }
+    }
+
+    const { byId, bySlug } = await getServiceTypeTitleMaps(db)
+
+    const rows = data.map((row) => {
+      const customer = Array.isArray(row.customers) ? row.customers[0] : row.customers
+      return {
+        id: String(row.id),
+        customerName: String(customer?.full_name ?? 'Unknown'),
+        phone: String(customer?.phone ?? '—'),
+        email: String(customer?.email ?? '—'),
+        address: String(customer?.address ?? '—'),
+        serviceType: serviceLabelFromFallback(
+          row.service_type == null ? null : String(row.service_type),
+          row.service_type_id == null ? null : String(row.service_type_id),
+          byId,
+          bySlug,
+        ),
+        confirmationCode: String(row.confirmation_code ?? ''),
+        preferredDate: String(row.preferred_date ?? ''),
+        preferredTimeSlot: String(row.preferred_time_slot ?? '—'),
+        status: asStatus(String(row.status ?? 'pending')),
+        createdAt: String(row.created_at ?? ''),
+      }
+    })
+
     return {
-      rows: [],
+      rows,
       diagnostics: {
         dataSource: 'live',
         serviceRoleReady: Boolean(getServiceRoleClient()),
-        queryOk: false,
-        errorCode: error?.code ?? 'BOOKINGS_QUERY_FAILED',
-        errorMessage: error?.message ?? 'Bookings query returned no data.',
-        rowCount: 0,
+        queryOk: true,
+        errorCode: bookingsResult.missingServiceTypeId ? 'SCHEMA_DRIFT_42703' : null,
+        errorMessage: bookingsResult.missingServiceTypeId
+          ? 'Live DB is missing bookings.service_type_id. Using compatibility mode; run phase1 schema migration.'
+          : null,
+        rowCount: rows.length,
         liveReadMode: access.liveReadMode,
       },
     }
-  }
-
-  const { byId, bySlug } = await getServiceTypeTitleMaps(db)
-
-  const rows = data.map((row) => {
-    const customer = Array.isArray(row.customers) ? row.customers[0] : row.customers
+  } catch (err) {
+    console.error('[admin/queries] getAdminBookingsResult failed', err)
     return {
-      id: String(row.id),
-      customerName: String(customer?.full_name ?? 'Unknown'),
-      phone: String(customer?.phone ?? '—'),
-      email: String(customer?.email ?? '—'),
-      address: String(customer?.address ?? '—'),
-      serviceType: serviceLabelFromFallback(
-        row.service_type == null ? null : String(row.service_type),
-        row.service_type_id == null ? null : String(row.service_type_id),
-        byId,
-        bySlug,
-      ),
-      confirmationCode: String(row.confirmation_code ?? ''),
-      preferredDate: String(row.preferred_date ?? ''),
-      preferredTimeSlot: String(row.preferred_time_slot ?? '—'),
-      status: asStatus(String(row.status ?? 'pending')),
-      createdAt: String(row.created_at ?? ''),
+      rows: [],
+      diagnostics: {
+        dataSource: 'live',
+        serviceRoleReady: Boolean(getServiceRoleClient()),
+        queryOk: false,
+        errorCode: 'BOOKINGS_QUERY_EXCEPTION',
+        errorMessage: err instanceof Error ? err.message : 'Unexpected error loading bookings.',
+        rowCount: 0,
+      },
     }
-  })
-
-  return {
-    rows,
-    diagnostics: {
-      dataSource: 'live',
-      serviceRoleReady: Boolean(getServiceRoleClient()),
-      queryOk: true,
-      errorCode: bookingsResult.missingServiceTypeId ? 'SCHEMA_DRIFT_42703' : null,
-      errorMessage: bookingsResult.missingServiceTypeId
-        ? 'Live DB is missing bookings.service_type_id. Using compatibility mode; run phase1 schema migration.'
-        : null,
-      rowCount: rows.length,
-      liveReadMode: access.liveReadMode,
-    },
   }
 }
 
@@ -324,8 +339,6 @@ export async function getAdminBookings(): Promise<AdminBookingRow[]> {
 export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics> {
   if (isAdminMockDataSource()) return getMockAdminDashboardMetrics()
 
-  const access = await getAdminDatabaseClient()
-  const db = access.client
   const empty: AdminDashboardMetrics = {
     bookingsCreatedToday: 0,
     bookingsScheduledToday: 0,
@@ -340,92 +353,100 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
     topBookedService: '—',
     topEntryPages: [],
   }
-  if (!db) return empty
 
-  const todayStart = startOfTodayIso()
-  const todayEnd = endOfTodayIso()
-  const todayDate = localDateString()
-  const sevenDayStart = subDays(new Date(), 7).toISOString()
-  const now = new Date()
-  const plus7 = subDays(now, -7)
+  try {
+    const access = await getAdminDatabaseClient()
+    const db = access.client
+    if (!db) return empty
 
-  const [bookingQuery, { data: funnel }] = await Promise.all([
-    selectBookingsWithOptionalServiceTypeId(
-      db,
-      'status,service_type,service_type_id,preferred_date,created_at',
-      'status,service_type,preferred_date,created_at',
-    ),
-    db.from('booking_funnel_events').select('event_type,source_path').gte('created_at', sevenDayStart),
-  ])
+    const todayStart = startOfTodayIso()
+    const todayEnd = endOfTodayIso()
+    const todayDate = localDateString()
+    const sevenDayStart = subDays(new Date(), 7).toISOString()
+    const now = new Date()
+    const plus7 = subDays(now, -7)
 
-  const all = bookingQuery.data ?? []
-  const funnelRows = funnel ?? []
-  const { byId, bySlug } = await getServiceTypeTitleMaps(db)
+    const [bookingQuery, { data: funnel }] = await Promise.all([
+      selectBookingsWithOptionalServiceTypeId(
+        db,
+        'status,service_type,service_type_id,preferred_date,created_at',
+        'status,service_type,preferred_date,created_at',
+      ),
+      db.from('booking_funnel_events').select('event_type,source_path').gte('created_at', sevenDayStart),
+    ])
 
-  const bookingsCreatedToday = all.filter(
-    (b) => String(b.created_at ?? '') >= todayStart && String(b.created_at ?? '') <= todayEnd,
-  ).length
+    const all = bookingQuery.data ?? []
+    const funnelRows = funnel ?? []
+    const { byId, bySlug } = await getServiceTypeTitleMaps(db)
 
-  const bookingsScheduledToday = all.filter((b) => String(b.preferred_date ?? '') === todayDate).length
+    const bookingsCreatedToday = all.filter(
+      (b) => String(b.created_at ?? '') >= todayStart && String(b.created_at ?? '') <= todayEnd,
+    ).length
 
-  const pendingConfirmations = all.filter((b) => b.status === 'pending').length
-  const inProgress = all.filter((b) => b.status === 'in_progress').length
+    const bookingsScheduledToday = all.filter((b) => String(b.preferred_date ?? '') === todayDate).length
 
-  const completedScheduledToday = all.filter(
-    (b) => b.status === 'completed' && String(b.preferred_date ?? '') === todayDate,
-  ).length
-  const cancelledScheduledToday = all.filter(
-    (b) => b.status === 'cancelled' && String(b.preferred_date ?? '') === todayDate,
-  ).length
+    const pendingConfirmations = all.filter((b) => b.status === 'pending').length
+    const inProgress = all.filter((b) => b.status === 'in_progress').length
 
-  const upcoming7Days = all.filter((b) => {
-    if (!b.preferred_date) return false
-    const d = new Date(String(b.preferred_date))
-    return d >= now && d <= plus7
-  }).length
+    const completedScheduledToday = all.filter(
+      (b) => b.status === 'completed' && String(b.preferred_date ?? '') === todayDate,
+    ).length
+    const cancelledScheduledToday = all.filter(
+      (b) => b.status === 'cancelled' && String(b.preferred_date ?? '') === todayDate,
+    ).length
 
-  const serviceCounts = new Map<string, number>()
-  for (const row of all) {
-    const key = serviceLabelFromFallback(
-      row.service_type == null ? null : String(row.service_type),
-      row.service_type_id == null ? null : String(row.service_type_id),
-      byId,
-      bySlug,
-    )
-    serviceCounts.set(key, (serviceCounts.get(key) ?? 0) + 1)
-  }
-  const topBookedService =
-    [...serviceCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—'
+    const upcoming7Days = all.filter((b) => {
+      if (!b.preferred_date) return false
+      const d = new Date(String(b.preferred_date))
+      return d >= now && d <= plus7
+    }).length
 
-  const bookingStarts = funnelRows.filter((r) => r.event_type === 'start').length
-  const bookingSubmissions = funnelRows.filter((r) => r.event_type === 'submit').length
-  const bookingConversionRate =
-    bookingStarts > 0 ? Number(((bookingSubmissions / bookingStarts) * 100).toFixed(1)) : 0
+    const serviceCounts = new Map<string, number>()
+    for (const row of all) {
+      const key = serviceLabelFromFallback(
+        row.service_type == null ? null : String(row.service_type),
+        row.service_type_id == null ? null : String(row.service_type_id),
+        byId,
+        bySlug,
+      )
+      serviceCounts.set(key, (serviceCounts.get(key) ?? 0) + 1)
+    }
+    const topBookedService =
+      [...serviceCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—'
 
-  const pathCounts = new Map<string, number>()
-  for (const row of funnelRows) {
-    if (row.event_type !== 'submit') continue
-    const path = String(row.source_path ?? '/')
-    pathCounts.set(path, (pathCounts.get(path) ?? 0) + 1)
-  }
-  const topEntryPages = [...pathCounts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([sourcePath, submissions]) => ({ sourcePath, submissions }))
+    const bookingStarts = funnelRows.filter((r) => r.event_type === 'start').length
+    const bookingSubmissions = funnelRows.filter((r) => r.event_type === 'submit').length
+    const bookingConversionRate =
+      bookingStarts > 0 ? Number(((bookingSubmissions / bookingStarts) * 100).toFixed(1)) : 0
 
-  return {
-    bookingsCreatedToday,
-    bookingsScheduledToday,
-    pendingConfirmations,
-    inProgress,
-    completedScheduledToday,
-    cancelledScheduledToday,
-    upcoming7Days,
-    bookingStarts,
-    bookingSubmissions,
-    bookingConversionRate,
-    topBookedService,
-    topEntryPages,
+    const pathCounts = new Map<string, number>()
+    for (const row of funnelRows) {
+      if (row.event_type !== 'submit') continue
+      const path = String(row.source_path ?? '/')
+      pathCounts.set(path, (pathCounts.get(path) ?? 0) + 1)
+    }
+    const topEntryPages = [...pathCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([sourcePath, submissions]) => ({ sourcePath, submissions }))
+
+    return {
+      bookingsCreatedToday,
+      bookingsScheduledToday,
+      pendingConfirmations,
+      inProgress,
+      completedScheduledToday,
+      cancelledScheduledToday,
+      upcoming7Days,
+      bookingStarts,
+      bookingSubmissions,
+      bookingConversionRate,
+      topBookedService,
+      topEntryPages,
+    }
+  } catch (err) {
+    console.error('[admin/queries] getAdminDashboardMetrics failed', err)
+    return empty
   }
 }
 
@@ -737,6 +758,19 @@ function computeOperationalInsights(
   }
 }
 
+function emptyOperationalInsights(slaHours: number): AdminOperationalInsights {
+  return {
+    slaPendingThresholdHours: slaHours,
+    pendingOlderThanThreshold: 0,
+    emergencyBookingsLast30d: 0,
+    residentialBookingsCount: 0,
+    commercialBookingsCount: 0,
+    noShowRate7d: 0,
+    cancelRate7d: 0,
+    repeatEmergencyCustomers30d: 0,
+  }
+}
+
 async function getOperationalBookingInputs(): Promise<OperationalBookingInput[]> {
   if (isAdminMockDataSource()) {
     const rows = await getAdminBookings()
@@ -787,8 +821,13 @@ async function getOperationalBookingInputs(): Promise<OperationalBookingInput[]>
 
 export async function getAdminOperationalInsights(): Promise<AdminOperationalInsights> {
   const slaHours = 4
-  const inputs = await getOperationalBookingInputs()
-  return computeOperationalInsights(inputs, slaHours)
+  try {
+    const inputs = await getOperationalBookingInputs()
+    return computeOperationalInsights(inputs, slaHours)
+  } catch (err) {
+    console.error('[admin/queries] getAdminOperationalInsights failed', err)
+    return emptyOperationalInsights(slaHours)
+  }
 }
 
 export type BookingActivityRow = {
@@ -813,37 +852,42 @@ export async function getRecentBookingActivity(limit: number): Promise<BookingAc
     }))
   }
 
-  const access = await getAdminDatabaseClient()
-  const db = access.client
-  if (!db) return []
+  try {
+    const access = await getAdminDatabaseClient()
+    const db = access.client
+    if (!db) return []
 
-  const { data, error } = await db
-    .from('booking_events')
-    .select('id,booking_id,event_type,payload,created_at')
-    .order('created_at', { ascending: false })
-    .limit(limit)
+    const { data, error } = await db
+      .from('booking_events')
+      .select('id,booking_id,event_type,payload,created_at')
+      .order('created_at', { ascending: false })
+      .limit(limit)
 
-  if (isMissingBookingEventsTableError(error)) {
-    console.warn('[admin/queries] booking_events table missing; returning empty activity feed')
+    if (isMissingBookingEventsTableError(error)) {
+      console.warn('[admin/queries] booking_events table missing; returning empty activity feed')
+      return []
+    }
+    if (error || !data) return []
+
+    return data.map((r) => {
+      const payload = (r.payload && typeof r.payload === 'object' ? r.payload : {}) as Record<string, unknown>
+      const shortId = String(r.booking_id ?? '').slice(0, 8)
+      return {
+        id: String(r.id),
+        bookingId: String(r.booking_id ?? ''),
+        eventType: String(r.event_type ?? ''),
+        payload,
+        createdAt: String(r.created_at ?? ''),
+        label:
+          r.event_type === 'status_change'
+            ? `${shortId || 'booking'} · ${String(payload.from ?? '—')} → ${String(payload.to ?? '—')}`
+            : `${shortId || 'booking'} · ${String(r.event_type ?? '')}`,
+      }
+    })
+  } catch (err) {
+    console.error('[admin/queries] getRecentBookingActivity failed', err)
     return []
   }
-  if (error || !data) return []
-
-  return data.map((r) => {
-    const payload = (r.payload && typeof r.payload === 'object' ? r.payload : {}) as Record<string, unknown>
-    const shortId = String(r.booking_id ?? '').slice(0, 8)
-    return {
-      id: String(r.id),
-      bookingId: String(r.booking_id ?? ''),
-      eventType: String(r.event_type ?? ''),
-      payload,
-      createdAt: String(r.created_at ?? ''),
-      label:
-        r.event_type === 'status_change'
-          ? `${shortId || 'booking'} · ${String(payload.from ?? '—')} → ${String(payload.to ?? '—')}`
-          : `${shortId || 'booking'} · ${String(r.event_type ?? '')}`,
-    }
-  })
 }
 
 export async function getBookingsForClientKey(clientKey: string): Promise<AdminBookingRow[]> {

@@ -1,5 +1,7 @@
 declare namespace NodeJS {
   interface ProcessEnv {
+    /** Public site origin for canonical URLs, sitemap, and robots (https, no trailing slash). */
+    NEXT_PUBLIC_SITE_URL?: string
     NEXT_PUBLIC_SUPABASE_URL: string
     NEXT_PUBLIC_SUPABASE_ANON_KEY: string
     NEXT_PUBLIC_CALENDLY_EVENT_URL?: string | undefined

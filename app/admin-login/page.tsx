@@ -6,6 +6,7 @@ import { SiteChrome } from '@/components/SiteChrome'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { absoluteUrl } from '@/lib/site'
 
 export const metadata: Metadata = {
   title: 'Admin Access | MS & P LLC',
@@ -13,6 +14,12 @@ export const metadata: Metadata = {
   robots: {
     index: false,
     follow: false,
+  },
+  alternates: {
+    canonical: absoluteUrl('/admin-login'),
+  },
+  openGraph: {
+    url: absoluteUrl('/admin-login'),
   },
 }
 

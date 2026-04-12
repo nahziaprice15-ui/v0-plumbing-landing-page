@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { StructuredData } from '@/components/StructuredData'
 import { HomePageEntry } from '@/components/HomePageEntry'
 import { homeFaqs, buildFaqPageJsonLd } from '@/data/faqs'
-import { getSiteUrl } from '@/lib/site'
+import { absoluteUrl, getSiteUrl } from '@/lib/site'
 import {
   buildLocalBusinessJsonLd,
   buildPlumbingServiceJsonLd,
@@ -16,12 +16,12 @@ export const metadata: Metadata = {
   description:
     'Licensed New Orleans plumber for emergencies, drain cleaning, water heaters, leaks, and repipes. Fast response and clear estimates. Book online or call MS & P LLC.',
   alternates: {
-    canonical: '/',
+    canonical: absoluteUrl('/'),
   },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: siteUrl,
+    url: absoluteUrl('/'),
     siteName: 'MS & P LLC Plumbing',
     title: 'New Orleans Plumber | 24/7 Emergency | MS & P LLC',
     description:

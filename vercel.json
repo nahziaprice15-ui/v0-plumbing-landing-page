@@ -4,5 +4,13 @@
       "path": "/api/cron/admin-digest",
       "schedule": "0 14 * * *"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.mspllcs.com" }],
+      "destination": "https://mspllcs.com/:path*",
+      "permanent": true
+    }
   ]
 }
