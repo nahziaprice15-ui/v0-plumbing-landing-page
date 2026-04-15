@@ -42,6 +42,12 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  async redirects() {
+    return [
+      { source: '/favicon.ico', destination: '/icon.svg', permanent: false },
+      { source: '/apple-touch-icon.png', destination: '/icon.svg', permanent: false },
+    ]
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
   },

@@ -30,6 +30,7 @@ export function BrandLogo({
         height={72}
         className={`w-auto ${innerHeights[size]}`}
         priority
+        unoptimized
       />
     </span>
   )

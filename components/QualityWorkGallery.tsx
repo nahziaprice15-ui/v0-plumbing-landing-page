@@ -109,6 +109,7 @@ function SlideHero({ project, slideIndex }: { project: ProjectSlide; slideIndex:
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 280px"
                 priority={slideIndex === 0 && i === 0}
+                unoptimized
               />
             </div>
           ))}
@@ -126,6 +127,7 @@ function SlideHero({ project, slideIndex }: { project: ProjectSlide; slideIndex:
         className="object-cover"
         sizes="(max-width: 896px) 100vw, 896px"
         priority={slideIndex === 0}
+        unoptimized
       />
     </div>
   )
