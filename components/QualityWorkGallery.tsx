@@ -33,18 +33,18 @@ const projects: ProjectSlide[] = [
   {
     layout: 'single',
     title: 'Residential bathroom renovation',
-    image: '/images/before-after-1-before.svg',
+    image: '/images/bathroom-installation-tub.png',
     description:
       'Fixture and finish upgrades with coordinated tile work, careful rough-in, and protection of surrounding spaces.',
-    alt: 'Bathroom renovation in progress showing updated wall tile, tub and shower area, and plumbing fixtures',
+    alt: 'Bathroom renovation in progress showing updated tub and plumbing fixtures',
   },
   {
     layout: 'single',
     title: 'Completed bathroom transformation',
-    image: '/images/before-after-1-after.svg',
+    image: '/images/bathroom-installation-shower.png',
     description:
       'The same space finished—walk-in shower, modern vanity, and polished details ready for daily use.',
-    alt: 'Completed modern bathroom with walk-in shower, vanity, and updated tile finishes',
+    alt: 'Completed modern bathroom with updated shower area and tile finishes',
   },
   {
     layout: 'gallery',
@@ -54,16 +54,16 @@ const projects: ProjectSlide[] = [
     a11yPhotoLabels: 'tub and shower area, shower and tile detail, vanity and toilet wall',
     images: [
       {
-        src: '/images/before-after-2-before.svg',
+        src: '/images/bathroom-installation-tub.png',
         alt: 'Bathroom showing tub and shower wall with tile and fixtures',
       },
       {
-        src: '/images/before-after-2-after.svg',
-        alt: 'Updated shower area with glass enclosure, tile, and modern fixtures',
+        src: '/images/bathroom-installation-shower.png',
+        alt: 'Updated shower area with tile and modern fixtures',
       },
       {
-        src: '/images/before-after-3-before.svg',
-        alt: 'Vanity wall with toilet and sink area during renovation',
+        src: '/images/bathroom-installation-vanity.png',
+        alt: 'Vanity wall with sink and updated finishes',
       },
     ],
   },
@@ -72,15 +72,15 @@ const projects: ProjectSlide[] = [
     title: 'Commercial and large-scale projects',
     description:
       'Coordinated installs across homes and businesses—same attention to detail on bigger jobs and tighter schedules.',
-    a11yPhotoLabels: 'finished bath renovation, MS & P branding',
+    a11yPhotoLabels: 'hotel commercial pipe installation views',
     images: [
       {
-        src: '/images/before-after-3-after.svg',
-        alt: 'Completed bathroom renovation with walk-in shower and premium finishes',
+        src: '/images/hotel-commercial-pipe-install-1.png',
+        alt: 'Commercial pipe installation at hotel property, first view',
       },
       {
-        src: '/images/plumber-hero.svg',
-        alt: 'MS & P LLC professional plumber illustration',
+        src: '/images/hotel-commercial-pipe-install-2.png',
+        alt: 'Commercial pipe installation at hotel property, second view',
       },
     ],
   },
@@ -109,7 +109,6 @@ function SlideHero({ project, slideIndex }: { project: ProjectSlide; slideIndex:
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 280px"
                 priority={slideIndex === 0 && i === 0}
-                unoptimized
               />
             </div>
           ))}
@@ -127,7 +126,6 @@ function SlideHero({ project, slideIndex }: { project: ProjectSlide; slideIndex:
         className="object-cover"
         sizes="(max-width: 896px) 100vw, 896px"
         priority={slideIndex === 0}
-        unoptimized
       />
     </div>
   )

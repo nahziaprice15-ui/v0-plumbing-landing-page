@@ -26,14 +26,14 @@ export const metadata: Metadata = {
     title: 'New Orleans Plumber | 24/7 Emergency | MS & P LLC',
     description:
       'Licensed New Orleans plumber: emergencies, drains, water heaters, leak detection, fixtures, and pipe repair. Book online today.',
-    images: [{ url: '/images/plumber-hero.svg', width: 1200, height: 800, alt: 'MS & P LLC Professional Plumber' }],
+    images: [{ url: '/images/plumber-hero.jpg', width: 1200, height: 800, alt: 'MS & P LLC Professional Plumber' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'New Orleans Plumber | MS & P LLC',
     description:
       '24/7 emergency plumbing, drain cleaning, and water heaters in New Orleans. Licensed and insured.',
-    images: ['/images/plumber-hero.svg'],
+    images: ['/images/plumber-hero.jpg'],
   },
 }
 

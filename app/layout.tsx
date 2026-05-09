@@ -23,11 +23,11 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     siteName: 'MS & P LLC Plumbing',
-    images: [{ url: '/images/plumber-hero.svg', width: 1200, height: 800, alt: 'MS & P LLC Professional Plumber' }],
+    images: [{ url: '/images/plumber-hero.jpg', width: 1200, height: 800, alt: 'MS & P LLC Professional Plumber' }],
   },
   twitter: {
     card: 'summary_large_image',
-    images: ['/images/plumber-hero.svg'],
+    images: ['/images/plumber-hero.jpg'],
   },
   robots: {
     index: true,
