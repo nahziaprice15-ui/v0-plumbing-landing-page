@@ -10,9 +10,16 @@ export async function signInAdmin(formData: FormData) {
     redirect('/admin-login?error=1')
   }
 
-  const supabase = await createClient()
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
-  if (error) {
+  try {
+    const supabase = await createClient()
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) {
+      redirect('/admin-login?error=1')
+    }
+  } catch (err) {
+    // Re-throw Next.js redirect errors — they must propagate to work correctly.
+    if ((err as { digest?: string })?.digest?.startsWith('NEXT_REDIRECT')) throw err
+    // Any other error (Supabase config missing, network failure, etc.) → show login error.
     redirect('/admin-login?error=1')
   }
 
