@@ -10,7 +10,7 @@ const innerHeights: Record<BrandLogoSize, string> = {
   footer: 'h-16',
 }
 
-const LOGO_SRC = '/images/ms-p-logo.svg'
+const LOGO_SRC = '/images/ms-p-logo.png'
 
 export function BrandLogo({
   size = 'nav',
@@ -30,7 +30,6 @@ export function BrandLogo({
         height={72}
         className={`w-auto ${innerHeights[size]}`}
         priority
-        unoptimized
       />
     </span>
   )
