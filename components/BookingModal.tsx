@@ -18,13 +18,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { AddressAutocompleteInput } from '@/components/address/AddressAutocompleteInput'
-import { BOOKING_DATE_FULL_MESSAGE } from '@/lib/booking-messages'
-import {
-  addCalendarDaysYmd,
-  fetchBookingAvailability,
-  getClientTodayDateString,
-  type BookingAvailabilityDates,
-} from '@/lib/booking-availability-ui'
+import { getClientTodayDateString } from '@/lib/booking-availability-ui'
 import { SITE } from '@/lib/site'
 import type { BookingServiceTypeId } from '@/lib/bookingServiceType'
 
@@ -75,8 +69,6 @@ type BookingFormData = z.infer<typeof bookingSchema>
 
 export function BookingModal({ isOpen, onClose, presetServiceType = null }: BookingModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [availability, setAvailability] = useState<BookingAvailabilityDates>({})
-  const [availabilityLoading, setAvailabilityLoading] = useState(false)
   const modalRef = useRef<HTMLDivElement>(null)
   const firstInputRef = useRef<HTMLInputElement>(null)
   const focusableElementsRef = useRef<HTMLElement[]>([])
@@ -107,30 +99,7 @@ export function BookingModal({ isOpen, onClose, presetServiceType = null }: Book
   })
 
   const phoneValue = watch('phone')
-  const preferredDateValue = watch('preferredDate')
 
-  useEffect(() => {
-    if (!isOpen) return
-    const today = getClientTodayDateString()
-    const to = addCalendarDaysYmd(today, 90)
-    setAvailabilityLoading(true)
-    void fetchBookingAvailability(today, to)
-      .then(setAvailability)
-      .finally(() => setAvailabilityLoading(false))
-  }, [isOpen])
-
-  useEffect(() => {
-    if (!preferredDateValue) {
-      clearErrors('preferredDate')
-      return
-    }
-    const row = availability[preferredDateValue]
-    if (row && !row.available) {
-      setError('preferredDate', { type: 'manual', message: BOOKING_DATE_FULL_MESSAGE })
-    } else {
-      clearErrors('preferredDate')
-    }
-  }, [preferredDateValue, availability, setError, clearErrors])
 
   // Fresh form when the modal opens (and apply service preset from the CTA that opened it).
   useEffect(() => {
@@ -146,16 +115,6 @@ export function BookingModal({ isOpen, onClose, presetServiceType = null }: Book
       notes: '',
     })
   }, [isOpen, presetServiceType, reset])
-
-  useEffect(() => {
-    if (!isOpen) return
-    const sourcePath = typeof window !== 'undefined' ? window.location.pathname : '/'
-    void fetch('/api/booking/start', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sourcePath, formVariant: 'modal' }),
-    }).catch(() => undefined)
-  }, [isOpen])
 
   // Format phone number as user types
   useEffect(() => {
@@ -240,19 +199,6 @@ export function BookingModal({ isOpen, onClose, presetServiceType = null }: Book
   if (!isOpen) return null
 
   const onSubmit = async (data: BookingFormData) => {
-    if (
-      data.preferredDate &&
-      availability[data.preferredDate] &&
-      !availability[data.preferredDate].available
-    ) {
-      setError('preferredDate', { type: 'manual', message: BOOKING_DATE_FULL_MESSAGE })
-      toast.error('This date is fully booked', {
-        description: BOOKING_DATE_FULL_MESSAGE,
-        duration: 6000,
-      })
-      return
-    }
-
     setIsSubmitting(true)
     try {
       const response = await fetch('/api/booking', {
