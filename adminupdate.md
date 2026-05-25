@@ -12,6 +12,12 @@ structured system a plumbing business owner can actually use and maintain.
 ## Phase 1 — Cleanup (Remove Old Broken System)
 
 ### Files to delete
+
+
+
+
+
+1
 - `app/admin/` — entire directory (all broken admin portal pages)
 - `app/admin-login/` — entire directory (broken login page + actions)
 - `lib/admin/` — entire directory (all admin utilities, queries, mock data)
