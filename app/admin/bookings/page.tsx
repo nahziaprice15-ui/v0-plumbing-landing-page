@@ -39,10 +39,12 @@ const TABS = [
 ]
 
 async function fetchBookings(status?: string): Promise<AdminBookingRow[]> {
-  if (process.env.ADMIN_DATA_SOURCE === 'mock') {
-    return getMockBookings(status || null)
+  try {
+    if (process.env.ADMIN_DATA_SOURCE === 'mock') return getMockBookings(status || null)
+    return await getAdminBookings({ status: (status as BookingStatus) || null })
+  } catch {
+    return []
   }
-  return getAdminBookings({ status: (status as BookingStatus) || null })
 }
 
 function formatDate(dateStr: string | null) {

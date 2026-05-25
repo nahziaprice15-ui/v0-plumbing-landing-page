@@ -13,13 +13,15 @@ const SERVICE_LABELS: Record<string, string> = {
 }
 
 async function fetchSlaBookings(): Promise<AdminBookingRow[]> {
-  if (process.env.ADMIN_DATA_SOURCE === 'mock') {
-    const cutoff = new Date(Date.now() - 4 * 60 * 60 * 1000)
-    return getMockBookings('pending').filter(
-      (b) => new Date(b.created_at) < cutoff,
-    )
+  try {
+    if (process.env.ADMIN_DATA_SOURCE === 'mock') {
+      const cutoff = new Date(Date.now() - 4 * 60 * 60 * 1000)
+      return getMockBookings('pending').filter((b) => new Date(b.created_at) < cutoff)
+    }
+    return await getPendingSlabookings(4)
+  } catch {
+    return []
   }
-  return getPendingSlabookings(4)
 }
 
 function formatTimeAgo(dateStr: string) {

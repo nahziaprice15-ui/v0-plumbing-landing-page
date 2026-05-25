@@ -30,10 +30,12 @@ const STATUS_LABELS: Record<BookingStatus, string> = {
 }
 
 async function fetchClientBookings(phone: string): Promise<AdminBookingRow[]> {
-  if (process.env.ADMIN_DATA_SOURCE === 'mock') {
-    return getMockBookings().filter((b) => b.phone === phone)
+  try {
+    if (process.env.ADMIN_DATA_SOURCE === 'mock') return getMockBookings().filter((b) => b.phone === phone)
+    return await getClientBookings(phone)
+  } catch {
+    return []
   }
-  return getClientBookings(phone)
 }
 
 function formatDate(dateStr: string | null) {

@@ -41,11 +41,15 @@ function getTimeGroup(time: string | null): TimeGroup {
 }
 
 async function fetchTodayBookings(): Promise<AdminBookingRow[]> {
-  if (process.env.ADMIN_DATA_SOURCE === 'mock') {
-    const today = new Date().toISOString().slice(0, 10)
-    return getMockBookings().filter((b) => b.preferred_date === today)
+  try {
+    if (process.env.ADMIN_DATA_SOURCE === 'mock') {
+      const today = new Date().toISOString().slice(0, 10)
+      return getMockBookings().filter((b) => b.preferred_date === today)
+    }
+    return await getTodayBookings()
+  } catch {
+    return []
   }
-  return getTodayBookings()
 }
 
 function BookingCard({ booking }: { booking: AdminBookingRow }) {

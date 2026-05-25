@@ -14,10 +14,12 @@ const SERVICE_LABELS: Record<string, string> = {
 }
 
 async function fetchClients(): Promise<ClientSummaryRow[]> {
-  if (process.env.ADMIN_DATA_SOURCE === 'mock') {
-    return getMockClientSummaries()
+  try {
+    if (process.env.ADMIN_DATA_SOURCE === 'mock') return getMockClientSummaries()
+    return await getClientSummaries()
+  } catch {
+    return []
   }
-  return getClientSummaries()
 }
 
 function formatDate(dateStr: string | null) {

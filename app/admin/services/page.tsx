@@ -4,10 +4,12 @@ import type { ServiceDemandRow } from '@/lib/admin/queries'
 import { ServicesClientView } from './_components/ServicesClientView'
 
 async function fetchDemand(days: number): Promise<ServiceDemandRow[]> {
-  if (process.env.ADMIN_DATA_SOURCE === 'mock') {
-    return getMockServiceDemand()
+  try {
+    if (process.env.ADMIN_DATA_SOURCE === 'mock') return getMockServiceDemand()
+    return await getServiceDemand(days)
+  } catch {
+    return []
   }
-  return getServiceDemand(days)
 }
 
 export default async function ServicesPage() {

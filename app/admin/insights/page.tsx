@@ -13,10 +13,12 @@ const SERVICE_LABELS: Record<string, string> = {
 }
 
 async function fetchDemand(): Promise<ServiceDemandRow[]> {
-  if (process.env.ADMIN_DATA_SOURCE === 'mock') {
-    return getMockServiceDemand()
+  try {
+    if (process.env.ADMIN_DATA_SOURCE === 'mock') return getMockServiceDemand()
+    return await getServiceDemand(30)
+  } catch {
+    return []
   }
-  return getServiceDemand(30)
 }
 
 export default async function InsightsPage() {

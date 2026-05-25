@@ -53,10 +53,12 @@ async function saveNotesAction(formData: FormData) {
 }
 
 async function fetchBooking(id: string): Promise<AdminBookingRow | null> {
-  if (process.env.ADMIN_DATA_SOURCE === 'mock') {
-    return getMockBookingById(id)
+  try {
+    if (process.env.ADMIN_DATA_SOURCE === 'mock') return getMockBookingById(id)
+    return await getAdminBookingById(id)
+  } catch {
+    return null
   }
-  return getAdminBookingById(id)
 }
 
 function formatDate(dateStr: string | null) {
