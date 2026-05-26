@@ -442,11 +442,7 @@ export function BookingModal({ isOpen, onClose, presetServiceType = null }: Book
                   aria-invalid={errors.preferredDate ? 'true' : 'false'}
                   aria-describedby={errors.preferredDate ? 'preferredDate-error' : undefined}
                   className={errors.preferredDate ? 'border-destructive' : ''}
-                  disabled={availabilityLoading}
                 />
-                {availabilityLoading ? (
-                  <p className="text-xs text-muted-foreground">Loading availability…</p>
-                ) : null}
                 {errors.preferredDate && (
                   <p id="preferredDate-error" className="text-sm text-destructive" role="alert">
                     {errors.preferredDate.message}

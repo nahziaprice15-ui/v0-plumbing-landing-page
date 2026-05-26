@@ -48,7 +48,12 @@ export function AddressAutocompleteInput({
       .then(() => {
         if (!active || !window.google?.maps?.places || !inputRef.current) return
         if (!autocompleteRef.current) {
-          autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const AC = (window.google.maps.places as any).Autocomplete as new (
+            input: HTMLInputElement,
+            opts: object,
+          ) => typeof autocompleteRef.current
+          autocompleteRef.current = new AC(inputRef.current, {
             fields: ['formatted_address'],
             componentRestrictions: { country: 'us' },
             bounds: BIAS_BOUNDS,
@@ -62,8 +67,10 @@ export function AddressAutocompleteInput({
           placeChangedListenerRef.current = null
         }
 
-        placeChangedListenerRef.current = autocompleteRef.current.addListener('place_changed', () => {
-          const place = autocompleteRef.current?.getPlace() as { formatted_address?: string } | undefined
+        const ac = autocompleteRef.current
+        if (!ac) return
+        placeChangedListenerRef.current = ac.addListener('place_changed', () => {
+          const place = ac.getPlace() as { formatted_address?: string } | undefined
           const selected = place?.formatted_address?.trim() || inputRef.current?.value.trim() || ''
           if (!selected) return
           onChange(selected)

@@ -156,7 +156,7 @@ function HubHero({ onBook }: { onBook: (opts?: OpenBookingOptions) => void }) {
           type="button"
           variant="outline"
           className="font-semibold text-base px-8 border-brand text-brand hover:bg-brand/10"
-          onClick={onBook}
+          onClick={() => onBook()}
         >
           Book online
         </Button>
@@ -182,7 +182,7 @@ function ServicesMobileDock({ onBook }: { onBook: (opts?: OpenBookingOptions) =>
         type="button"
         variant="outline"
         className="flex-1 font-semibold border-brand text-brand"
-        onClick={onBook}
+        onClick={() => onBook()}
       >
         Book
       </Button>
