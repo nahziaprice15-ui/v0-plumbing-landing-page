@@ -56,6 +56,7 @@ export async function POST(req: Request) {
   }
 
   sendBookingEmails({
+    id: booking.id,
     name: d.name,
     phone: d.phone,
     email: d.email || null,
