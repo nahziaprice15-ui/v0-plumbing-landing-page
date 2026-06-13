@@ -36,8 +36,8 @@ function authHeaders(token: string) {
 
 async function throwIfError(res: Response, label: string) {
   if (!res.ok) {
-    const body = await res.json().catch(() => ({})) as { error?: { message?: string } }
-    throw new Error(`[airtable] ${label}: ${body?.error?.message ?? res.statusText}`)
+    const text = await res.text().catch(() => '')
+    throw new Error(`[airtable] ${label}: HTTP ${res.status} — ${text || res.statusText}`)
   }
 }
 
