@@ -76,13 +76,13 @@ export async function getAdminBookings(opts?: {
   if (opts?.status) q = q.eq('status', opts.status)
 
   const { data, error } = await q
-  if (error) throw new Error(error.message)
+  if (error) { console.error('[getAdminBookings]', error.message); return [] }
   return (data ?? []) as AdminBookingRow[]
 }
 
 export async function getAdminBookingById(id: string): Promise<AdminBookingRow | null> {
   const { data, error } = await supabase.from('bookings').select('*').eq('id', id).maybeSingle()
-  if (error) throw new Error(error.message)
+  if (error) { console.error('[getAdminBookingById]', error.message); return null }
   return data as AdminBookingRow | null
 }
 
@@ -109,7 +109,7 @@ export async function getTodayBookings(): Promise<AdminBookingRow[]> {
     .select('*')
     .or(`preferred_date.eq.${today},created_at.gte.${today}T00:00:00`)
     .order('preferred_time', { ascending: true })
-  if (error) throw new Error(error.message)
+  if (error) { console.error('[getTodayBookings]', error.message); return [] }
   return (data ?? []) as AdminBookingRow[]
 }
 
@@ -121,38 +121,43 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
   const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
   const slaThreshold = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
 
-  const [todayRes, pendingRes, inProgressRes, completedRes, slaRes] = await Promise.all([
-    supabase
-      .from('bookings')
-      .select('id', { count: 'exact', head: true })
-      .gte('created_at', `${todayStr}T00:00:00`),
-    supabase
-      .from('bookings')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'pending'),
-    supabase
-      .from('bookings')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'in_progress'),
-    supabase
-      .from('bookings')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'completed')
-      .gte('updated_at', `${monthStart}T00:00:00`),
-    supabase
-      .from('bookings')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'pending')
-      .lte('created_at', slaThreshold),
-  ])
+  try {
+    const [todayRes, pendingRes, inProgressRes, completedRes, slaRes] = await Promise.all([
+      supabase
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .gte('created_at', `${todayStr}T00:00:00`),
+      supabase
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending'),
+      supabase
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'in_progress'),
+      supabase
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'completed')
+        .gte('updated_at', `${monthStart}T00:00:00`),
+      supabase
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending')
+        .lte('created_at', slaThreshold),
+    ])
 
-  return {
-    newBookingsToday: todayRes.count ?? 0,
-    pendingConfirmations: pendingRes.count ?? 0,
-    inProgress: inProgressRes.count ?? 0,
-    completedThisMonth: completedRes.count ?? 0,
-    pendingSlaCount: slaRes.count ?? 0,
-    unreadNotifications: slaRes.count ?? 0,
+    return {
+      newBookingsToday: todayRes.count ?? 0,
+      pendingConfirmations: pendingRes.count ?? 0,
+      inProgress: inProgressRes.count ?? 0,
+      completedThisMonth: completedRes.count ?? 0,
+      pendingSlaCount: slaRes.count ?? 0,
+      unreadNotifications: slaRes.count ?? 0,
+    }
+  } catch (err) {
+    console.error('[getAdminDashboardMetrics]', err)
+    return { newBookingsToday: 0, pendingConfirmations: 0, inProgress: 0, completedThisMonth: 0, pendingSlaCount: 0, unreadNotifications: 0 }
   }
 }
 
@@ -174,7 +179,7 @@ export async function getClientSummaries(): Promise<ClientSummaryRow[]> {
     .from('bookings')
     .select('phone, full_name, email, service_type, created_at')
     .order('created_at', { ascending: false })
-  if (error) throw new Error(error.message)
+  if (error) { console.error('[getClientSummaries]', error.message); return [] }
 
   const byPhone = new Map<string, ClientSummaryRow>()
   for (const row of data ?? []) {
@@ -201,7 +206,7 @@ export async function getClientBookings(phone: string): Promise<AdminBookingRow[
     .select('*')
     .eq('phone', phone)
     .order('created_at', { ascending: false })
-  if (error) throw new Error(error.message)
+  if (error) { console.error('[getClientBookings]', error.message); return [] }
   return (data ?? []) as AdminBookingRow[]
 }
 
@@ -213,7 +218,7 @@ export async function getServiceDemand(days = 30): Promise<ServiceDemandRow[]> {
     .from('bookings')
     .select('service_type')
     .gte('created_at', since)
-  if (error) throw new Error(error.message)
+  if (error) { console.error('[getServiceDemand]', error.message); return [] }
 
   const counts = new Map<string, number>()
   for (const row of data ?? []) {
@@ -239,6 +244,6 @@ export async function getPendingSlabookings(thresholdHours = 4): Promise<AdminBo
     .eq('status', 'pending')
     .lte('created_at', cutoff)
     .order('created_at', { ascending: true })
-  if (error) throw new Error(error.message)
+  if (error) { console.error('[getPendingSlabookings]', error.message); return [] }
   return (data ?? []) as AdminBookingRow[]
 }
