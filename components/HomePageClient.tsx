@@ -7,18 +7,16 @@ import { QualityWorkGallery } from '@/components/QualityWorkGallery'
 import { Testimonials } from '@/components/Testimonials'
 import { FAQ } from '@/components/FAQ'
 import { Guarantee } from '@/components/Guarantee'
-import { useOpenBooking } from '@/components/BookingOpenContext'
 
 export function HomePageClient() {
-  const onBookingClick = useOpenBooking()
   return (
     <>
-      <Hero onBookingClick={onBookingClick} />
+      <Hero />
       <TrustBar />
-      <Features onBookingClick={onBookingClick} />
+      <Features />
       <QualityWorkGallery />
       <Testimonials />
-      <Guarantee onBookingClick={onBookingClick} />
+      <Guarantee />
       <FAQ />
     </>
   )

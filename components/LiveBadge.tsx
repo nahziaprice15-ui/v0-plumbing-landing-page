@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { Wrench } from 'lucide-react'
 
 const serviceAreas = [
@@ -14,7 +15,7 @@ const serviceAreas = [
   'Algiers',
 ]
 
-export function LiveBadge({ onBookingClick }: { onBookingClick: () => void }) {
+export function LiveBadge() {
   const [currentArea, setCurrentArea] = useState(0)
   const [isVisible, setIsVisible] = useState(true)
 
@@ -54,12 +55,12 @@ export function LiveBadge({ onBookingClick }: { onBookingClick: () => void }) {
                 {serviceAreas[currentArea]}
               </span>
             </p>
-            <button
-              onClick={onBookingClick}
+            <Link
+              href="/book"
               className="text-xs text-secondary hover:text-secondary/80 font-bold transition-all duration-300 hover:translate-x-1 inline-flex items-center gap-1"
             >
               Book your service →
-            </button>
+            </Link>
           </div>
         </div>
       </div>

@@ -49,7 +49,7 @@ const services = [
   },
 ]
 
-export function Features({ onBookingClick }: { onBookingClick: () => void }) {
+export function Features() {
   return (
     <section id="services" className="py-20 bg-white/70 border-y border-border/80">
       <div className="container mx-auto px-4">
@@ -104,11 +104,11 @@ export function Features({ onBookingClick }: { onBookingClick: () => void }) {
         <div className="text-center space-y-4 animate-in fade-in duration-700 delay-700">
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
             <Button
-              onClick={onBookingClick}
+              asChild
               size="lg"
               className="bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold text-lg px-8"
             >
-              Book Your Service Now
+              <Link href="/book">Book Your Service Now</Link>
             </Button>
             <Button size="lg" variant="outline" className="font-semibold text-lg px-8 border-brand text-brand hover:bg-brand/10" asChild>
               <Link href="/services">Browse services by category</Link>

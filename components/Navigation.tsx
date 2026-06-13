@@ -6,7 +6,7 @@ import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BrandLogo } from '@/components/BrandLogo'
 
-export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
+export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -71,20 +71,20 @@ export function Navigation({ onBookingClick }: { onBookingClick: () => void }) {
           {/* Zone 3a: Desktop CTA */}
           <div className="hidden md:flex items-center justify-end gap-3 shrink-0 md:pl-4 md:border-l md:border-white/15">
             <Button
-              onClick={onBookingClick}
+              asChild
               className="bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-sm font-semibold text-sm h-10 px-5 transition-colors"
             >
-              Book service
+              <Link href="/book">Book service</Link>
             </Button>
           </div>
 
           {/* Zone 3b: Mobile CTA + toggle */}
           <div className="md:hidden ml-auto flex items-center justify-end gap-2 shrink-0">
             <Button
-              onClick={onBookingClick}
+              asChild
               className="bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-sm font-semibold text-sm h-11 px-3.5 transition-colors"
             >
-              Book service
+              <Link href="/book">Book service</Link>
             </Button>
 
             <button

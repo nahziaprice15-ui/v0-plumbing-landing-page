@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { SiteChrome } from '@/components/SiteChrome'
 import { BookingPageContent } from './BookingPageContent'
 import { absoluteUrl } from '@/lib/site'
@@ -12,7 +13,9 @@ export const metadata: Metadata = {
 export default function BookPage() {
   return (
     <SiteChrome>
-      <BookingPageContent />
+      <Suspense>
+        <BookingPageContent />
+      </Suspense>
     </SiteChrome>
   )
 }

@@ -31,7 +31,6 @@ import {
   isSegmentId,
   serviceSegments,
 } from '@/data/serviceSegments'
-import { useOpenBooking, type OpenBookingOptions } from '@/components/BookingOpenContext'
 import { offeringToBookingType, segmentIdToBookingType } from '@/lib/bookingServiceType'
 import { SITE } from '@/lib/site'
 import { cn } from '@/lib/utils'
@@ -54,29 +53,23 @@ const offeringIcons: Record<OfferingIconKey, LucideIcon> = {
 }
 
 function SegmentPanel({ segment }: { segment: ServiceSegment }) {
-  const openBooking = useOpenBooking()
-
   return (
     <div className="space-y-10 animate-in fade-in duration-300">
       <p className="text-muted-foreground leading-relaxed max-w-2xl">{segment.intro}</p>
 
       <div className="grid sm:grid-cols-2 gap-5">
         {segment.offerings.map((offering) => (
-          <OfferingCard key={offering.title} offering={offering} onBook={openBooking} />
+          <OfferingCard key={offering.title} offering={offering} />
         ))}
       </div>
     </div>
   )
 }
 
-function OfferingCard({
-  offering,
-  onBook,
-}: {
-  offering: SegmentOffering
-  onBook: (opts?: OpenBookingOptions) => void
-}) {
+function OfferingCard({ offering }: { offering: SegmentOffering }) {
   const Icon = offeringIcons[offering.iconKey]
+  const st = offeringToBookingType(offering)
+  const bookHref = st ? `/book?service=${st}` : '/book'
 
   return (
     <div className="group flex flex-col rounded-xl border-2 border-brand/20 bg-card p-5 shadow-sm transition-all duration-300 hover:border-brand hover:shadow-lg hover:shadow-brand/10">
@@ -117,13 +110,8 @@ function OfferingCard({
             Call now
           </a>
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full sm:w-auto"
-          onClick={() => onBook({ serviceType: offeringToBookingType(offering) })}
-        >
-          Book online
+        <Button variant="outline" className="w-full sm:w-auto" asChild>
+          <Link href={bookHref}>Book online</Link>
         </Button>
         {offering.detailSlug ? (
           <Button variant="ghost" className="w-full sm:w-auto text-muted-foreground" asChild>
@@ -135,7 +123,7 @@ function OfferingCard({
   )
 }
 
-function HubHero({ onBook }: { onBook: (opts?: OpenBookingOptions) => void }) {
+function HubHero() {
   return (
     <div className="mb-10 md:mb-12 text-center max-w-3xl mx-auto">
       <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-balance">
@@ -153,19 +141,18 @@ function HubHero({ onBook }: { onBook: (opts?: OpenBookingOptions) => void }) {
           </a>
         </Button>
         <Button
-          type="button"
+          asChild
           variant="outline"
           className="font-semibold text-base px-8 border-brand text-brand hover:bg-brand/10"
-          onClick={() => onBook()}
         >
-          Book online
+          <Link href="/book">Book online</Link>
         </Button>
       </div>
     </div>
   )
 }
 
-function ServicesMobileDock({ onBook }: { onBook: (opts?: OpenBookingOptions) => void }) {
+function ServicesMobileDock() {
   return (
     <div
       className={cn(
@@ -178,13 +165,8 @@ function ServicesMobileDock({ onBook }: { onBook: (opts?: OpenBookingOptions) =>
           Call
         </a>
       </Button>
-      <Button
-        type="button"
-        variant="outline"
-        className="flex-1 font-semibold border-brand text-brand"
-        onClick={() => onBook()}
-      >
-        Book
+      <Button asChild variant="outline" className="flex-1 font-semibold border-brand text-brand">
+        <Link href="/book">Book</Link>
       </Button>
     </div>
   )
@@ -194,7 +176,6 @@ export function ServicesHub() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const openBooking = useOpenBooking()
 
   const tabFromUrl = searchParams.get('tab')
   const initialTab = useMemo((): SegmentId => {
@@ -222,7 +203,7 @@ export function ServicesHub() {
   return (
     <>
       <article className="container mx-auto px-4 pt-24 pb-24 md:pb-20 max-w-5xl">
-        <HubHero onBook={openBooking} />
+        <HubHero />
 
         <Tabs value={tab} onValueChange={setTabAndUrl} className="w-full gap-8">
           <TabsList className="grid h-auto w-full grid-cols-3 gap-1 rounded-xl bg-muted p-1 sm:w-full sm:max-w-xl sm:mx-auto">
@@ -251,15 +232,10 @@ export function ServicesHub() {
                       Call {SITE.phoneDisplay}
                     </a>
                   </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      const st = segmentIdToBookingType(segment.id)
-                      openBooking(st ? { serviceType: st } : undefined)
-                    }}
-                  >
-                    Book this category
+                  <Button asChild variant="outline">
+                    <Link href={(() => { const st = segmentIdToBookingType(segment.id); return st ? `/book?service=${st}` : '/book' })()}>
+                      Book this category
+                    </Link>
                   </Button>
                 </div>
               </div>
@@ -275,7 +251,7 @@ export function ServicesHub() {
         </p>
       </article>
 
-      <ServicesMobileDock onBook={openBooking} />
+      <ServicesMobileDock />
     </>
   )
 }

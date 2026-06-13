@@ -1,9 +1,10 @@
 'use client'
 
+import Link from 'next/link'
 import { ArrowRight, Clock, Shield, Wrench } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-export function Hero({ onBookingClick }: { onBookingClick: () => void }) {
+export function Hero() {
   return (
     <section className="relative min-h-[90vh] flex items-center pt-20 bg-gradient-to-br from-brand via-brand to-brand-deep text-white">
       <div className="container mx-auto px-4 py-16 md:py-24">
@@ -21,7 +22,7 @@ export function Hero({ onBookingClick }: { onBookingClick: () => void }) {
             </h1>
 
             <p className="text-lg md:text-xl text-white/85 leading-relaxed text-pretty">
-              Fast, reliable plumbing solutions for New Orleans homes and businesses. 
+              Fast, reliable plumbing solutions for New Orleans homes and businesses.
               Available 24/7 for emergencies with same-day service guaranteed.
             </p>
 
@@ -50,15 +51,17 @@ export function Hero({ onBookingClick }: { onBookingClick: () => void }) {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button
-                onClick={onBookingClick}
+                asChild
                 size="lg"
                 className="bg-gradient-to-r from-secondary to-secondary/90 text-secondary-foreground hover:shadow-2xl hover:shadow-secondary/50 hover:scale-105 transition-all duration-300 font-bold text-lg px-8 py-6 h-auto relative overflow-hidden group"
               >
-                <span className="relative z-10 flex items-center">
-                  Get Service Now
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                <Link href="/book">
+                  <span className="relative z-10 flex items-center">
+                    Get Service Now
+                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                </Link>
               </Button>
               <Button
                 variant="outline"

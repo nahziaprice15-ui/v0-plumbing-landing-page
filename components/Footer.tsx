@@ -10,7 +10,7 @@ import { SITE } from '@/lib/site'
 
 const footerMuted = 'text-[color:var(--footer-muted)]'
 
-export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
+export function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
@@ -124,14 +124,16 @@ export function Footer({ onBookingClick }: { onBookingClick: () => void }) {
             </p>
           </div>
           <Button
-            onClick={onBookingClick}
+            asChild
             size="lg"
             className="bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-md font-semibold px-8 h-12 shrink-0 transition-colors"
           >
-            <span className="flex items-center gap-2">
-              Schedule service
-              <Phone className="w-4 h-4" aria-hidden />
-            </span>
+            <Link href="/book">
+              <span className="flex items-center gap-2">
+                Schedule service
+                <Phone className="w-4 h-4" aria-hidden />
+              </span>
+            </Link>
           </Button>
         </div>
 

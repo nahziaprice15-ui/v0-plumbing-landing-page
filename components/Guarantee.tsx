@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { Shield, CheckCircle2, Clock, ThumbsUp, Award } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -26,7 +27,7 @@ const guaranteePoints = [
   },
 ]
 
-export function Guarantee({ onBookingClick }: { onBookingClick: () => void }) {
+export function Guarantee() {
   return (
     <section className="py-20 bg-gradient-to-br from-brand via-brand to-brand-deep text-white relative overflow-hidden">
       {/* Background Pattern */}
@@ -88,12 +89,14 @@ export function Guarantee({ onBookingClick }: { onBookingClick: () => void }) {
                 </p>
               </div>
               <Button
-                onClick={onBookingClick}
+                asChild
                 size="lg"
                 className="bg-gradient-to-r from-secondary to-secondary/90 text-secondary-foreground hover:shadow-2xl hover:shadow-secondary/50 hover:scale-110 transition-all duration-300 font-bold text-lg px-8 whitespace-nowrap relative overflow-hidden group"
               >
-                <span className="relative z-10">Lock in Your Guarantee</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                <Link href="/book">
+                  <span className="relative z-10">Lock in Your Guarantee</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                </Link>
               </Button>
             </div>
           </div>
