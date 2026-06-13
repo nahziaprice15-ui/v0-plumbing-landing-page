@@ -1,4 +1,10 @@
-import { supabase } from '@/lib/supabase'
+import {
+  listBookings,
+  getBookingById,
+  updateBookingStatus as airtableUpdateStatus,
+  updateBookingNotes as airtableUpdateNotes,
+} from '@/lib/airtable'
+import type { AirtableRecord } from '@/lib/airtable'
 
 export type BookingStatus = 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled'
 
@@ -59,6 +65,25 @@ export interface ServiceCategoryRow {
   created_at: string
 }
 
+function toRow(record: AirtableRecord): AdminBookingRow {
+  const f = record.fields
+  return {
+    id: record.id,
+    full_name: f.name ?? '',
+    phone: f.phone ?? '',
+    email: f.email ?? null,
+    service_type: f.service ?? '',
+    address: '',
+    preferred_date: f.date ?? null,
+    preferred_time: f.time ?? null,
+    description: f.notes ?? null,
+    status: (f.status ?? 'pending') as BookingStatus,
+    notes: f.notes ?? null,
+    created_at: record.createdTime,
+    updated_at: record.createdTime,
+  }
+}
+
 // ── Bookings ─────────────────────────────────────────────────────────────────
 
 export async function getAdminBookings(opts?: {
@@ -66,94 +91,70 @@ export async function getAdminBookings(opts?: {
   limit?: number
   offset?: number
 }): Promise<AdminBookingRow[]> {
-  let q = supabase
-    .from('bookings')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(opts?.limit ?? 100)
-
-  if (opts?.offset) q = q.range(opts.offset, opts.offset + (opts.limit ?? 100) - 1)
-  if (opts?.status) q = q.eq('status', opts.status)
-
-  const { data, error } = await q
-  if (error) { console.error('[getAdminBookings]', error.message); return [] }
-  return (data ?? []) as AdminBookingRow[]
+  try {
+    const records = await listBookings({ status: opts?.status, maxRecords: opts?.limit ?? 100 })
+    return records.map(toRow)
+  } catch (err) {
+    console.error('[getAdminBookings]', err)
+    return []
+  }
 }
 
 export async function getAdminBookingById(id: string): Promise<AdminBookingRow | null> {
-  const { data, error } = await supabase.from('bookings').select('*').eq('id', id).maybeSingle()
-  if (error) { console.error('[getAdminBookingById]', error.message); return null }
-  return data as AdminBookingRow | null
+  try {
+    const record = await getBookingById(id)
+    return record ? toRow(record) : null
+  } catch (err) {
+    console.error('[getAdminBookingById]', err)
+    return null
+  }
 }
 
 export async function updateBookingStatus(id: string, status: BookingStatus): Promise<void> {
-  const { error } = await supabase
-    .from('bookings')
-    .update({ status, updated_at: new Date().toISOString() })
-    .eq('id', id)
-  if (error) throw new Error(error.message)
+  await airtableUpdateStatus(id, status)
 }
 
 export async function updateBookingNotes(id: string, notes: string): Promise<void> {
-  const { error } = await supabase
-    .from('bookings')
-    .update({ notes, updated_at: new Date().toISOString() })
-    .eq('id', id)
-  if (error) throw new Error(error.message)
+  await airtableUpdateNotes(id, notes)
 }
 
 export async function getTodayBookings(): Promise<AdminBookingRow[]> {
-  const today = new Date().toISOString().slice(0, 10)
-  const { data, error } = await supabase
-    .from('bookings')
-    .select('*')
-    .or(`preferred_date.eq.${today},created_at.gte.${today}T00:00:00`)
-    .order('preferred_time', { ascending: true })
-  if (error) { console.error('[getTodayBookings]', error.message); return [] }
-  return (data ?? []) as AdminBookingRow[]
+  try {
+    const today = new Date().toISOString().slice(0, 10)
+    const records = await listBookings({ maxRecords: 200 })
+    return records
+      .filter(r => r.createdTime.startsWith(today) || r.fields.date === today)
+      .sort((a, b) => (a.fields.time ?? '').localeCompare(b.fields.time ?? ''))
+      .map(toRow)
+  } catch (err) {
+    console.error('[getTodayBookings]', err)
+    return []
+  }
 }
 
 // ── Dashboard metrics ─────────────────────────────────────────────────────────
 
 export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics> {
-  const now = new Date()
-  const todayStr = now.toISOString().slice(0, 10)
-  const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
-  const slaThreshold = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
-
   try {
-    const [todayRes, pendingRes, inProgressRes, completedRes, slaRes] = await Promise.all([
-      supabase
-        .from('bookings')
-        .select('id', { count: 'exact', head: true })
-        .gte('created_at', `${todayStr}T00:00:00`),
-      supabase
-        .from('bookings')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending'),
-      supabase
-        .from('bookings')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'in_progress'),
-      supabase
-        .from('bookings')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'completed')
-        .gte('updated_at', `${monthStart}T00:00:00`),
-      supabase
-        .from('bookings')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending')
-        .lte('created_at', slaThreshold),
-    ])
+    const all = await listBookings({ maxRecords: 500 })
+    const today = new Date().toISOString().slice(0, 10)
+    const now = new Date()
+    const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+    const slaThreshold = new Date(Date.now() - 4 * 60 * 60 * 1000)
+
+    const slaCount = all.filter(
+      r => r.fields.status === 'pending' && new Date(r.createdTime) <= slaThreshold,
+    ).length
 
     return {
-      newBookingsToday: todayRes.count ?? 0,
-      pendingConfirmations: pendingRes.count ?? 0,
-      inProgress: inProgressRes.count ?? 0,
-      completedThisMonth: completedRes.count ?? 0,
-      pendingSlaCount: slaRes.count ?? 0,
-      unreadNotifications: slaRes.count ?? 0,
+      newBookingsToday: all.filter(r => r.createdTime.startsWith(today)).length,
+      pendingConfirmations: all.filter(r => r.fields.status === 'pending').length,
+      inProgress: all.filter(r => r.fields.status === 'in_progress').length,
+      completedThisMonth: all.filter(
+        r => r.fields.status === 'completed' && r.createdTime >= monthStart,
+      ).length,
+      pendingSlaCount: slaCount,
+      unreadNotifications: slaCount,
     }
   } catch (err) {
     console.error('[getAdminDashboardMetrics]', err)
@@ -163,87 +164,95 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 
 export async function getAdminOperationalInsights() {
   const slaPendingThresholdHours = 4
-  const slaThreshold = new Date(Date.now() - slaPendingThresholdHours * 60 * 60 * 1000).toISOString()
-  const { count } = await supabase
-    .from('bookings')
-    .select('id', { count: 'exact', head: true })
-    .eq('status', 'pending')
-    .lte('created_at', slaThreshold)
-  return { slaPendingThresholdHours, pendingOlderThanThreshold: count ?? 0 }
+  try {
+    const slaThreshold = new Date(Date.now() - slaPendingThresholdHours * 60 * 60 * 1000)
+    const records = await listBookings({ status: 'pending', maxRecords: 200 })
+    const count = records.filter(r => new Date(r.createdTime) <= slaThreshold).length
+    return { slaPendingThresholdHours, pendingOlderThanThreshold: count }
+  } catch (err) {
+    console.error('[getAdminOperationalInsights]', err)
+    return { slaPendingThresholdHours, pendingOlderThanThreshold: 0 }
+  }
 }
 
 // ── Clients ───────────────────────────────────────────────────────────────────
 
 export async function getClientSummaries(): Promise<ClientSummaryRow[]> {
-  const { data, error } = await supabase
-    .from('bookings')
-    .select('phone, full_name, email, service_type, created_at')
-    .order('created_at', { ascending: false })
-  if (error) { console.error('[getClientSummaries]', error.message); return [] }
-
-  const byPhone = new Map<string, ClientSummaryRow>()
-  for (const row of data ?? []) {
-    const existing = byPhone.get(row.phone)
-    if (!existing) {
-      byPhone.set(row.phone, {
-        phone: row.phone,
-        full_name: row.full_name,
-        email: row.email,
-        booking_count: 1,
-        last_booking_date: row.created_at,
-        last_service_type: row.service_type,
-      })
-    } else {
-      existing.booking_count++
+  try {
+    const records = await listBookings({ maxRecords: 500 })
+    const byPhone = new Map<string, ClientSummaryRow>()
+    for (const r of records) {
+      const phone = r.fields.phone ?? ''
+      const existing = byPhone.get(phone)
+      if (!existing) {
+        byPhone.set(phone, {
+          phone,
+          full_name: r.fields.name ?? '',
+          email: r.fields.email ?? null,
+          booking_count: 1,
+          last_booking_date: r.createdTime,
+          last_service_type: r.fields.service ?? null,
+        })
+      } else {
+        existing.booking_count++
+      }
     }
+    return Array.from(byPhone.values())
+  } catch (err) {
+    console.error('[getClientSummaries]', err)
+    return []
   }
-  return Array.from(byPhone.values())
 }
 
 export async function getClientBookings(phone: string): Promise<AdminBookingRow[]> {
-  const { data, error } = await supabase
-    .from('bookings')
-    .select('*')
-    .eq('phone', phone)
-    .order('created_at', { ascending: false })
-  if (error) { console.error('[getClientBookings]', error.message); return [] }
-  return (data ?? []) as AdminBookingRow[]
+  try {
+    const records = await listBookings({ phone, maxRecords: 100 })
+    return records.map(toRow)
+  } catch (err) {
+    console.error('[getClientBookings]', err)
+    return []
+  }
 }
 
 // ── Service demand ────────────────────────────────────────────────────────────
 
 export async function getServiceDemand(days = 30): Promise<ServiceDemandRow[]> {
-  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
-  const { data, error } = await supabase
-    .from('bookings')
-    .select('service_type')
-    .gte('created_at', since)
-  if (error) { console.error('[getServiceDemand]', error.message); return [] }
+  try {
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+    const records = await listBookings({ maxRecords: 500 })
+    const filtered = records.filter(r => new Date(r.createdTime) >= since)
 
-  const counts = new Map<string, number>()
-  for (const row of data ?? []) {
-    counts.set(row.service_type, (counts.get(row.service_type) ?? 0) + 1)
+    const counts = new Map<string, number>()
+    for (const r of filtered) {
+      const s = r.fields.service ?? 'Unknown'
+      counts.set(s, (counts.get(s) ?? 0) + 1)
+    }
+    const total = [...counts.values()].reduce((a, b) => a + b, 0) || 1
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([service_type, count]) => ({
+        service_type,
+        total: count,
+        pct: Math.round((count / total) * 100),
+      }))
+  } catch (err) {
+    console.error('[getServiceDemand]', err)
+    return []
   }
-  const total = [...counts.values()].reduce((a, b) => a + b, 0) || 1
-  return [...counts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .map(([service_type, count]) => ({
-      service_type,
-      total: count,
-      pct: Math.round((count / total) * 100),
-    }))
 }
 
 // ── Notifications ─────────────────────────────────────────────────────────────
 
 export async function getPendingSlabookings(thresholdHours = 4): Promise<AdminBookingRow[]> {
-  const cutoff = new Date(Date.now() - thresholdHours * 60 * 60 * 1000).toISOString()
-  const { data, error } = await supabase
-    .from('bookings')
-    .select('*')
-    .eq('status', 'pending')
-    .lte('created_at', cutoff)
-    .order('created_at', { ascending: true })
-  if (error) { console.error('[getPendingSlabookings]', error.message); return [] }
-  return (data ?? []) as AdminBookingRow[]
+  try {
+    const cutoff = new Date(Date.now() - thresholdHours * 60 * 60 * 1000)
+    const records = await listBookings({ status: 'pending', maxRecords: 200 })
+    return records
+      .filter(r => new Date(r.createdTime) <= cutoff)
+      .sort((a, b) => a.createdTime.localeCompare(b.createdTime))
+      .map(toRow)
+  } catch (err) {
+    console.error('[getPendingSlabookings]', err)
+    return []
+  }
 }

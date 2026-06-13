@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { supabase } from '@/lib/supabase'
-import { sendBookingEmails } from '@/lib/email/booking'
+import { createBooking } from '@/lib/airtable'
 
 const schema = z.object({
   name: z.string().min(2),
@@ -34,38 +33,19 @@ export async function POST(req: Request) {
 
   const d = parsed.data
 
-  const { data: booking, error } = await supabase
-    .from('bookings')
-    .insert({
-      full_name: d.name,
-      phone: d.phone,
+  try {
+    const { id } = await createBooking({
+      name: d.name,
       email: d.email || null,
-      service_type: d.serviceType,
-      address: d.address,
-      preferred_date: d.preferredDate || null,
-      preferred_time: d.preferredTime || null,
-      description: d.notes || null,
-      status: 'pending',
+      phone: d.phone,
+      service: d.serviceType,
+      date: d.preferredDate || null,
+      time: d.preferredTime || null,
+      notes: d.notes || null,
     })
-    .select('id')
-    .single()
-
-  if (error) {
-    console.error('[booking] supabase insert error', error.message)
+    return NextResponse.json({ success: true, id })
+  } catch (err) {
+    console.error('[booking] airtable error', err)
     return NextResponse.json({ success: false, error: 'Failed to save booking' }, { status: 500 })
   }
-
-  sendBookingEmails({
-    id: booking.id,
-    name: d.name,
-    phone: d.phone,
-    email: d.email || null,
-    address: d.address,
-    serviceType: d.serviceType,
-    preferredDate: d.preferredDate,
-    preferredTime: d.preferredTime,
-    notes: d.notes,
-  }).catch((err) => console.error('[booking] email error', err))
-
-  return NextResponse.json({ success: true, id: booking.id })
 }
