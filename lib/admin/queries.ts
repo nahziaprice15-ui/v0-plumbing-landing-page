@@ -69,16 +69,16 @@ function toRow(record: AirtableRecord): AdminBookingRow {
   const f = record.fields
   return {
     id: record.id,
-    full_name: f.name ?? '',
-    phone: f.phone ?? '',
-    email: f.email ?? null,
-    service_type: f.service ?? '',
+    full_name: f.Name ?? '',
+    phone: f.Phone ?? '',
+    email: f.Email ?? null,
+    service_type: f.Service ?? '',
     address: '',
-    preferred_date: f.date ?? null,
-    preferred_time: f.time ?? null,
-    description: f.notes ?? null,
-    status: (f.status ?? 'pending') as BookingStatus,
-    notes: f.notes ?? null,
+    preferred_date: f.Date ?? null,
+    preferred_time: f.Time ?? null,
+    description: f.Notes ?? null,
+    status: (f.Status ?? 'pending') as BookingStatus,
+    notes: f.Notes ?? null,
     created_at: record.createdTime,
     updated_at: record.createdTime,
   }
@@ -123,8 +123,8 @@ export async function getTodayBookings(): Promise<AdminBookingRow[]> {
     const today = new Date().toISOString().slice(0, 10)
     const records = await listBookings({ maxRecords: 200 })
     return records
-      .filter(r => r.createdTime.startsWith(today) || r.fields.date === today)
-      .sort((a, b) => (a.fields.time ?? '').localeCompare(b.fields.time ?? ''))
+      .filter(r => r.createdTime.startsWith(today) || r.fields.Date === today)
+      .sort((a, b) => (a.fields.Time ?? '').localeCompare(b.fields.Time ?? ''))
       .map(toRow)
   } catch (err) {
     console.error('[getTodayBookings]', err)
@@ -143,15 +143,15 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
     const slaThreshold = new Date(Date.now() - 4 * 60 * 60 * 1000)
 
     const slaCount = all.filter(
-      r => r.fields.status === 'pending' && new Date(r.createdTime) <= slaThreshold,
+      r => r.fields.Status === 'pending' && new Date(r.createdTime) <= slaThreshold,
     ).length
 
     return {
       newBookingsToday: all.filter(r => r.createdTime.startsWith(today)).length,
-      pendingConfirmations: all.filter(r => r.fields.status === 'pending').length,
-      inProgress: all.filter(r => r.fields.status === 'in_progress').length,
+      pendingConfirmations: all.filter(r => r.fields.Status === 'pending').length,
+      inProgress: all.filter(r => r.fields.Status === 'in_progress').length,
       completedThisMonth: all.filter(
-        r => r.fields.status === 'completed' && r.createdTime >= monthStart,
+        r => r.fields.Status === 'completed' && r.createdTime >= monthStart,
       ).length,
       pendingSlaCount: slaCount,
       unreadNotifications: slaCount,
@@ -182,16 +182,16 @@ export async function getClientSummaries(): Promise<ClientSummaryRow[]> {
     const records = await listBookings({ maxRecords: 500 })
     const byPhone = new Map<string, ClientSummaryRow>()
     for (const r of records) {
-      const phone = r.fields.phone ?? ''
+      const phone = r.fields.Phone ?? ''
       const existing = byPhone.get(phone)
       if (!existing) {
         byPhone.set(phone, {
           phone,
-          full_name: r.fields.name ?? '',
-          email: r.fields.email ?? null,
+          full_name: r.fields.Name ?? '',
+          email: r.fields.Email ?? null,
           booking_count: 1,
           last_booking_date: r.createdTime,
-          last_service_type: r.fields.service ?? null,
+          last_service_type: r.fields.Service ?? null,
         })
       } else {
         existing.booking_count++
@@ -224,7 +224,7 @@ export async function getServiceDemand(days = 30): Promise<ServiceDemandRow[]> {
 
     const counts = new Map<string, number>()
     for (const r of filtered) {
-      const s = r.fields.service ?? 'Unknown'
+      const s = r.fields.Service ?? 'Unknown'
       counts.set(s, (counts.get(s) ?? 0) + 1)
     }
     const total = [...counts.values()].reduce((a, b) => a + b, 0) || 1

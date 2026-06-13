@@ -1,14 +1,14 @@
 const AIRTABLE_API = 'https://api.airtable.com/v0'
 
 export interface AirtableFields {
-  name?: string
-  email?: string
-  phone?: string
-  service?: string
-  date?: string
-  time?: string
-  notes?: string
-  status?: string
+  Name?: string
+  Email?: string
+  Phone?: string
+  Service?: string
+  Date?: string
+  Time?: string
+  Notes?: string
+  Status?: string
 }
 
 export interface AirtableRecord {
@@ -51,11 +51,16 @@ export async function createBooking(data: {
   notes?: string | null
 }): Promise<{ id: string }> {
   const { token, url } = cfg()
-  const fields: AirtableFields = { name: data.name, phone: data.phone, service: data.service, status: 'pending' }
-  if (data.email) fields.email = data.email
-  if (data.date) fields.date = data.date
-  if (data.time) fields.time = data.time
-  if (data.notes) fields.notes = data.notes
+  const fields: AirtableFields = {
+    Name: data.name,
+    Phone: data.phone,
+    Service: data.service,
+    Status: 'pending',
+  }
+  if (data.email) fields.Email = data.email
+  if (data.date) fields.Date = data.date
+  if (data.time) fields.Time = data.time
+  if (data.notes) fields.Notes = data.notes
 
   const res = await fetch(url, {
     method: 'POST',
@@ -77,8 +82,8 @@ export async function listBookings(opts?: {
   params.set('maxRecords', String(opts?.maxRecords ?? 200))
 
   const filters: string[] = []
-  if (opts?.status) filters.push(`{status}="${opts.status}"`)
-  if (opts?.phone) filters.push(`{phone}="${opts.phone}"`)
+  if (opts?.status) filters.push(`{Status}="${opts.status}"`)
+  if (opts?.phone) filters.push(`{Phone}="${opts.phone}"`)
   if (filters.length) params.set('filterByFormula', filters.length === 1 ? filters[0] : `AND(${filters.join(',')})`)
 
   const res = await fetch(`${url}?${params}`, { headers: { Authorization: `Bearer ${token}` } })
@@ -100,7 +105,7 @@ export async function updateBookingStatus(id: string, status: string): Promise<v
   const res = await fetch(`${url}/${id}`, {
     method: 'PATCH',
     headers: authHeaders(token),
-    body: JSON.stringify({ fields: { status } }),
+    body: JSON.stringify({ fields: { Status: status } }),
   })
   await throwIfError(res, 'updateBookingStatus')
 }
@@ -110,7 +115,7 @@ export async function updateBookingNotes(id: string, notes: string): Promise<voi
   const res = await fetch(`${url}/${id}`, {
     method: 'PATCH',
     headers: authHeaders(token),
-    body: JSON.stringify({ fields: { notes } }),
+    body: JSON.stringify({ fields: { Notes: notes } }),
   })
   await throwIfError(res, 'updateBookingNotes')
 }
