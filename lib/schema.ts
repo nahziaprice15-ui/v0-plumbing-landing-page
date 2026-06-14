@@ -27,10 +27,16 @@ export function buildLocalBusinessJsonLd() {
     },
     geo: NOLA_GEO,
     hasMap: `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`,
-    areaServed: {
-      '@type': 'AdministrativeArea',
-      name: `${SITE.city}, ${SITE.state}`,
-    },
+    areaServed: [
+      { '@type': 'AdministrativeArea', name: 'Orleans Parish, Louisiana' },
+      { '@type': 'AdministrativeArea', name: 'Jefferson Parish, Louisiana' },
+      { '@type': 'AdministrativeArea', name: 'St. Tammany Parish, Louisiana' },
+      { '@type': 'AdministrativeArea', name: 'St. Bernard Parish, Louisiana' },
+      { '@type': 'AdministrativeArea', name: 'St. Charles Parish, Louisiana' },
+      { '@type': 'AdministrativeArea', name: 'Plaquemines Parish, Louisiana' },
+      { '@type': 'AdministrativeArea', name: 'St. John the Baptist Parish, Louisiana' },
+      { '@type': 'AdministrativeArea', name: 'Tangipahoa Parish, Louisiana' },
+    ],
     image: `${url}/images/plumber-hero.svg`,
     openingHoursSpecification: [
       {
