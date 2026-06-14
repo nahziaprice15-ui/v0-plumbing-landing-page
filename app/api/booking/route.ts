@@ -45,8 +45,7 @@ export async function POST(req: Request) {
     })
     return NextResponse.json({ success: true, id })
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    console.error('[booking] airtable error', msg)
-    return NextResponse.json({ success: false, error: msg }, { status: 500 })
+    console.error('[booking] airtable error', err instanceof Error ? err.message : String(err))
+    return NextResponse.json({ success: false, error: 'Failed to save booking. Please try again or call us directly.' }, { status: 500 })
   }
 }
