@@ -2,16 +2,9 @@ import type { MetadataRoute } from 'next'
 import { articles } from '@/data/articles'
 import { getAllServiceSlugs } from '@/data/services'
 import { SITE_WIDE_LAST_UPDATED_ISO } from '@/lib/freshness'
+import { absoluteUrl } from '@/lib/site'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://mspllcs.com').replace(/\/$/, '')
-
-  function absoluteUrl(path: string) {
-    const normalized = path.startsWith('/') ? path : `/${path}`
-    if (normalized === '/') return baseUrl
-    return `${baseUrl}${normalized}`
-  }
-
   const siteWide = new Date(SITE_WIDE_LAST_UPDATED_ISO)
 
   const serviceEntries: MetadataRoute.Sitemap = getAllServiceSlugs().map((slug) => ({

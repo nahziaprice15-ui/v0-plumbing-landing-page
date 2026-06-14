@@ -46,11 +46,11 @@ export default function PrivacyPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Third-Party Scheduling (Calendly)</h2>
+        <h2 className="text-xl font-semibold">Third-Party Services</h2>
         <p className="text-muted-foreground">
-          Our booking experience is embedded through Calendly. When you use the scheduler, the details
-          you submit are processed by Calendly and may be subject to Calendly&apos;s cookies and privacy
-          practices.
+          Our booking form stores appointment data securely via Airtable. Information you submit is used
+          solely to schedule and fulfill your service request. We use Vercel Analytics (cookieless) to
+          understand general site usage. No personal data is sold to advertisers or third parties.
         </p>
       </section>
 
